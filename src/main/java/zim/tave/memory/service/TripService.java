@@ -1,8 +1,10 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.DiaryImage;
 import zim.tave.memory.domain.Trip;
@@ -27,7 +29,7 @@ public class TripService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public Trip createTrip(CreateTripRequest request) {
+    public Trip createTrip(Long userId, CreateTripRequest request) {
         // 테마 처리: 테마가 선택되지 않으면 기본 테마(id=1)를 사용
         Long themeId = request.getThemeId();
         if (themeId == null) {
@@ -38,7 +40,7 @@ public class TripService {
                 .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
         
         User user = new User();
-        user.setId(request.getUserId());
+        user.setId(userId);
         
         Trip trip = Trip.createTrip(user, request.getTripName(), request.getDescription(), theme);
         tripRepository.save(trip);
@@ -51,8 +53,8 @@ public class TripService {
     }
 
     @Transactional
-    public void updateTrip(Long tripId, UpdateTripRequest request) {
-        Trip findTrip = tripRepository.findOne(tripId);
+    public void updateTrip(Long userId, Long tripId, UpdateTripRequest request) {
+        Trip findTrip = getOwnedTrip(tripId, userId);
         
         if (request.getTripName() != null) {
             findTrip.setTripName(request.getTripName());
@@ -81,17 +83,16 @@ public class TripService {
         }
     }
 
-    public List<Trip> findAll() {
-        return tripRepository.findAllWithDiaries();
-    }
+    // public List<Trip> findAll() {
+    //     return tripRepository.findAllWithDiaries();
+    // } -> 이거는 모든 사용자의 여행을 조회하는 메서드이므로 사용하지 않는다.
 
-    public Trip findOne(Long tripId) {
-        return tripRepository.findOne(tripId);
+    public Trip findOne(Long userId, Long tripId) {
+        return getOwnedTrip(tripId, userId);
     }
-
     public List<Trip> findByUserId(Long userId) {
-        return tripRepository.findByUserIdWithDiaries(userId);
-    }
+        return tripRepository.findByUserId(userId);
+   }
 
     // 여행의 마지막 다이어리 날짜를 기준으로 종료 날짜 업데이트
     @Transactional
@@ -106,8 +107,8 @@ public class TripService {
 
     // 여행의 대표 사진 설정
     @Transactional
-    public void updateTripRepresentativeImage(Long tripId, Long imageId) {
-        Trip trip = tripRepository.findOne(tripId);
+    public void updateTripRepresentativeImage(Long userId, Long tripId, Long imageId) {
+        Trip trip = getOwnedTrip(tripId, userId);
         
         // 해당 이미지가 이 여행에 속하는 다이어리의 대표 사진인지 검증
         DiaryImage diaryImage = findDiaryImageById(imageId);
@@ -121,6 +122,17 @@ public class TripService {
         }
         
         trip.setRepresentativeImageUrl(diaryImage.getImageUrl());
+    }
+
+    private Trip getOwnedTrip(Long tripId, Long userId) {
+        Trip trip = tripRepository.findOne(tripId);
+        if (trip == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "여행을 찾을 수 없습니다.");
+        }
+        if (trip.getUser() == null || !trip.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 여행에 접근할 수 없습니다.");
+        }
+        return trip;
     }
 
     // DiaryImage ID로 DiaryImage 찾기
