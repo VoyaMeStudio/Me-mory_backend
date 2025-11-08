@@ -161,11 +161,23 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "대표사진 조회 성공",
                     content = @Content(schema = @Schema(implementation = TripRepresentativeImageDto.class))),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
     public ResponseEntity<List<TripRepresentativeImageDto>> getRepresentativeImages(
-            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId) {
-        List<TripRepresentativeImageDto> representativeImages = diaryService.getRepresentativeImagesByTripId(tripId);
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getUserId();
+        Trip trip = tripService.findOne(tripId);
+
+        if (!trip.getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<TripRepresentativeImageDto> representativeImages =
+                diaryService.getRepresentativeImagesByTripId(tripId);
         return ResponseEntity.ok(representativeImages);
     }
 
@@ -174,14 +186,24 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 대표사진 설정 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-            @ApiResponse(responseCode = "404", description = "여행 또는 이미지를 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "404", description = "여행 또는 이미지를 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
     public ResponseEntity<Void> updateTripRepresentativeImage(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
-            @RequestBody UpdateRepresentativeImageRequest request) {
+            @RequestBody UpdateRepresentativeImageRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         if (request.getImageId() == null) {
             return ResponseEntity.badRequest().build();
+        }
+
+        Long userId = userDetails.getUserId();
+        Trip trip = tripService.findOne(tripId);
+
+        if (!trip.getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         try {
