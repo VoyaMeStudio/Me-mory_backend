@@ -54,11 +54,11 @@ class TripDiaryIntegrationTest {
     void setUp() {
         user = new User();
         user.setId(1L);
-        
+
         tripTheme = new TripTheme();
         tripTheme.setId(1L);
         tripTheme.setThemeName("여름 테마");
-        
+
         trip = new Trip();
         trip.setId(1L);
         trip.setTripName("제주도 여행");
@@ -74,11 +74,10 @@ class TripDiaryIntegrationTest {
         tripRequest.setTripName("제주도 여행");
         tripRequest.setDescription("제주도 3박 4일 여행");
         tripRequest.setThemeId(1L);
-        tripRequest.setUserId(1L);
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
 
-        Trip createdTrip = tripService.createTrip(tripRequest);
+        Trip createdTrip = tripService.createTrip(tripRequest, 1L);
         assertThat(createdTrip.getStartDate()).isEqualTo(LocalDate.now());
         assertThat(createdTrip.getEndDate()).isNull(); // 아직 다이어리가 없음
 
@@ -90,17 +89,17 @@ class TripDiaryIntegrationTest {
         diaryRequest.setCity("제주시");
         diaryRequest.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
         diaryRequest.setContent("제주도 첫째 날");
-        
+
         CreateDiaryRequest.DiaryImageInfo imageInfo1 = new CreateDiaryRequest.DiaryImageInfo();
         imageInfo1.setImageUrl("front.jpg");
         imageInfo1.setCameraType(DiaryImage.CameraType.FRONT);
         imageInfo1.setRepresentative(true);
-        
+
         CreateDiaryRequest.DiaryImageInfo imageInfo2 = new CreateDiaryRequest.DiaryImageInfo();
         imageInfo2.setImageUrl("back.jpg");
         imageInfo2.setCameraType(DiaryImage.CameraType.BACK);
         imageInfo2.setRepresentative(false);
-        
+
         diaryRequest.setImages(Arrays.asList(imageInfo1, imageInfo2));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -188,12 +187,12 @@ class TripDiaryIntegrationTest {
         imageInfo1.setImageUrl(frontUrl);
         imageInfo1.setCameraType(DiaryImage.CameraType.FRONT);
         imageInfo1.setRepresentative(true);
-        
+
         CreateDiaryRequest.DiaryImageInfo imageInfo2 = new CreateDiaryRequest.DiaryImageInfo();
         imageInfo2.setImageUrl(backUrl);
         imageInfo2.setCameraType(DiaryImage.CameraType.BACK);
         imageInfo2.setRepresentative(false);
-        
+
         return Arrays.asList(imageInfo1, imageInfo2);
     }
-} 
+}

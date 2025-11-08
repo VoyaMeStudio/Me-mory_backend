@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.domain.Trip;
 import zim.tave.memory.dto.CreateTripRequest;
@@ -16,6 +17,7 @@ import zim.tave.memory.dto.TripRepresentativeImageDto;
 import zim.tave.memory.dto.TripResponseDto;
 import zim.tave.memory.dto.UpdateRepresentativeImageRequest;
 import zim.tave.memory.dto.UpdateTripRequest;
+import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.DiaryService;
 import zim.tave.memory.service.TripService;
 
@@ -36,23 +38,28 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 생성 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 누락 또는 만료)", content = @Content()),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content)
     })
-    public ResponseEntity<TripResponseDto> createTrip(@RequestBody CreateTripRequest request) {
+    public ResponseEntity<TripResponseDto> createTrip(
+            @RequestBody CreateTripRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         // DTO 검증
         if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         if (request.getTripName().trim().length() > 14) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             return ResponseEntity.badRequest().build();
         }
-        
-        Trip trip = tripService.createTrip(request);
+
+        Long userId = userDetails.getUserId();
+        Trip trip = tripService.createTrip(request, userId);
+
         return ResponseEntity.ok(TripResponseDto.from(trip));
     }
 
@@ -64,23 +71,23 @@ public class TripController {
             @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
     })
     public ResponseEntity<Void> updateTrip(
-            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId, 
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateTripRequest request) {
         // DTO 검증
         if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         // 날짜 순서 검증: startDate가 endDate보다 늦으면 안됨
-        if (request.getStartDate() != null && request.getEndDate() != null && 
+        if (request.getStartDate() != null && request.getEndDate() != null &&
             request.getStartDate().isAfter(request.getEndDate())) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         tripService.updateTrip(tripId, request);
         return ResponseEntity.ok().build();
     }
@@ -149,11 +156,11 @@ public class TripController {
     public ResponseEntity<Void> updateTripRepresentativeImage(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateRepresentativeImageRequest request) {
-        
+
         if (request.getImageId() == null) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         try {
             tripService.updateTripRepresentativeImage(tripId, request.getImageId());
             return ResponseEntity.ok().build();
@@ -161,4 +168,4 @@ public class TripController {
             return ResponseEntity.badRequest().build();
         }
     }
-} 
+}
