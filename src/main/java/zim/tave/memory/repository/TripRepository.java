@@ -42,9 +42,12 @@ public class TripRepository {
                 .getResultList();
     }
 
-    // 다이어리가 하나 이상 있는 특정 사용자의 여행 조회
+    // 특정 사용자 모든 여행 조회 (없으면 null)
     public List<Trip> findByUserIdWithDiaries(Long userId) {
-        return em.createQuery("select t from Trip t where t.user.id = :userId and size(t.diaries) > 0", Trip.class)
+        return em.createQuery(
+                        "select distinct t from Trip t " +
+                                "left join fetch t.diaries " +
+                                "where t.user.id = :userId", Trip.class)
                 .setParameter("userId", userId)
                 .getResultList();
     }

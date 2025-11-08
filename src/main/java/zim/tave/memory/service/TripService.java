@@ -13,6 +13,7 @@ import zim.tave.memory.dto.UpdateTripRequest;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.TripThemeRepository;
+import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +26,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripThemeRepository tripThemeRepository;
     private final DiaryRepository diaryRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public Trip createTrip(CreateTripRequest request, Long userId) {
@@ -37,8 +39,9 @@ public class TripService {
         TripTheme theme = tripThemeRepository.findById(themeId)
                 .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
 
-        User user = new User();
-        user.setId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
 
         Trip trip = Trip.createTrip(user, request.getTripName(), request.getDescription(), theme);
         tripRepository.save(trip);
@@ -51,8 +54,12 @@ public class TripService {
     }
 
     @Transactional
-    public void updateTrip(Long tripId, UpdateTripRequest request) {
+    public void updateTrip(Long tripId, UpdateTripRequest request, Long userId) {
         Trip findTrip = tripRepository.findOne(tripId);
+
+        if (!findTrip.getUser().getId().equals(userId)) {
+            throw new SecurityException("해당 여행에 대한 수정 권한이 없습니다.");
+        }
 
         if (request.getTripName() != null) {
             findTrip.setTripName(request.getTripName());

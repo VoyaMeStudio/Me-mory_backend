@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -68,11 +69,14 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 수정 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
     public ResponseEntity<Void> updateTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
-            @RequestBody UpdateTripRequest request) {
+            @RequestBody UpdateTripRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         // DTO 검증
         if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
             return ResponseEntity.badRequest().build();
@@ -88,16 +92,26 @@ public class TripController {
             return ResponseEntity.badRequest().build();
         }
 
-        tripService.updateTrip(tripId, request);
+        Long userId = userDetails.getUserId();
+
+        tripService.updateTrip(tripId, request, userId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    @Operation(summary = "전체 여행 목록 조회", description = "모든 여행의 목록을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "여행 목록 조회 성공",
-            content = @Content(schema = @Schema(implementation = TripResponseDto.class)))
-    public ResponseEntity<List<TripResponseDto>> getAllTrips() {
-        List<Trip> trips = tripService.findAll();
+    @Operation(summary = "사용자 여행 전체 목록 조회", description = "JWT 인증 후 해당 사용자의 모든 여행을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "여행 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
+            @ApiResponse(responseCode = "404", description = "해당 사용자의 여행 없음", content = @Content)
+    })
+    public ResponseEntity<List<TripResponseDto>> getAllTrips(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getUserId();
+        List<Trip> trips = tripService.findByUserId(userId);
+
         List<TripResponseDto> tripDtos = trips.stream()
                 .map(TripResponseDto::from)
                 .collect(Collectors.toList());
@@ -109,11 +123,20 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 조회 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
     public ResponseEntity<TripResponseDto> getTrip(
-            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId) {
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getUserId();
         Trip trip = tripService.findOne(tripId);
+
+        if (!trip.getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(TripResponseDto.from(trip));
     }
 
