@@ -44,87 +44,9 @@ public class DiaryController {
     public ResponseEntity<DiaryResponseDto> createDiary(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody CreateDiaryRequest request) {
-        Long userId = userDetails.getUserId();
-        request.setUserId(userId); // JWT에서 추출한 userId를 request에 설정
-        System.out.println("=== 일기 생성 요청 시작 ===");
-        System.out.println("Request: " + request);
-        
-        // 도시 검증
-        if (request.getCity() == null || request.getCity().trim().isEmpty()) {
-            System.out.println("검증 실패: 도시 정보 누락");
-            return ResponseEntity.badRequest().build();
-        }
-
-        // 날짜 검증
-        if (request.getDateTime() == null) {
-            System.out.println("검증 실패: 날짜 정보 누락");
-            return ResponseEntity.badRequest().build();
-        }
-
-        // 내용 검증
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            System.out.println("검증 실패: 내용 누락");
-            return ResponseEntity.badRequest().build();
-        }
-
-        // 이미지 2장 있는지 확인
-        if (request.getImages() == null || request.getImages().size() != 2) {
-            System.out.println("검증 실패: 이미지 개수 오류. 현재 개수: " + 
-                (request.getImages() == null ? "null" : request.getImages().size()));
-            return ResponseEntity.badRequest().build();
-        }
-
-        // FRONT/BACK 카메라 있는지
-        boolean hasFrontCamera = request.getImages().stream()
-                .anyMatch(img -> img.getCameraType() == CameraType.FRONT);
-        boolean hasBackCamera = request.getImages().stream()
-                .anyMatch(img -> img.getCameraType() == CameraType.BACK);
-
-        if (!hasFrontCamera || !hasBackCamera) {
-            System.out.println("검증 실패: 카메라 타입 오류. FRONT: " + hasFrontCamera + ", BACK: " + hasBackCamera);
-            return ResponseEntity.badRequest().build();
-        }
-
-        // 대표 이미지가 정확히 1개인지
-        long representativeCount = request.getImages().stream()
-                .filter(CreateDiaryRequest.DiaryImageInfo::isRepresentative)
-                .count();
-
-        if (representativeCount != 1) {
-            System.out.println("검증 실패: 대표 이미지 개수 오류. 현재 개수: " + representativeCount);
-            return ResponseEntity.badRequest().build();
-        }
-
-        if (request.getCountryCode() == null || request.getCountryCode().trim().isEmpty()) {
-            System.out.println("검증 실패: 국가 코드 누락");
-            return ResponseEntity.badRequest().build();
-        }
-        
-        System.out.println("모든 검증 통과, 서비스 호출");
-
-        // 정상 로직
-        try {
-            Diary diary = diaryService.createDiary(request);
-            return ResponseEntity.ok(DiaryResponseDto.from(diary));
-        } catch (IllegalArgumentException e) {
-            System.out.println("일기 생성 실패: " + e.getMessage());
-            // 구체적인 에러 메시지를 로그로 남기고 클라이언트에게는 간단한 오류 반환
-            if (e.getMessage().contains("국가 코드를 찾을 수 없습니다")) {
-                System.out.println("존재하지 않는 국가 코드: " + request.getCountryCode());
-            } else if (e.getMessage().contains("사용자를 찾을 수 없습니다")) {
-                System.out.println("존재하지 않는 사용자");
-            } else if (e.getMessage().contains("여행을 찾을 수 없습니다")) {
-                System.out.println("존재하지 않는 여행");
-            } else if (e.getMessage().contains("감정을 찾을 수 없습니다")) {
-                System.out.println("존재하지 않는 감정");
-            } else if (e.getMessage().contains("날씨를 찾을 수 없습니다")) {
-                System.out.println("존재하지 않는 날씨");
-            }
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.out.println("일기 생성 중 예상치 못한 오류: " + e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
+        request.setUserId(userDetails.getUserId());
+        Diary diary = diaryService.createDiary(request);
+        return ResponseEntity.ok(DiaryResponseDto.from(diary));
     }
 
     // 일기 선택 필드 수정 - JWT 인증으로 본인 일기만 수정 가능
@@ -142,13 +64,13 @@ public class DiaryController {
             @RequestBody UpdateDiaryOptionalFieldsRequest request) {
         Long userId = userDetails.getUserId();
         Diary diary = diaryService.findOne(diaryId);
-        
+
         // 본인의 일기인지 확인
         if (!diary.getUser().getId().equals(userId)) {
             System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 수정 시도");
             return ResponseEntity.status(403).build();
         }
-        
+
         diaryService.updateDiaryOptionalFields(diaryId, request);
         return ResponseEntity.ok().build();
     }
@@ -170,16 +92,16 @@ public class DiaryController {
         if (request.getImageId() == null) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         Long userId = userDetails.getUserId();
         Diary diary = diaryService.findOne(diaryId);
-        
+
         // 본인의 일기인지 확인
         if (!diary.getUser().getId().equals(userId)) {
             System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 이미지 변경 시도");
             return ResponseEntity.status(403).build();
         }
-        
+
         diaryService.updateRepresentativeImage(diaryId, request.getImageId());
         return ResponseEntity.ok().build();
     }
@@ -217,13 +139,13 @@ public class DiaryController {
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
         Long userId = userDetails.getUserId();
         Diary diary = diaryService.findOne(diaryId);
-        
+
         // 본인의 일기인지 확인
         if (!diary.getUser().getId().equals(userId)) {
             System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 접근 시도");
             return ResponseEntity.status(403).build();
         }
-        
+
         return ResponseEntity.ok(DiaryResponseDto.from(diary));
     }
 
@@ -241,13 +163,13 @@ public class DiaryController {
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId) {
         Long userId = userDetails.getUserId();
         List<Diary> diaries = diaryService.findByTripId(tripId);
-        
+
         // 본인의 여행인지 확인 (첫 번째 일기의 사용자 확인)
         if (!diaries.isEmpty() && !diaries.get(0).getUser().getId().equals(userId)) {
             System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 여행 " + tripId + " 일기 접근 시도");
             return ResponseEntity.status(403).build();
         }
-        
+
         List<DiaryResponseDto> diaryDtos = diaries.stream()
                 .map(DiaryResponseDto::from)
                 .collect(Collectors.toList());
@@ -269,14 +191,14 @@ public class DiaryController {
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
         Long userId = userDetails.getUserId();
         Diary diary = diaryService.findOne(diaryId);
-        
+
         // 본인의 일기인지 확인
         if (!diary.getUser().getId().equals(userId)) {
             System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 삭제 시도");
             return ResponseEntity.status(403).build();
         }
-        
+
         diaryService.deleteDiary(diaryId);
         return ResponseEntity.ok().build();
     }
-} 
+}

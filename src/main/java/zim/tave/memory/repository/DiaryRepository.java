@@ -8,6 +8,7 @@ import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.Trip;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,8 +24,13 @@ public class DiaryRepository {
         }
     }
 
-    public Diary findById(Long id) {
-        return em.find(Diary.class, id);
+    public Optional<Diary> findById(Long id) {
+        return Optional.ofNullable(em.find(Diary.class, id));
+    }
+
+    public Diary findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다. ID=" + id));
     }
 
     public List<Diary> findAll() {
