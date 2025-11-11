@@ -16,6 +16,7 @@ import zim.tave.memory.repository.WeatherRepository;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,121 +32,121 @@ public class DiaryService {
     private final CountryService countryService;
     private final VisitedCountryService visitedCountryService;
 
+    // 이미지 검증&저장
+    private void validateAndAttachImages(Diary diary, List<CreateDiaryRequest.DiaryImageInfo> images) {
+        if (images == null || images.size() != 2) {
+            throw new IllegalArgumentException("이미지는 반드시 2장이어야 합니다. (FRONT/BACK)");
+        }
+
+        boolean hasFront = images.stream().anyMatch(img -> img.getCameraType() == DiaryImage.CameraType.FRONT);
+        boolean hasBack = images.stream().anyMatch(img -> img.getCameraType() == DiaryImage.CameraType.BACK);
+
+        if (!hasFront || !hasBack) {
+            throw new IllegalArgumentException("FRONT/BACK 카메라 사진이 모두 필요합니다.");
+        }
+
+        long representativeCount = images.stream().filter(CreateDiaryRequest.DiaryImageInfo::isRepresentative).count();
+        if (representativeCount != 1) {
+            throw new IllegalArgumentException("대표 이미지는 정확히 1장이어야 합니다.");
+        }
+
+        for (int i = 0; i < images.size(); i++) {
+            CreateDiaryRequest.DiaryImageInfo imageInfo = images.get(i);
+            DiaryImage image = new DiaryImage();
+            image.setDiary(diary);
+            image.setImageUrl(imageInfo.getImageUrl());
+            image.setCameraType(imageInfo.getCameraType());
+            image.setImageOrder(i + 1);
+            image.setRepresentative(imageInfo.isRepresentative());
+            diary.addDiaryImage(image);
+        }
+    }
+
     @Transactional
     public Diary createDiary(CreateDiaryRequest request) {
+
+        // 사용자 검증
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        //여행 검증
         Trip trip = tripRepository.findOne(request.getTripId());
         if (trip == null) {
-            throw new IllegalArgumentException("여행을 찾을 수 없습니다: " + request.getTripId());
+            throw new IllegalArgumentException("여행을 찾을 수 없습니다. ID=" + request.getTripId());
         }
-        
-        // CountryService를 통해 Country 조회
+
+        //국가 검증
         Country country = countryService.findByCode(request.getCountryCode());
         if (country == null) {
-            throw new IllegalArgumentException("국가 코드를 찾을 수 없습니다: " + request.getCountryCode());
+            throw new IllegalArgumentException("유효하지 않은 국가 코드입니다. CODE=" + request.getCountryCode());
         }
-        
-        // 감정 처리: 감정이 선택되지 않으면 기본 감정(id=1)을 사용
-        Long emotionId = request.getEmotionId();
-        if (emotionId == null) {
-            emotionId = 1L; // 기본 감정 ID
-        }
-        Emotion emotion = emotionRepository.findById(emotionId)
+
+        // 감정 검증 (기본 = 1)
+        Emotion emotion = emotionRepository.findById(
+                        Optional.ofNullable(request.getEmotionId()).orElse(1L))
                 .orElseThrow(() -> new IllegalArgumentException("감정을 찾을 수 없습니다."));
-        
-        Diary diary = Diary.createDiary(user, trip, country, request.getCity(), 
-                                       request.getDateTime(), request.getContent());
-        diaryRepository.save(diary);
-        
-        // 이미지 저장 (전면/후면 카메라)
-        if (request.getImages() != null) {
-            for (int i = 0; i < request.getImages().size(); i++) {
-                CreateDiaryRequest.DiaryImageInfo imageInfo = request.getImages().get(i);
-                DiaryImage diaryImage = new DiaryImage();
-                diaryImage.setDiary(diary);
-                diaryImage.setImageUrl(imageInfo.getImageUrl());
-                diaryImage.setCameraType(imageInfo.getCameraType());
-                diaryImage.setImageOrder(i + 1);
-                diaryImage.setRepresentative(imageInfo.isRepresentative()); // 사용자가 선택한 대표사진
-                diary.addDiaryImage(diaryImage);
-            }
-        }
-        
-        // 선택적 필드 설정 (감정은 이미 위에서 처리했으므로 제외)
+
+        //날씨 검증
         Weather weather = null;
         if (request.getWeatherId() != null) {
             weather = weatherRepository.findById(request.getWeatherId())
                     .orElseThrow(() -> new IllegalArgumentException("날씨를 찾을 수 없습니다."));
         }
-        
-        diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), 
-                               emotion, weather);
-        
-        // 이미지와 선택적 필드 설정 후 다시 저장
+
+        // Diary 생성
+        Diary diary = Diary.createDiary(user, trip, country,
+                request.getCity(), request.getDateTime(), request.getContent());
+
+        // 이미지 검증 및 저장
+        validateAndAttachImages(diary, request.getImages());
+
+        //선택 필드 설정
+        diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), emotion, weather);
         diaryRepository.save(diary);
-        
-        // Trip의 종료 날짜를 다이어리 생성 날짜로 업데이트
+
         trip.updateEndDate(diary.getCreatedAt().toLocalDate());
-        
-        // 방문한 국가를 VisitedCountry에 자동 등록 (감정 포함)
+
+        // VisitedCountry 등록
         try {
             visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
         } catch (Exception e) {
-            // VisitedCountry 등록 실패 시 로그만 남기고 다이어리 생성은 계속 진행
             System.err.println("VisitedCountry 등록 실패: " + e.getMessage());
         }
-        
+
         return diary;
     }
 
     @Transactional
     public void updateDiaryOptionalFields(Long diaryId, UpdateDiaryOptionalFieldsRequest request) {
-        Diary diary = diaryRepository.findById(diaryId);
-        
+        Diary diary = diaryRepository.findByIdOrThrow(diaryId);
         Emotion emotion = null;
         if (request.getEmotionId() != null) {
             emotion = emotionRepository.findById(request.getEmotionId())
                     .orElseThrow(() -> new IllegalArgumentException("감정을 찾을 수 없습니다."));
         }
-        
         Weather weather = null;
         if (request.getWeatherId() != null) {
             weather = weatherRepository.findById(request.getWeatherId())
                     .orElseThrow(() -> new IllegalArgumentException("날씨를 찾을 수 없습니다."));
         }
-        
-        diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), 
-                               emotion, weather);
+        diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), emotion, weather);
     }
 
     @Transactional
     public void updateRepresentativeImage(Long diaryId, Long imageId) {
-        Diary diary = diaryRepository.findById(diaryId);
-        
-        // 모든 이미지의 대표사진 설정을 false로 초기화
+        Diary diary = diaryRepository.findByIdOrThrow(diaryId);
         diary.getDiaryImages().forEach(img -> img.setRepresentative(false));
-        
-        // 선택된 이미지를 대표사진으로 설정
-        DiaryImage selectedImage = diary.getDiaryImages().stream()
+
+        DiaryImage selected = diary.getDiaryImages().stream()
                 .filter(img -> img.getId().equals(imageId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
-        
-        selectedImage.setRepresentative(true);
-    }
+                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID=" + imageId));
 
-    @Transactional
-    public void saveDiary(Diary diary) {
-        diaryRepository.save(diary);
-    }
-
-    public List<Diary> findAll() {
-        return diaryRepository.findAll();
+        selected.setRepresentative(true);
     }
 
     public Diary findOne(Long diaryId) {
-        return diaryRepository.findById(diaryId);
+        return diaryRepository.findByIdOrThrow(diaryId);
     }
 
     public List<Diary> findByTripId(Long tripId) {
@@ -159,7 +160,7 @@ public class DiaryService {
     // 여행별 대표사진 조회
     public List<TripRepresentativeImageDto> getRepresentativeImagesByTripId(Long tripId) {
         List<Diary> diaries = diaryRepository.findByTripId(tripId);
-        
+
         return diaries.stream()
                 .filter(diary -> diary.getDiaryImages() != null && !diary.getDiaryImages().isEmpty())
                 .map(diary -> {
@@ -168,7 +169,7 @@ public class DiaryService {
                             .filter(DiaryImage::isRepresentative)
                             .findFirst()
                             .orElse(diary.getDiaryImages().get(0));
-                    
+
                                     return new TripRepresentativeImageDto(
                         diary.getId(),
                         representativeImage.getId(),
@@ -184,25 +185,22 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(Long diaryId) {
-        Diary diary = diaryRepository.findById(diaryId);
+        Diary diary = diaryRepository.findByIdOrThrow(diaryId);
         Long tripId = diary.getTrip().getId();
         diaryRepository.delete(diary);
-        
+
         // 다이어리 삭제 후 Trip의 종료 날짜를 업데이트
-        // 남은 다이어리 중 가장 최근 날짜로 설정
-        List<Diary> remainingDiaries = diaryRepository.findByTripId(tripId);
-        if (remainingDiaries.isEmpty()) {
-            // 다이어리가 없으면 종료 날짜를 null로 설정
-            Trip trip = tripRepository.findOne(tripId);
+        Trip trip = tripRepository.findOne(tripId);
+        List<Diary> remaining = diaryRepository.findByTripId(tripId);
+
+        if (remaining.isEmpty()) {
             trip.setEndDate(null);
         } else {
-            // 남은 다이어리 중 가장 최근 날짜로 설정
-            LocalDate latestDate = remainingDiaries.stream()
+            LocalDate latest = remaining.stream()
                     .map(d -> d.getCreatedAt().toLocalDate())
                     .max(LocalDate::compareTo)
                     .orElse(null);
-            Trip trip = tripRepository.findOne(tripId);
-            trip.setEndDate(latestDate);
+            trip.setEndDate(latest);
         }
     }
 

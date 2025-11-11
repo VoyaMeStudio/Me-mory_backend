@@ -13,6 +13,7 @@ import zim.tave.memory.dto.UpdateTripRequest;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.TripThemeRepository;
+import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,21 +26,23 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripThemeRepository tripThemeRepository;
     private final DiaryRepository diaryRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public Trip createTrip(CreateTripRequest request) {
+    public Trip createTrip(CreateTripRequest request, Long userId) {
         // 테마 처리: 테마가 선택되지 않으면 기본 테마(id=1)를 사용
         Long themeId = request.getThemeId();
         if (themeId == null) {
             themeId = 1L; // 기본 테마 ID
         }
-        
+
         TripTheme theme = tripThemeRepository.findById(themeId)
                 .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
-        
-        User user = new User();
-        user.setId(request.getUserId());
-        
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+
         Trip trip = Trip.createTrip(user, request.getTripName(), request.getDescription(), theme);
         tripRepository.save(trip);
         return trip;
@@ -51,31 +54,35 @@ public class TripService {
     }
 
     @Transactional
-    public void updateTrip(Long tripId, UpdateTripRequest request) {
+    public void updateTrip(Long tripId, UpdateTripRequest request, Long userId) {
         Trip findTrip = tripRepository.findOne(tripId);
-        
+
+        if (!findTrip.getUser().getId().equals(userId)) {
+            throw new SecurityException("해당 여행에 대한 수정 권한이 없습니다.");
+        }
+
         if (request.getTripName() != null) {
             findTrip.setTripName(request.getTripName());
         }
-        
+
         if (request.getDescription() != null) {
             findTrip.setDescription(request.getDescription());
         }
-        
+
         if (request.getThemeId() != null) {
             TripTheme theme = tripThemeRepository.findById(request.getThemeId())
                     .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
             findTrip.setTripTheme(theme);
         }
-        
+
         if (request.getRepresentativeImageUrl() != null) {
             findTrip.setRepresentativeImageUrl(request.getRepresentativeImageUrl());
         }
-        
+
         if (request.getStartDate() != null) {
             findTrip.setStartDate(request.getStartDate());
         }
-        
+
         if (request.getEndDate() != null) {
             findTrip.setEndDate(request.getEndDate());
         }
@@ -108,18 +115,18 @@ public class TripService {
     @Transactional
     public void updateTripRepresentativeImage(Long tripId, Long imageId) {
         Trip trip = tripRepository.findOne(tripId);
-        
+
         // 해당 이미지가 이 여행에 속하는 다이어리의 대표 사진인지 검증
         DiaryImage diaryImage = findDiaryImageById(imageId);
-        
+
         if (!diaryImage.getDiary().getTrip().getId().equals(tripId)) {
             throw new IllegalArgumentException("해당 이미지는 이 여행에 속하지 않습니다.");
         }
-        
+
         if (!diaryImage.isRepresentative()) {
             throw new IllegalArgumentException("선택된 이미지는 다이어리의 대표 사진이 아닙니다.");
         }
-        
+
         trip.setRepresentativeImageUrl(diaryImage.getImageUrl());
     }
 
