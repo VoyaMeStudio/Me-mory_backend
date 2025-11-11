@@ -8,6 +8,8 @@ import zim.tave.memory.dto.MyPageResponseDto;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,10 +25,9 @@ public class MyPageService {
 
     public MyPageResponseDto getMyPage(Long userId) {
 
-
-        //유저 조회
+        // Get user by userId
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         String formattedBirth = birthFormatter(user.getBirth());
 
@@ -41,7 +42,7 @@ public class MyPageService {
                 user.getNationality()
         );
 
-        //Statistics
+        // Statistics
         Long diaryCount = diaryRepository.countByUserId(userId);
         Long countryCount = visitedCountryRepository.countByUserId(userId);
         MyPageResponseDto.Statistics statistics = new MyPageResponseDto.Statistics(countryCount, diaryCount);
@@ -53,14 +54,6 @@ public class MyPageService {
                 .collect(Collectors.joining());
 
         return new MyPageResponseDto(userInfo, statistics, flags);
-    }
-
-    private String countryCodeToEmoji(String countryCode) {
-        // ISO Alpha-2 코드 기반 이모지 변환
-        return countryCode.toUpperCase()
-                .chars()
-                .mapToObj(c -> String.valueOf((char)(c + 127397)))
-                .collect(Collectors.joining());
     }
 
     private String birthFormatter(LocalDate birth) {
@@ -77,5 +70,11 @@ public class MyPageService {
         String englishMonth = englishMonthForm[monthIndex];
 
         return String.format("%d %s/%s %d", day, koreanMonth, englishMonth, year);
+    }
+
+    // 에러 테스트 코드
+    public MyPageResponseDto getErrorExample(Long userId) {
+        // 일부러 예외 발생
+        throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 }
