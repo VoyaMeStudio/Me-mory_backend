@@ -1,10 +1,14 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.LoginRequestDto;
 import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.jwt.JwtUtil;
 import zim.tave.memory.kakao.KakaoApiClient;
 import zim.tave.memory.kakao.KakaoUserInfo;
@@ -22,10 +26,26 @@ public class LoginService {
 
     public LoginResponseDto login(LoginRequestDto request) {
         KakaoUserInfo kakaoUserInfo = kakaoApiClient.getKakaoUserInfo(request.getAccessToken());
-        User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoId()).orElse(null);
+        try {
+            kakaoUserInfo = kakaoApiClient.getKakaoUserInfo(request.getAccessToken());
+        } catch (HttpClientErrorException e) {
+            // 401 에러
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                throw new CustomException(ErrorCode.LOGIN_FAIL);
+            }
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        } catch (Exception e) {
+            // 나머지 500 에러
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
 
+        if (kakaoUserInfo == null || kakaoUserInfo.getKakaoId() == null) {
+            throw new CustomException(ErrorCode.LOGIN_FAIL); // 유효하지 않은 토큰
+        }
+
+        User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoId()).orElse(null);
         if (user != null) {
-            // 기존 회원
+            // 기존 사용자
             String token = jwtUtil.generateToken(user.getId(), user.getKakaoId());
             return new LoginResponseDto(
                     user.getId(),
@@ -64,7 +84,6 @@ public class LoginService {
                 savedUser.getKakaoId(),
                 savedUser.getProfileImageUrl(),
                 token
-
         );
     }
 }

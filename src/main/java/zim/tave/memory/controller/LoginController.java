@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.dto.LoginRequestDto;
 import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.service.LoginService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/login")
-@Tag(name = "kakaoLogin-controller", description = "카카오 로그인")
+@RequestMapping("/api/auth/login")
+@Tag(name = "kakaoLogin", description = "카카오 로그인")
 public class LoginController {
     /*
     토큰 발급 URL
@@ -32,18 +34,20 @@ public class LoginController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (client id 오류, 만료된 authorization code 등)", content = @Content()),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효하지 않은 토큰, Authorization Code 오류 등)", content = @Content()),
+            @ApiResponse(responseCode = "403", description = "카카오 인증 실패", content = @Content()),
             @ApiResponse(responseCode = "500", description = "서버 오류, 유효하지 않은 토큰", content = @Content())
     })
     @PostMapping("/kakao")
-    public ResponseEntity<LoginResponseDto> kakaoLogin(
+    public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLogin(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "카카오 로그인 요청. 클라이언트 앱에 Access Token 요청",
                     required = true,
                     content = @Content(schema = @Schema(implementation = LoginRequestDto.class))
             )
-            @RequestBody LoginRequestDto request) {
+            @RequestBody LoginRequestDto request
+    ){
         LoginResponseDto response = loginService.login(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, response));
     }
 }
