@@ -25,10 +25,10 @@ public class ApiResponseDto<T> {
     }
 
     // 실패 응답
-    public static <T> ApiResponseDto<T> error(ResponseCode code) {
+    public static <T> ApiResponseDto<T> error(ResponseCode code, String customMessage) {
         return ApiResponseDto.<T>builder()
                 .code(code.getCode())
-                .message(code.getMessage())
+                .message(customMessage != null ? customMessage : code.getMessage())
                 .data(null)
                 .build();
     }
