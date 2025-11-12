@@ -44,6 +44,7 @@ public class MyPageController {
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, responseDto));
     }
 
+    /*
     //에러 테스트 코드
     @GetMapping("/test-error")
     public ResponseEntity<ApiResponseDto<MyPageResponseDto>> testError(
@@ -54,4 +55,5 @@ public class MyPageController {
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, responseDto));
     }
+     */
 }
