@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
         ResponseCode responseCode = switch (errorCode) {
             case LOGIN_FAIL -> ResponseCode.LOGIN_FAIL;
             case USER_NOT_FOUND -> ResponseCode.USER_NOT_FOUND;
-            default -> ResponseCode.SERVER_ERROR;
+            default -> ResponseCode.INTERNAL_SERVER_ERROR;
         };
 
         // 사용자에게는 errorId 포함 메시지로 전달
@@ -51,6 +51,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDto.error(ResponseCode.SERVER_ERROR, safeMessage));
+                .body(ApiResponseDto.error(ResponseCode.INTERNAL_SERVER_ERROR, safeMessage));
     }
 }

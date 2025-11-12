@@ -34,10 +34,10 @@ public class LoginService {
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
                 throw new CustomException(ErrorCode.LOGIN_FAIL);
             }
-            throw new CustomException(ErrorCode.SERVER_ERROR);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             // 나머지 500 에러
-            throw new CustomException(ErrorCode.SERVER_ERROR);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         if (kakaoUserInfo == null || kakaoUserInfo.getKakaoId() == null) {
