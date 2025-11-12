@@ -57,6 +57,11 @@ public class MyPageService {
     }
 
     private String birthFormatter(LocalDate birth) {
+
+        if (birth == null) {
+            return "생일 정보를 입력해주세요.";
+        }
+
         int day = birth.getDayOfMonth();
         int year = birth.getYear();
 
