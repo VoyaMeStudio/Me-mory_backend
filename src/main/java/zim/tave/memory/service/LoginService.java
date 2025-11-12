@@ -1,5 +1,6 @@
 package zim.tave.memory.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,20 @@ public class LoginService {
                 savedUser.getProfileImageUrl(),
                 token
         );
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.isStatus()) {
+            throw new CustomException(ErrorCode.ALREADY_LOGGED_OUT);
+        }
+
+        user.setStatus(false); // 로그아웃 시 상태 변경
+
+        // 로그아웃 후 프론트에서 accessToken 삭제
     }
 }
 
