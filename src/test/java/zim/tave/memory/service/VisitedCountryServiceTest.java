@@ -38,6 +38,7 @@ public class VisitedCountryServiceTest {
         
         // when: 첫 번째 등록
         VisitedCountry first = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
+        assertThat(first.getEmotion().getName()).isEqualTo("행복1");
 
         // 두 번째 등록 (감정 변경)
         VisitedCountry updated = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion2.getId());
@@ -46,11 +47,29 @@ public class VisitedCountryServiceTest {
 
         // then: 하나의 기록만 존재하고, 두 번째 감정으로 업데이트됨
         assertThat(visitedList).hasSize(1);
-        assertThat(first.getEmotion().getName()).isEqualTo("행복1");
+        assertThat(first.getEmotion().getName()).isEqualTo("슬픔1");
         assertThat(updated.getEmotion().getName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getCountry().getCountryCode()).isEqualTo("KR1");
         assertThat(visitedList.get(0).getEmotion().getName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getColor()).isEqualTo("#0000FF");
+    }
+
+    @Test
+    void testRegisterVisitedCountry_ReturnsSavedEntity() {
+        // given
+        User user = createTestUser("testKakaoNew");
+        Country country = createTestCountry("KRNEW", "대한민국NEW", "🇰🇷");
+        Emotion emotion = createTestEmotion("설렘", "#FDD7DE");
+
+        // when
+        VisitedCountry result = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
+
+        // then
+        assertThat(result.getVisitedCountryId()).isNotNull();
+        assertThat(result.getUser().getId()).isEqualTo(user.getId());
+        assertThat(result.getCountry().getCountryCode()).isEqualTo("KRNEW");
+        assertThat(result.getEmotion().getName()).isEqualTo("설렘");
+        assertThat(result.getColor()).isEqualTo("#FDD7DE");
     }
 
     @Test
