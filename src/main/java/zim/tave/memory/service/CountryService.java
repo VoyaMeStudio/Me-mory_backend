@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Country;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.CountryRepository;
 import zim.tave.memory.util.EmojiValidator;
 
@@ -27,22 +29,28 @@ public class CountryService {
     }
 
     public Country findByCode(String countryCode) {
-        // 국가 코드 검증 - 간단한 null/empty 체크만
         if (countryCode == null || countryCode.trim().isEmpty()) {
-            return null;
+            throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
         }
-        return countryRepository.findByCode(countryCode.trim().toUpperCase());
+        String normalizedCode = countryCode.trim().toUpperCase();
+        Country country = countryRepository.findByCode(normalizedCode);
+        if (country == null) {
+            throw new CustomException(ErrorCode.COUNTRY_NOT_FOUND);
+        }
+        return country;
     }
 
     public void saveCountry(Country country) {
-        // 국가 코드 검증
-        if (country.getCountryCode() == null || country.getCountryCode().trim().isEmpty()) {
-            throw new IllegalArgumentException("국가 코드는 필수입니다.");
+        if (country == null) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
-        // 이모지 유효성 검증
+
+        if (country.getCountryCode() == null || country.getCountryCode().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
+        }
+
         if (country.getEmoji() != null && !EmojiValidator.isUtf8mb4Compatible(country.getEmoji())) {
-            throw new IllegalArgumentException("유효하지 않은 이모지입니다: " + country.getEmoji());
+            throw new CustomException(ErrorCode.INVALID_COUNTRY_EMOJI);
         }
         countryRepository.save(country);
     }

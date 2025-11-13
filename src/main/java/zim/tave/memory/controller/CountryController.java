@@ -43,13 +43,16 @@ public class CountryController {
     @Operation(summary = "국가 검색", description = "공통 마스터 데이터에서 국가 목록을 키워드로 검색합니다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "검색 성공",
-            content = @Content(schema = @Schema(implementation = CountrySearchResponseDto.class))),
-        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content())
+            content = @Content(schema = @Schema(implementation = CountrySearchResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/countries")
     public ResponseEntity<ApiResponseDto<List<CountrySearchResponseDto>>> searchCountries(
         @Parameter(description = "검색할 국가 이름(한글)", example = "대한")
-        @RequestParam String keyword
+        @RequestParam(required = false, defaultValue = "") String keyword
     ) {
         List<Country> countries = countryService.searchCountriesByName(keyword);
         List<CountrySearchResponseDto> result = countries.stream()
@@ -61,9 +64,13 @@ public class CountryController {
     @Operation(summary = "방문 국가 목록 조회", description = "JWT 토큰으로 인증된 사용자의 방문 국가 및 감정 정보를 조회합니다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = VisitedCountryResponseDto.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content())
+            content = @Content(schema = @Schema(implementation = VisitedCountryListResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/users/me/visited-countries")
     public ResponseEntity<ApiResponseDto<List<VisitedCountryResponseDto>>> getVisitedCountries(
@@ -81,10 +88,15 @@ public class CountryController {
     @Operation(summary = "방문 국가 등록 또는 업데이트", description = "사용자의 방문 국가를 등록하거나 감정 정보를 업데이트합니다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "등록 또는 업데이트 성공",
-            content = @Content(schema = @Schema(implementation = VisitedCountryResponseDto.class))),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content()),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content())
+            content = @Content(schema = @Schema(implementation = VisitedCountrySingleResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/users/me/visited-countries")
     public ResponseEntity<ApiResponseDto<VisitedCountryResponseDto>> registerVisitedCountry(
@@ -111,10 +123,16 @@ public class CountryController {
 
     @Operation(summary = "방문 국가 삭제", description = "사용자의 방문 국가를 삭제합니다.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "삭제 성공", content = @Content()),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-        @ApiResponse(responseCode = "404", description = "방문 국가를 찾을 수 없음", content = @Content()),
-        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content())
+        @ApiResponse(responseCode = "200", description = "삭제 성공",
+            content = @Content(schema = @Schema(implementation = VoidResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "방문 국가를 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @DeleteMapping("/users/me/visited-countries/{countryCode}")
     public ResponseEntity<ApiResponseDto<Void>> deleteVisitedCountry(
@@ -125,5 +143,40 @@ public class CountryController {
         Long userId = userDetails.getUserId();
         visitedCountryService.deleteVisitedCountry(userId, countryCode);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
+
+    @Schema(name = "CountrySearchResponse")
+    static class CountrySearchResponse {
+        public int code;
+        public String message;
+        public List<CountrySearchResponseDto> data;
+    }
+
+    @Schema(name = "VisitedCountryListResponse")
+    static class VisitedCountryListResponse {
+        public int code;
+        public String message;
+        public List<VisitedCountryResponseDto> data;
+    }
+
+    @Schema(name = "VisitedCountrySingleResponse")
+    static class VisitedCountrySingleResponse {
+        public int code;
+        public String message;
+        public VisitedCountryResponseDto data;
+    }
+
+    @Schema(name = "VoidResponse")
+    static class VoidResponse {
+        public int code;
+        public String message;
+        public Object data;
+    }
+
+    @Schema(name = "ErrorResponse")
+    static class ErrorResponse {
+        public int code;
+        public String message;
+        public Object data;
     }
 }

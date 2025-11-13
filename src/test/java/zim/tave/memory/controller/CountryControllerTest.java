@@ -20,6 +20,9 @@ import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.domain.VisitedCountry;
 import zim.tave.memory.dto.RegisterVisitedCountryRequestDto;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
+import zim.tave.memory.global.common.exception.GlobalExceptionHandler;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.CountryService;
 import zim.tave.memory.service.VisitedCountryService;
@@ -34,6 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -55,6 +59,7 @@ class CountryControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(countryController)
+                .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
         objectMapper = new ObjectMapper();
@@ -162,5 +167,25 @@ class CountryControllerTest {
                 .andExpect(jsonPath("$.data").doesNotExist());
 
         verify(visitedCountryService).deleteVisitedCountry(3L, "KR");
+    }
+
+    @Test
+    void registerVisitedCountry_whenCountryNotFound_returnsErrorResponse() throws Exception {
+        CustomUserDetails principal = new CustomUserDetails(7L, "user@test.com");
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
+        SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+
+        RegisterVisitedCountryRequestDto request = new RegisterVisitedCountryRequestDto("ZZ", 3L);
+
+        given(visitedCountryService.registerVisitedCountry(7L, "ZZ", 3L))
+                .willThrow(new CustomException(ErrorCode.COUNTRY_NOT_FOUND));
+
+        mockMvc.perform(post("/api/users/me/visited-countries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(404))
+                .andExpect(jsonPath("$.message", containsString("errorId")));
     }
 }
