@@ -9,6 +9,7 @@ public enum ResponseCode {
 
     // 성공 응답
     SUCCESS(200, "성공하였습니다."),
+    CREATED(201, "생성되었습니다."),
     LOGOUT_SUCCESS(200, "로그아웃 성공"),
 
     // 실패 응답

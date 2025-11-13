@@ -29,22 +29,13 @@ public class VisitedCountryService {
         return visitedCountryRepository.findByUserId(userId);
     }
 
-    //방문 국가 색 업데이트
-    public void updateVisitedCountryColor(Long userId, String countryCode, String newColor) {
-        VisitedCountry visitedCountry = visitedCountryRepository.findByUserIdAndCountryCode(userId, countryCode)
-                .orElseThrow(() -> new IllegalArgumentException("해당 국가 기록이 존재하지 않습니다."));
-
-        visitedCountry.setColor(newColor);
-        visitedCountryRepository.save(visitedCountry);
-    }
-
     //사용자가 이미 특정 국가를 방문했는지 여부
     public boolean alreadyVisited(Long userId, String countryCode) {
         return visitedCountryRepository.existsByUserIdAndCountryCode(userId, countryCode);
     }
 
     //방문 국가 등록 (기존 기록이 있으면 감정과 색상 업데이트)
-    public void registerVisitedCountry(Long userId, String countryCode, Long emotionId) {
+    public VisitedCountry registerVisitedCountry(Long userId, String countryCode, Long emotionId) {
         if (countryCode == null || countryCode.trim().isEmpty()) {
             throw new IllegalArgumentException("국가를 선택해야 합니다.");
         }
@@ -70,20 +61,22 @@ public class VisitedCountryService {
         var existingVisitedCountry = visitedCountryRepository.findByUserIdAndCountryCode(userId, countryCode);
         
         if (existingVisitedCountry.isPresent()) {
-            // 기존 기록이 있으면 감정과 색상 업데이트
+            // 기존 기록이 있으면 감정과 색상 업데이트 후 반환
             VisitedCountry visited = existingVisitedCountry.get();
             visited.setEmotion(emotion);
             visited.setColor(emotion.getColorCode());
             visitedCountryRepository.save(visited);
-        } else {
-            // 새로운 기록 생성
-            VisitedCountry visited = new VisitedCountry();
-            visited.setUser(user);
-            visited.setCountry(country);
-            visited.setEmotion(emotion);
-            visited.setColor(emotion.getColorCode());
-            visitedCountryRepository.save(visited);
+            return visited;
         }
+
+        // 새로운 기록 생성
+        VisitedCountry visited = new VisitedCountry();
+        visited.setUser(user);
+        visited.setCountry(country);
+        visited.setEmotion(emotion);
+        visited.setColor(emotion.getColorCode());
+        visitedCountryRepository.save(visited);
+        return visited;
     }
 
     //특정 사용자의 특정 방문 국가 삭제

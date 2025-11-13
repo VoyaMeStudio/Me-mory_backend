@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Transactional
 @SpringBootTest
@@ -28,8 +27,6 @@ public class VisitedCountryServiceTest {
     private CountryRepository countryRepository;
     @Autowired
     private EmotionRepository emotionRepository;
-    @Autowired
-    private VisitedCountryRepository visitedCountryRepository;
 
     @Test
     void testRegisterVisitedCountry_SuccessAndUpdate() {
@@ -40,15 +37,17 @@ public class VisitedCountryServiceTest {
         Emotion emotion2 = createTestEmotion("슬픔1", "#0000FF");
         
         // when: 첫 번째 등록
-        visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
+        VisitedCountry first = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
 
         // 두 번째 등록 (감정 변경)
-        visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion2.getId());
+        VisitedCountry updated = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion2.getId());
 
         List<VisitedCountry> visitedList = visitedCountryService.getVisitedCountries(user.getId());
 
         // then: 하나의 기록만 존재하고, 두 번째 감정으로 업데이트됨
         assertThat(visitedList).hasSize(1);
+        assertThat(first.getEmotion().getName()).isEqualTo("행복1");
+        assertThat(updated.getEmotion().getName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getCountry().getCountryCode()).isEqualTo("KR1");
         assertThat(visitedList.get(0).getEmotion().getName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getColor()).isEqualTo("#0000FF");
@@ -69,88 +68,6 @@ public class VisitedCountryServiceTest {
 
         boolean after = visitedCountryService.alreadyVisited(user.getId(), country.getCountryCode());
         assertThat(after).isTrue();
-    }
-
-    @Test
-    void testUpdateVisitedCountryColor_Success() {
-        // given: 테스트용 데이터 생성
-        User user = createTestUser("testKakao3");
-        Country country = createTestCountry("KR3", "대한민국3", "🇰🇷");
-        Emotion emotion = createTestEmotion("행복3", "#FFD700");
-        
-        // 방문 국가 등록
-        visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
-        
-        // when: 색상 업데이트
-        String newColor = "#FF0000";
-        visitedCountryService.updateVisitedCountryColor(user.getId(), country.getCountryCode(), newColor);
-        
-        // then: 업데이트된 색상 확인
-        List<VisitedCountry> visitedList = visitedCountryService.getVisitedCountries(user.getId());
-        assertThat(visitedList).hasSize(1);
-        assertThat(visitedList.get(0).getColor()).isEqualTo(newColor);
-    }
-
-    @Test
-    void testUpdateVisitedCountryColor_NotFound() {
-        // given: 테스트용 데이터 생성
-        User user = createTestUser("testKakao4");
-        Country country = createTestCountry("KR4", "대한민국4", "🇰🇷");
-        
-        // when & then: 존재하지 않는 기록에 대해 색상 업데이트 시도 시 예외 발생
-        String newColor = "#FF0000";
-        assertThatThrownBy(() -> 
-            visitedCountryService.updateVisitedCountryColor(user.getId(), country.getCountryCode(), newColor)
-        ).isInstanceOf(IllegalArgumentException.class)
-         .hasMessage("해당 국가 기록이 존재하지 않습니다.");
-    }
-
-    @Test
-    void testUpdateVisitedCountryColor_MultipleUpdates() {
-        // given: 테스트용 데이터 생성
-        User user = createTestUser("testKakao5");
-        Country country = createTestCountry("KR5", "대한민국5", "🇰🇷");
-        Emotion emotion = createTestEmotion("행복5", "#FFD700");
-        
-        // 방문 국가 등록
-        visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
-        
-        // when: 색상을 여러 번 업데이트
-        String color1 = "#FF0000";
-        String color2 = "#00FF00";
-        String color3 = "#0000FF";
-        
-        visitedCountryService.updateVisitedCountryColor(user.getId(), country.getCountryCode(), color1);
-        visitedCountryService.updateVisitedCountryColor(user.getId(), country.getCountryCode(), color2);
-        visitedCountryService.updateVisitedCountryColor(user.getId(), country.getCountryCode(), color3);
-        
-        // then: 마지막 색상으로 업데이트됨
-        List<VisitedCountry> visitedList = visitedCountryService.getVisitedCountries(user.getId());
-        assertThat(visitedList).hasSize(1);
-        assertThat(visitedList.get(0).getColor()).isEqualTo(color3);
-    }
-
-    @Test
-    void testUpdateVisitedCountryColor_OtherUserUnaffected() {
-        // given: 두 사용자와 방문 국가 등록
-        User user1 = createTestUser("testKakao6");
-        User user2 = createTestUser("testKakao7");
-        Country country = createTestCountry("KR6", "대한민국6", "🇰🇷");
-        Emotion emotion = createTestEmotion("행복6", "#FFD700");
-        
-        visitedCountryService.registerVisitedCountry(user1.getId(), country.getCountryCode(), emotion.getId());
-        visitedCountryService.registerVisitedCountry(user2.getId(), country.getCountryCode(), emotion.getId());
-        
-        // when: 한 사용자의 색상만 업데이트
-        String newColor = "#FF0000";
-        visitedCountryService.updateVisitedCountryColor(user1.getId(), country.getCountryCode(), newColor);
-        
-        // then: 다른 사용자의 색상은 변경되지 않음
-        List<VisitedCountry> user1List = visitedCountryService.getVisitedCountries(user1.getId());
-        List<VisitedCountry> user2List = visitedCountryService.getVisitedCountries(user2.getId());
-        
-        assertThat(user1List.get(0).getColor()).isEqualTo(newColor);
-        assertThat(user2List.get(0).getColor()).isEqualTo(emotion.getColorCode());
     }
 
     @Test
