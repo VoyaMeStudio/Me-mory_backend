@@ -10,6 +10,7 @@ public enum ResponseCode {
     // 성공 응답
     SUCCESS(200, "성공하였습니다."),
     LOGOUT_SUCCESS(200, "로그아웃 성공"),
+    LOGIN_SUCCESS(200, "로그인에 성공하였습니다."),
 
     // 실패 응답
     LOGIN_FAIL(401, "로그인 실패"),

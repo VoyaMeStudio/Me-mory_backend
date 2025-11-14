@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.dto.LoginRequestDto;
 import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.service.LoginService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/login")
+@RequestMapping("/api/auth")
 @Tag(name = "kakaoLogin-controller", description = "카카오 로그인")
 public class LoginController {
     /*
@@ -35,15 +37,10 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청 (client id 오류, 만료된 authorization code 등)", content = @Content()),
             @ApiResponse(responseCode = "500", description = "서버 오류, 유효하지 않은 토큰", content = @Content())
     })
-    @PostMapping("/kakao")
-    public ResponseEntity<LoginResponseDto> kakaoLogin(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "카카오 로그인 요청. 클라이언트 앱에 Access Token 요청",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = LoginRequestDto.class))
-            )
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLogin(
             @RequestBody LoginRequestDto request) {
         LoginResponseDto response = loginService.login(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.LOGIN_SUCCESS, response));
     }
 }
