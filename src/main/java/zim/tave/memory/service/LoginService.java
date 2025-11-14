@@ -1,10 +1,13 @@
 package zim.tave.memory.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.LoginRequestDto;
 import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.jwt.JwtUtil;
 import zim.tave.memory.kakao.KakaoApiClient;
 import zim.tave.memory.kakao.KakaoUserInfo;
@@ -66,6 +69,18 @@ public class LoginService {
                 token
 
         );
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.isStatus()) {
+            throw new CustomException(ErrorCode.ALREADY_LOGGED_OUT);
+        }
+
+        user.setStatus(false); // 로그아웃 시 비활성화 상태로 전환
     }
 }
 

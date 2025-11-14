@@ -27,6 +27,7 @@ public class GlobalExceptionHandler {
         ResponseCode responseCode = switch (errorCode) {
             case LOGIN_FAIL -> ResponseCode.LOGIN_FAIL;
             case USER_NOT_FOUND -> ResponseCode.USER_NOT_FOUND;
+            case ALREADY_LOGGED_OUT -> ResponseCode.ALREADY_LOGGED_OUT;
             default -> ResponseCode.SERVER_ERROR;
         };
 
