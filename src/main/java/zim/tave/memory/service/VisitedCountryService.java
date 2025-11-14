@@ -48,12 +48,19 @@ public class VisitedCountryService {
         if (country == null) {
             throw new CustomException(ErrorCode.COUNTRY_NOT_FOUND);
         }
-        // 감정이 null이면 '설렘'으로 대체
+        // 감정이 null이면 '설렘'으로 대체, 없으면 '기본'으로 대체
         Emotion emotion;
         if (emotionId == null) {
             emotion = emotionRepository.findByName("설렘");
             if (emotion == null) {
-                throw new CustomException(ErrorCode.DEFAULT_EMOTION_NOT_CONFIGURED);
+                // 설렘도 없으면 기본 감정 사용
+                emotion = emotionRepository.findByName("기본");
+                if (emotion == null) {
+                    // 기본 감정도 없으면 첫 번째 감정 사용 (데이터 초기화가 되어 있다고 가정)
+                    emotion = emotionRepository.findAllByOrderById().stream()
+                            .findFirst()
+                            .orElseThrow(() -> new CustomException(ErrorCode.DEFAULT_EMOTION_NOT_CONFIGURED));
+                }
             }
         } else {
             emotion = emotionRepository.findById(emotionId)
