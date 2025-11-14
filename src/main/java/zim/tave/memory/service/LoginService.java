@@ -80,7 +80,8 @@ public class LoginService {
             throw new CustomException(ErrorCode.ALREADY_LOGGED_OUT);
         }
 
-        user.setStatus(false); // 로그아웃 시 비활성화 상태로 전환
+        user.setStatus(false); //로그아웃 시 status false로 설정
+        //프론트에서 accessToken 삭제
     }
 }
 
