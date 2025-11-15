@@ -9,7 +9,6 @@ import zim.tave.memory.domain.User;
 import zim.tave.memory.domain.VisitedCountry;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.CountryRepository;
 import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;
@@ -22,7 +21,7 @@ import java.util.List;
 public class VisitedCountryService {
 
     private final VisitedCountryRepository visitedCountryRepository;
-    private final CountryRepository countryRepository;
+    private final CountryService countryService;
     private final UserRepository userRepository;
     private final EmotionRepository emotionRepository;
 
@@ -38,16 +37,10 @@ public class VisitedCountryService {
 
     //방문 국가 등록 (기존 기록이 있으면 감정과 색상 업데이트)
     public VisitedCountry registerVisitedCountry(Long userId, String countryCode, Long emotionId) {
-        if (countryCode == null || countryCode.trim().isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
-        }
-        String normalizedCode = countryCode.trim().toUpperCase();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        Country country = countryRepository.findByCode(normalizedCode);
-        if (country == null) {
-            throw new CustomException(ErrorCode.COUNTRY_NOT_FOUND);
-        }
+        Country country = countryService.findByCode(countryCode);
+        String normalizedCode = country.getCountryCode();
         // 감정이 null이면 '설렘'으로 대체, 없으면 '기본'으로 대체
         Emotion emotion;
         if (emotionId == null) {
