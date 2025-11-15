@@ -13,6 +13,7 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;
+import zim.tave.memory.util.CountryValidator;
 
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class VisitedCountryService {
     }
 
     //방문 국가 등록 (기존 기록이 있으면 감정과 색상 업데이트)
-    public VisitedCountry registerVisitedCountry(Long userId, String countryCode, Long emotionId) {
+    public VisitedCountryResponseDto registerVisitedCountry(Long userId, String countryCode, Long emotionId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Country country = countryService.findByCode(countryCode);
@@ -74,7 +75,7 @@ public class VisitedCountryService {
             visited.setEmotion(emotion);
             visited.setColor(emotion.getColorCode());
             visitedCountryRepository.save(visited);
-            return visited;
+            return VisitedCountryResponseDto.from(visited);
         }
 
         // 새로운 기록 생성
@@ -84,7 +85,7 @@ public class VisitedCountryService {
         visited.setEmotion(emotion);
         visited.setColor(emotion.getColorCode());
         visitedCountryRepository.save(visited);
-        return visited;
+        return VisitedCountryResponseDto.from(visited);
     }
 
     //특정 사용자의 특정 방문 국가 삭제
@@ -92,7 +93,7 @@ public class VisitedCountryService {
         if (countryCode == null || countryCode.trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
         }
-        String normalizedCode = countryCode.trim().toUpperCase();
+        String normalizedCode = CountryValidator.normalizeCountryCode(countryCode);
         VisitedCountry visitedCountry = visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(userId, normalizedCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.VISITED_COUNTRY_NOT_FOUND));
         visitedCountryRepository.delete(visitedCountry);

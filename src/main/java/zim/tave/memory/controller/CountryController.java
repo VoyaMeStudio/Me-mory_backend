@@ -16,6 +16,11 @@ import zim.tave.memory.domain.Country;
 import zim.tave.memory.dto.CountrySearchResponseDto;
 import zim.tave.memory.dto.RegisterVisitedCountryRequestDto;
 import zim.tave.memory.dto.VisitedCountryResponseDto;
+import zim.tave.memory.dto.swagger.CountrySearchResponse;
+import zim.tave.memory.dto.swagger.ErrorResponse;
+import zim.tave.memory.dto.swagger.VoidResponse;
+import zim.tave.memory.dto.swagger.VisitedCountryListResponse;
+import zim.tave.memory.dto.swagger.VisitedCountrySingleResponse;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.security.CustomUserDetails;
@@ -99,12 +104,10 @@ public class CountryController {
         @RequestBody RegisterVisitedCountryRequestDto requestDto
     ) {
         Long userId = userDetails.getUserId();
-        VisitedCountryResponseDto responseDto = VisitedCountryResponseDto.from(
-            visitedCountryService.registerVisitedCountry(
-                userId,
-                requestDto.getCountryCode(),
-                requestDto.getEmotionId()
-            )
+        VisitedCountryResponseDto responseDto = visitedCountryService.registerVisitedCountry(
+            userId,
+            requestDto.getCountryCode(),
+            requestDto.getEmotionId()
         );
         return ResponseEntity
             .status(HttpStatus.CREATED)
@@ -133,40 +136,5 @@ public class CountryController {
         Long userId = userDetails.getUserId();
         visitedCountryService.deleteVisitedCountry(userId, countryCode);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
-    }
-
-    @Schema(name = "CountrySearchResponse")
-    static class CountrySearchResponse {
-        public int code;
-        public String message;
-        public List<CountrySearchResponseDto> data;
-    }
-
-    @Schema(name = "VisitedCountryListResponse")
-    static class VisitedCountryListResponse {
-        public int code;
-        public String message;
-        public List<VisitedCountryResponseDto> data;
-    }
-
-    @Schema(name = "VisitedCountrySingleResponse")
-    static class VisitedCountrySingleResponse {
-        public int code;
-        public String message;
-        public VisitedCountryResponseDto data;
-    }
-
-    @Schema(name = "VoidResponse")
-    static class VoidResponse {
-        public int code;
-        public String message;
-        public Object data;
-    }
-
-    @Schema(name = "ErrorResponse")
-    static class ErrorResponse {
-        public int code;
-        public String message;
-        public Object data;
     }
 }

@@ -7,6 +7,7 @@ import zim.tave.memory.domain.Country;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.CountryRepository;
+import zim.tave.memory.util.CountryValidator;
 import zim.tave.memory.util.EmojiValidator;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class CountryService {
         if (countryCode == null || countryCode.trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
         }
-        String normalizedCode = countryCode.trim().toUpperCase();
+        String normalizedCode = CountryValidator.normalizeCountryCode(countryCode);
         return countryRepository.findById(normalizedCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.COUNTRY_NOT_FOUND));
     }
