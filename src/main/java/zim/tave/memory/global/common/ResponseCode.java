@@ -30,7 +30,8 @@ public enum ResponseCode {
     VISITED_COUNTRY_NOT_FOUND(404, "방문 국가 기록을 찾을 수 없습니다."),
     SERVER_ERROR(500, "서버 오류가 발생했습니다."),
     ALREADY_LOGGED_OUT(400, "이미 로그아웃된 사용자입니다."),
-    KAKAO_LOGIN_REQUIRED(400, "카카오 로그인을 먼저 진행해주세요.");
+    KAKAO_LOGIN_REQUIRED(400, "카카오 로그인을 먼저 진행해주세요."),
+    INCOMPLETE_USER_INFO(400, "회원 정보 입력을 완료해주세요.");
 
     private final int code;
     private final String message;
