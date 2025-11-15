@@ -20,18 +20,6 @@ public class SettingController {
 
     private final SettingService settingService;
 
-    @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
-            @ApiResponse(responseCode = "500", description = "서버 오류, 존재하지 않는 사용자 등", content = @Content())
-    })
-    @PatchMapping("/logout")
-    public ResponseEntity<String> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        settingService.logout(userId);
-        return ResponseEntity.ok("로그아웃 완료");
-    }
-
     @Operation(summary = "회원탈퇴", description = "사용자 계정을 삭제")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원탈퇴 성공"),

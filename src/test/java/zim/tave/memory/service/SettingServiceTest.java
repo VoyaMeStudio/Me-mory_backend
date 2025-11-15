@@ -17,6 +17,7 @@ public class SettingServiceTest {
 
     @Autowired
     private SettingService settingService;
+    private LoginService loginService;
 
     @Autowired
     private UserRepository userRepository;
@@ -28,7 +29,7 @@ public class SettingServiceTest {
         Long testUserId = 1L;
 
         //when
-        settingService.logout(testUserId);
+        loginService.logout(testUserId);
 
         //then
         assertThat(true).isTrue();

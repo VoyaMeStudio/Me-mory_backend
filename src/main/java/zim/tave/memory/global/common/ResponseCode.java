@@ -11,6 +11,7 @@ public enum ResponseCode {
     SUCCESS(200, "성공하였습니다."),
     CREATED(201, "생성되었습니다."),
     LOGOUT_SUCCESS(200, "로그아웃 성공"),
+    LOGIN_SUCCESS(200, "로그인에 성공하였습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),
@@ -26,7 +27,8 @@ public enum ResponseCode {
     EMOTION_NOT_FOUND(404, "감정을 찾을 수 없습니다."),
     DEFAULT_EMOTION_NOT_CONFIGURED(500, "기본 감정 정보가 설정되어 있지 않습니다."),
     VISITED_COUNTRY_NOT_FOUND(404, "방문 국가 기록을 찾을 수 없습니다."),
-    SERVER_ERROR(500, "서버 오류가 발생했습니다.");
+    SERVER_ERROR(500, "서버 오류가 발생했습니다."),
+    ALREADY_LOGGED_OUT(400, "이미 로그아웃된 사용자입니다.");
 
     private final int code;
     private final String message;

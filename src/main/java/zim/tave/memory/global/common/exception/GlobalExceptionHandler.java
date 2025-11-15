@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
             case DEFAULT_EMOTION_NOT_CONFIGURED -> ResponseCode.DEFAULT_EMOTION_NOT_CONFIGURED;
             case VISITED_COUNTRY_NOT_FOUND -> ResponseCode.VISITED_COUNTRY_NOT_FOUND;
             case VALIDATION_ERROR -> ResponseCode.VALIDATION_ERROR;
+            case ALREADY_LOGGED_OUT -> ResponseCode.ALREADY_LOGGED_OUT;
             default -> ResponseCode.SERVER_ERROR;
         };
 

@@ -8,17 +8,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.dto.LoginRequestDto;
 import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
+import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.LoginService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/login")
+@RequestMapping("/api/auth")
 @Tag(name = "kakaoLogin-controller", description = "카카오 로그인")
 public class LoginController {
     /*
@@ -35,15 +36,25 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청 (client id 오류, 만료된 authorization code 등)", content = @Content()),
             @ApiResponse(responseCode = "500", description = "서버 오류, 유효하지 않은 토큰", content = @Content())
     })
-    @PostMapping("/kakao")
-    public ResponseEntity<LoginResponseDto> kakaoLogin(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "카카오 로그인 요청. 클라이언트 앱에 Access Token 요청",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = LoginRequestDto.class))
-            )
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLogin(
             @RequestBody LoginRequestDto request) {
         LoginResponseDto response = loginService.login(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.LOGIN_SUCCESS, response));
+    }
+
+    @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자"),
+            @ApiResponse(responseCode = "400", description = "이미 로그아웃된 사용자"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PatchMapping("/logout")
+    public ResponseEntity<ApiResponseDto<Void>> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
+        loginService.logout(userId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.LOGOUT_SUCCESS, null));
     }
 }

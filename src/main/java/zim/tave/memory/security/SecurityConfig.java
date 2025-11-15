@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/**",
                                 "/upload",
-                                "/api/login/**",
+                                "/api/auth/login/**",
                                 "/api/join/**",
                                 "/api/countries/**",
                                 "/api/auth/refresh",
