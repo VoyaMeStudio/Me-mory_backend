@@ -98,7 +98,7 @@ class TripServiceTest {
         when(tripRepository.findOne(1L)).thenReturn(trip);
 
         // when
-        tripService.updateTrip(1L, request);
+        tripService.updateTrip(1L, request, 1L);
 
         // then
         verify(tripRepository).findOne(1L);
@@ -120,7 +120,7 @@ class TripServiceTest {
         when(tripThemeRepository.findById(2L)).thenReturn(Optional.of(newTheme));
 
         // when
-        tripService.updateTrip(1L, request);
+        tripService.updateTrip(1L, request, 1L);
 
         // then
         assertThat(trip.getTripTheme()).isEqualTo(newTheme);

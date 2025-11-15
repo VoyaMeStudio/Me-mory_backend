@@ -52,4 +52,17 @@ public class CountryValidator {
             throw new IllegalArgumentException("검색 키워드는 최대 50자까지 입력 가능합니다.");
         }
     }
+    
+    /**
+     * 국가 코드 정규화 (trim + uppercase)
+     * @param countryCode 정규화할 국가 코드
+     * @return 정규화된 국가 코드 (대문자)
+     * @throws IllegalArgumentException 국가 코드가 null이거나 빈 문자열인 경우
+     */
+    public static String normalizeCountryCode(String countryCode) {
+        if (countryCode == null || countryCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("국가 코드는 필수 입력 항목입니다.");
+        }
+        return countryCode.trim().toUpperCase();
+    }
 } 
