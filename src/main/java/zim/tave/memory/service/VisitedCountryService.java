@@ -1,12 +1,13 @@
 package zim.tave.memory.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Country;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.domain.VisitedCountry;
+import zim.tave.memory.dto.VisitedCountryResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.EmotionRepository;
@@ -26,8 +27,12 @@ public class VisitedCountryService {
     private final EmotionRepository emotionRepository;
 
     //사용자의 모든 방문 국가 목록 조회 (감정 정보 포함)
-    public List<VisitedCountry> getVisitedCountries(Long userId) {
-        return visitedCountryRepository.findByUserId(userId);
+    @Transactional(readOnly = true)
+    public List<VisitedCountryResponseDto> getVisitedCountries(Long userId) {
+        List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
+        return visitedCountries.stream()
+                .map(VisitedCountryResponseDto::from)
+                .toList();
     }
 
     //사용자가 이미 특정 국가를 방문했는지 여부
@@ -61,7 +66,7 @@ public class VisitedCountryService {
         }
 
         // 기존 기록이 있는지 확인
-        var existingVisitedCountry = visitedCountryRepository.findByUserIdAndCountryCode(userId, normalizedCode);
+        var existingVisitedCountry = visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(userId, normalizedCode);
         
         if (existingVisitedCountry.isPresent()) {
             // 기존 기록이 있으면 감정과 색상 업데이트 후 반환
@@ -88,7 +93,7 @@ public class VisitedCountryService {
             throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
         }
         String normalizedCode = countryCode.trim().toUpperCase();
-        VisitedCountry visitedCountry = visitedCountryRepository.findByUserIdAndCountryCode(userId, normalizedCode)
+        VisitedCountry visitedCountry = visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(userId, normalizedCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.VISITED_COUNTRY_NOT_FOUND));
         visitedCountryRepository.delete(visitedCountry);
     }

@@ -9,7 +9,6 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.CountryRepository;
 import zim.tave.memory.util.EmojiValidator;
 
-
 import java.util.List;
 
 @Service
@@ -25,7 +24,7 @@ public class CountryService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return countryRepository.findAll();
         }
-        return countryRepository.findByNameContaining(keyword.trim());
+        return countryRepository.findByCountryNameContainingIgnoreCase(keyword.trim());
     }
 
     public Country findByCode(String countryCode) {
@@ -33,11 +32,8 @@ public class CountryService {
             throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
         }
         String normalizedCode = countryCode.trim().toUpperCase();
-        Country country = countryRepository.findByCode(normalizedCode);
-        if (country == null) {
-            throw new CustomException(ErrorCode.COUNTRY_NOT_FOUND);
-        }
-        return country;
+        return countryRepository.findById(normalizedCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.COUNTRY_NOT_FOUND));
     }
 
     public void saveCountry(Country country) {
@@ -310,7 +306,7 @@ public class CountryService {
             new Country("HM", "허드 맥도널드 제도", "🇭🇲"),
             new Country("HU", "헝가리", "🇭🇺"),
             new Country("HK", "홍콩", "🇭🇰")
-        );  
+        );
         countries.forEach(countryRepository::save);
         countryRepository.flush(); // 강제 DB 반영
         //List<Country> check = countryRepository.findAll();

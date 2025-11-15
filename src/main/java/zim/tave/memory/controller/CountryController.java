@@ -70,10 +70,7 @@ public class CountryController {
         @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getUserId();
-        List<VisitedCountryResponseDto> visitedCountries = visitedCountryService.getVisitedCountries(userId)
-                .stream()
-                .map(VisitedCountryResponseDto::from)
-                .toList();
+        List<VisitedCountryResponseDto> visitedCountries = visitedCountryService.getVisitedCountries(userId);
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, visitedCountries));
     }
