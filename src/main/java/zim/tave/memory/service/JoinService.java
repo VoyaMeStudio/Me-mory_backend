@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.JoinRequestDto;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
@@ -12,13 +14,14 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 public class JoinService {
+
     private final UserRepository userRepository;
 
     @Transactional
     public User join(JoinRequestDto requestDto) {
 
         User user = userRepository.findByKakaoId(requestDto.getKakaoId())
-                .orElseThrow(() -> new RuntimeException("카카오 로그인을 먼저 진행해주세요."));
+                .orElseThrow(() -> new CustomException(ErrorCode.KAKAO_LOGIN_REQUIRED));
 
         user.setKakaoId(requestDto.getKakaoId());
         user.setProfileImageUrl(requestDto.getProfileImageUrl());

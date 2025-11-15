@@ -28,6 +28,8 @@ public class GlobalExceptionHandler {
             case LOGIN_FAIL -> ResponseCode.LOGIN_FAIL;
             case USER_NOT_FOUND -> ResponseCode.USER_NOT_FOUND;
             case ALREADY_LOGGED_OUT -> ResponseCode.ALREADY_LOGGED_OUT;
+            case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
+            case KAKAO_LOGIN_REQUIRED -> ResponseCode.KAKAO_LOGIN_REQUIRED;
             default -> ResponseCode.SERVER_ERROR;
         };
 
