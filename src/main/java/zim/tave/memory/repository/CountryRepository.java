@@ -1,43 +1,16 @@
 package zim.tave.memory.repository;
 
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import zim.tave.memory.domain.Country;
 
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
-public class CountryRepository {
-
-    private final EntityManager em;
-
-    public void save(Country country) {
-        em.persist(country);
-        em.flush();
-    }
-
-    public Country findByCode(String countryCode) {
-        return em.find(Country.class, countryCode);
-    }
-
-    public List<Country> findAll() {
-        return em.createQuery("SELECT c FROM Country c ORDER BY c.countryName", Country.class).getResultList();
-    }
-//나라 검색용
-    public List<Country> findByNameContaining(String keyword) {
-        return em.createQuery("SELECT c FROM Country c WHERE c.countryName LIKE :keyword", Country.class)
-                .setParameter("keyword", "%" + keyword + "%")
-                .getResultList();
-    }
-
-    public void delete(Country country) {
-        em.remove(em.contains(country) ? country : em.merge(country));
-    }
-
-    public void flush() {
-        em.flush();
-    }
-
+public interface CountryRepository extends JpaRepository<Country, String> {
+    
+    //나라 검색용
+    List<Country> findByCountryNameContainingIgnoreCase(String keyword);
+    
+    @Query("SELECT c FROM Country c ORDER BY c.countryName")
+    List<Country> findAll();
 }

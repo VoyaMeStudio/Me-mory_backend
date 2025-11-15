@@ -145,7 +145,7 @@ class TripDiaryIntegrationTest {
         Diary diary2 = diaryService.createDiary(diaryRequest2);
 
         // when - 마지막 다이어리 삭제
-        when(diaryRepository.findById(2L)).thenReturn(diary2);
+        when(diaryRepository.findById(2L)).thenReturn(Optional.of(diary2));
         when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList(diary1));
 
         diaryService.deleteDiary(2L);
@@ -173,7 +173,7 @@ class TripDiaryIntegrationTest {
         Diary diary = diaryService.createDiary(diaryRequest);
 
         // when - 마지막 다이어리 삭제
-        when(diaryRepository.findById(1L)).thenReturn(diary);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
         when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList());
 
         diaryService.deleteDiary(1L);

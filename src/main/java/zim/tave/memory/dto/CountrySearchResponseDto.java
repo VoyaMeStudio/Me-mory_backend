@@ -10,11 +10,11 @@ import lombok.Getter;
 public class CountrySearchResponseDto {
     
     @Schema(description = "국가 코드", example = "KR")
-    private String countryCode;
+    private final String countryCode;
     
     @Schema(description = "국가명", example = "대한민국")
-    private String countryName;
+    private final String countryName;
     
     @Schema(description = "국가 이모지", example = "🇰🇷")
-    private String emoji;
-} 
+    private final String emoji;
+}

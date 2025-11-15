@@ -48,7 +48,7 @@ public class MyPageService {
         MyPageResponseDto.Statistics statistics = new MyPageResponseDto.Statistics(countryCount, diaryCount);
 
         // Flags
-        List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserId(userId);
+        List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
         String flags = visitedCountries.stream()
                 .map(vc -> vc.getCountry().getEmoji())
                 .collect(Collectors.joining());

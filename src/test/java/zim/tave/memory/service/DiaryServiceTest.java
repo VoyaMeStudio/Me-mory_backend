@@ -134,7 +134,7 @@ class DiaryServiceTest {
         request.setEmotionId(1L);
         request.setWeatherId(1L);
 
-        when(diaryRepository.findById(1L)).thenReturn(diary);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion));
         when(weatherRepository.findById(1L)).thenReturn(Optional.of(weather));
 
@@ -162,7 +162,7 @@ class DiaryServiceTest {
         diary.addDiaryImage(image1);
         diary.addDiaryImage(image2);
 
-        when(diaryRepository.findById(1L)).thenReturn(diary);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
 
         // when
         diaryService.updateRepresentativeImage(1L, 2L);
@@ -175,7 +175,7 @@ class DiaryServiceTest {
     @Test
     void 대표사진_변경_시_이미지_없음_예외_테스트() {
         // given
-        when(diaryRepository.findById(1L)).thenReturn(diary);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
 
         // when & then
         assertThatThrownBy(() -> diaryService.updateRepresentativeImage(1L, 999L))
@@ -186,7 +186,7 @@ class DiaryServiceTest {
     @Test
     void 다이어리_삭제_테스트() {
         // given
-        when(diaryRepository.findById(1L)).thenReturn(diary);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
         when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList());
 
         // when
@@ -203,7 +203,7 @@ class DiaryServiceTest {
         Diary remainingDiary = new Diary();
         remainingDiary.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
         
-        when(diaryRepository.findById(1L)).thenReturn(diary);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
         when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList(remainingDiary));
 
         // when
