@@ -29,7 +29,17 @@ public enum ResponseCode {
     DEFAULT_EMOTION_NOT_CONFIGURED(500, "기본 감정 정보가 설정되어 있지 않습니다."),
     VISITED_COUNTRY_NOT_FOUND(404, "방문 국가 기록을 찾을 수 없습니다."),
     SERVER_ERROR(500, "서버 오류가 발생했습니다."),
-    ALREADY_LOGGED_OUT(400, "이미 로그아웃된 사용자입니다.");
+    ALREADY_LOGGED_OUT(400, "이미 로그아웃된 사용자입니다."),
+    DIARY_NOT_FOUND(404, "일기를 찾을 수 없습니다."),
+    IMAGE_NOT_FOUND(404, "이미지를 찾을 수 없습니다."),
+    IMAGE_COUNT_INVALID(400, "이미지는 반드시 2장이어야 합니다. (FRONT/BACK)"),
+    CAMERA_TYPES_REQUIRED(400, "FRONT/BACK 카메라 사진이 모두 필요합니다."),
+    REPRESENTATIVE_IMAGE_REQUIRED(400, "대표 이미지는 정확히 1장이어야 합니다."),
+    IMAGE_ID_REQUIRED(400, "이미지 ID가 필요합니다."),
+    IMAGE_TRIP_MISMATCH(400, "해당 이미지는 이 여행에 속하지 않습니다."),
+    IMAGE_NOT_REPRESENTATIVE(400, "대표 이미지가 아닙니다."),
+    TRIP_THEME_NOT_FOUND(404, "여행 테마를 찾을 수 없습니다."),
+    WEATHER_NOT_FOUND(404, "날씨를 찾을 수 없습니다.");
 
     private final int code;
     private final String message;

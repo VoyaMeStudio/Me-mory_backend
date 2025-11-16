@@ -24,7 +24,17 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 여행을 찾을 수 없습니다."),
     TRIP_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 여행에 대한 수정 권한이 없습니다."),
-    ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, "이미 로그아웃된 사용자입니다.");
+    ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, "이미 로그아웃된 사용자입니다."),
+    DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "일기를 찾을 수 없습니다."),
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."),
+    IMAGE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "이미지는 반드시 2장이어야 합니다. (FRONT/BACK)"),
+    CAMERA_TYPES_REQUIRED(HttpStatus.BAD_REQUEST, "FRONT/BACK 카메라 사진이 모두 필요합니다."),
+    REPRESENTATIVE_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "대표 이미지는 정확히 1장이어야 합니다."),
+    IMAGE_ID_REQUIRED(HttpStatus.BAD_REQUEST, "이미지 ID가 필요합니다."),
+    IMAGE_TRIP_MISMATCH(HttpStatus.BAD_REQUEST, "해당 이미지는 이 여행에 속하지 않습니다."),
+    IMAGE_NOT_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "대표 이미지가 아닙니다."),
+    TRIP_THEME_NOT_FOUND(HttpStatus.NOT_FOUND, "여행 테마를 찾을 수 없습니다."),
+    WEATHER_NOT_FOUND(HttpStatus.NOT_FOUND, "날씨를 찾을 수 없습니다.");
 
 
 

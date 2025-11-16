@@ -41,6 +41,16 @@ public class GlobalExceptionHandler {
             case VISITED_COUNTRY_NOT_FOUND -> ResponseCode.VISITED_COUNTRY_NOT_FOUND;
             case VALIDATION_ERROR -> ResponseCode.VALIDATION_ERROR;
             case ALREADY_LOGGED_OUT -> ResponseCode.ALREADY_LOGGED_OUT;
+            case DIARY_NOT_FOUND -> ResponseCode.DIARY_NOT_FOUND;
+            case IMAGE_NOT_FOUND -> ResponseCode.IMAGE_NOT_FOUND;
+            case IMAGE_COUNT_INVALID -> ResponseCode.IMAGE_COUNT_INVALID;
+            case CAMERA_TYPES_REQUIRED -> ResponseCode.CAMERA_TYPES_REQUIRED;
+            case REPRESENTATIVE_IMAGE_REQUIRED -> ResponseCode.REPRESENTATIVE_IMAGE_REQUIRED;
+            case IMAGE_ID_REQUIRED -> ResponseCode.IMAGE_ID_REQUIRED;
+            case IMAGE_TRIP_MISMATCH -> ResponseCode.IMAGE_TRIP_MISMATCH;
+            case IMAGE_NOT_REPRESENTATIVE -> ResponseCode.IMAGE_NOT_REPRESENTATIVE;
+            case TRIP_THEME_NOT_FOUND -> ResponseCode.TRIP_THEME_NOT_FOUND;
+            case WEATHER_NOT_FOUND -> ResponseCode.WEATHER_NOT_FOUND;
             default -> ResponseCode.SERVER_ERROR;
         };
 
