@@ -24,7 +24,10 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 여행을 찾을 수 없습니다."),
     TRIP_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 여행에 대한 수정 권한이 없습니다."),
-    ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, "이미 로그아웃된 사용자입니다.");
+    ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, "이미 로그아웃된 사용자입니다."),
+    KAKAO_LOGIN_REQUIRED(HttpStatus.BAD_REQUEST, "카카오 로그인을 먼저 진행해주세요."),
+    INCOMPLETE_USER_INFO(HttpStatus.BAD_REQUEST, "회원 정보 입력을 완료해주세요."),
+    ALREADY_JOINED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다.");
 
 
 

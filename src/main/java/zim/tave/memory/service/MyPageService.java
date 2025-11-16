@@ -29,6 +29,11 @@ public class MyPageService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        // 필수 필드 입력여부 체크
+        if (isIncompleteUserInfo(user)) {
+            throw new CustomException(ErrorCode.INCOMPLETE_USER_INFO);
+        }
+
         String formattedBirth = birthFormatter(user.getBirth());
 
         // UserInfo
@@ -77,9 +82,24 @@ public class MyPageService {
         return String.format("%d %s/%s %d", day, koreanMonth, englishMonth, year);
     }
 
+    // 정보누락여부 체크용 메서드
+    private boolean isIncompleteUserInfo(User user) {
+        return isNullOrEmpty(user.getSurName()) ||
+                isNullOrEmpty(user.getFirstName()) ||
+                isNullOrEmpty(user.getKoreanName()) ||
+                user.getBirth() == null ||
+                isNullOrEmpty(user.getNationality());
+    }
+
+    private boolean isNullOrEmpty(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    /*
     // 에러 테스트 코드
     public MyPageResponseDto getErrorExample(Long userId) {
         // 일부러 예외 발생
         throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
+     */
 }

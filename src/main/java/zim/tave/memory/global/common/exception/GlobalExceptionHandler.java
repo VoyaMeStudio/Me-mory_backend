@@ -41,6 +41,9 @@ public class GlobalExceptionHandler {
             case VISITED_COUNTRY_NOT_FOUND -> ResponseCode.VISITED_COUNTRY_NOT_FOUND;
             case VALIDATION_ERROR -> ResponseCode.VALIDATION_ERROR;
             case ALREADY_LOGGED_OUT -> ResponseCode.ALREADY_LOGGED_OUT;
+            case KAKAO_LOGIN_REQUIRED -> ResponseCode.KAKAO_LOGIN_REQUIRED;
+            case INCOMPLETE_USER_INFO -> ResponseCode.INCOMPLETE_USER_INFO;
+            case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
             default -> ResponseCode.SERVER_ERROR;
         };
 

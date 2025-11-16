@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.JoinRequestDto;
 import zim.tave.memory.dto.UserResponseDto;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.service.JoinService;
 
 @RestController
-@RequestMapping("/api/join")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "join-controller", description = "회원가입(카카오 로그인 후 사용자 정보 입력)")
 public class JoinController {
@@ -28,16 +30,19 @@ public class JoinController {
             @ApiResponse(responseCode = "200", description = "회원가입 성공",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "입력값 오류", content = @Content()),
+            @ApiResponse(responseCode = "409", description = "이미 가입된 사용자"),
             @ApiResponse(responseCode = "500", description = "서버 오류, 중복 계정", content = @Content())})
-    @PostMapping
-    public ResponseEntity<UserResponseDto> join(
+    @PostMapping("/join")
+    public ResponseEntity<ApiResponseDto<UserResponseDto>> join(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "회원가입 용 요청 데이터. 사용자 아이디 및 카카오 정보(아이디, 프로필 이미지), 추가 정보 등",
                     required = true,
                     content = @Content(schema = @Schema(implementation = JoinRequestDto.class))
             )
             @RequestBody JoinRequestDto requestDto) {
+
         User user = joinService.join(requestDto);
+
         UserResponseDto response = new UserResponseDto(
                 //사용자 아이디
                 user.getId(),
@@ -58,6 +63,6 @@ public class JoinController {
                 user.getVisitedCountryCount(),
                 user.getFlags()
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.JOIN_SUCCESS, response));
     }
 }
