@@ -102,6 +102,8 @@ class TripServiceTest {
     void 여행_생성_시_테마_없음_예외_테스트() {
         // given
         CreateTripRequest request = new CreateTripRequest();
+        request.setTripName("제주도 여행");
+        request.setDescription("설명");
         request.setThemeId(999L);
 
         when(tripThemeRepository.findById(999L)).thenReturn(Optional.empty());
