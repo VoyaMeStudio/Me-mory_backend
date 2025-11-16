@@ -20,7 +20,6 @@ public class DiaryResponseDto {
 	private final LocalDateTime dateTime;
 	private final LocalDateTime createdAt;
 	private final String content;
-	private final String audioUrl;
 	private final String emotionColor;
 	private final String emotionName;
 	private final String weather;

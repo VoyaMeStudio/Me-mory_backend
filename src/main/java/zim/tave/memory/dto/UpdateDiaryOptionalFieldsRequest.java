@@ -8,7 +8,6 @@ import lombok.Setter;
 public class UpdateDiaryOptionalFieldsRequest {
     
     private String detailedLocation;
-    private String audioUrl;
     private Long emotionId;
     private Long weatherId;
 } 

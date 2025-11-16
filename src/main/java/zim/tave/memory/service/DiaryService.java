@@ -96,7 +96,7 @@ public class DiaryService {
         validateAndAttachImages(diary, request.getImages());
 
         //선택 필드 설정
-        diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), emotion, weather);
+        diary.setOptionalFields(request.getDetailedLocation(), emotion, weather);
 		Diary saved = diaryRepository.save(diary);
 
 		trip.updateEndDate(saved.getCreatedAt().toLocalDate());
@@ -124,7 +124,7 @@ public class DiaryService {
             weather = weatherRepository.findById(request.getWeatherId())
                     .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
         }
-        diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), emotion, weather);
+        diary.setOptionalFields(request.getDetailedLocation(), emotion, weather);
     }
 
     @Transactional
@@ -222,7 +222,6 @@ public class DiaryService {
 				.dateTime(diary.getDateTime())
 				.createdAt(diary.getCreatedAt())
 				.content(diary.getContent())
-				.audioUrl(diary.getAudioUrl())
 				.tripId(diary.getTrip() != null ? diary.getTrip().getId() : null)
 				.tripName(diary.getTrip() != null ? diary.getTrip().getTripName() : null);
 

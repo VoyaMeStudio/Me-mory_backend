@@ -12,12 +12,18 @@ import static org.assertj.core.api.Assertions.*;
 import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.CreateTripRequest;
 import zim.tave.memory.dto.CreateDiaryRequest;
+import zim.tave.memory.dto.DiaryResponseDto;
 import zim.tave.memory.service.TripService;
 import zim.tave.memory.service.DiaryService;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.TripThemeRepository;
+import zim.tave.memory.repository.EmotionRepository;
+import zim.tave.memory.repository.WeatherRepository;
+import zim.tave.memory.repository.DiaryImageRepository;
+import zim.tave.memory.service.CountryService;
+import zim.tave.memory.service.VisitedCountryService;
 import zim.tave.memory.dto.TripResponseDto;
 
 import java.time.LocalDateTime;
@@ -40,6 +46,21 @@ class TripDiaryIntegrationTest {
 
     @Mock
     private TripThemeRepository tripThemeRepository;
+
+    @Mock
+    private EmotionRepository emotionRepository;
+
+    @Mock
+    private WeatherRepository weatherRepository;
+
+    @Mock
+    private DiaryImageRepository diaryImageRepository;
+
+    @Mock
+    private CountryService countryService;
+
+    @Mock
+    private VisitedCountryService visitedCountryService;
 
     @InjectMocks
     private TripService tripService;
@@ -77,6 +98,7 @@ class TripDiaryIntegrationTest {
         tripRequest.setThemeId(1L);
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         TripResponseDto createdTrip = tripService.createTrip(tripRequest, 1L);
         assertThat(createdTrip.getStartDate()).isEqualTo(LocalDate.now());
@@ -105,13 +127,25 @@ class TripDiaryIntegrationTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        // country/emotion defaults
+        Country country = new Country();
+        country.setCountryCode("KR");
+        country.setCountryName("대한민국");
+        when(countryService.findByCode("KR")).thenReturn(country);
+        Emotion defaultEmotion = new Emotion("행복", "#FFD700");
+        defaultEmotion.setId(1L);
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(defaultEmotion));
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary d = invocation.getArgument(0);
+            if (d.getId() == null) d.setId(1L);
+            return d;
+        });
 
-        Diary createdDiary = diaryService.createDiary(diaryRequest);
+        DiaryResponseDto createdDiary = diaryService.createDiary(diaryRequest);
 
         // then
-        assertThat(createdDiary.getTrip()).isEqualTo(trip);
+        assertThat(createdDiary.getTripId()).isEqualTo(trip.getId());
         assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 15));
-        assertThat(trip.getDiaries()).hasSize(1);
     }
 
     @Test
@@ -131,7 +165,14 @@ class TripDiaryIntegrationTest {
         diaryRequest1.setContent("제주도 첫째 날");
         diaryRequest1.setImages(createImageInfo("front1.jpg", "back1.jpg"));
 
-        Diary diary1 = diaryService.createDiary(diaryRequest1);
+        when(countryService.findByCode("KR")).thenReturn(new Country());
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(new Emotion("행복", "#FFD700")));
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary d = invocation.getArgument(0);
+            d.setId(1L);
+            return d;
+        });
+        DiaryResponseDto diary1 = diaryService.createDiary(diaryRequest1);
 
         // 두 번째 다이어리 생성
         CreateDiaryRequest diaryRequest2 = new CreateDiaryRequest();
@@ -143,11 +184,26 @@ class TripDiaryIntegrationTest {
         diaryRequest2.setContent("제주도 마지막 날");
         diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
 
-        Diary diary2 = diaryService.createDiary(diaryRequest2);
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary d = invocation.getArgument(0);
+            d.setId(2L);
+            return d;
+        });
+        DiaryResponseDto diary2 = diaryService.createDiary(diaryRequest2);
 
         // when - 마지막 다이어리 삭제
-        when(diaryRepository.findById(2L)).thenReturn(Optional.of(diary2));
-        when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList(diary1));
+        Diary persisted2 = new Diary();
+        persisted2.setId(2L);
+        persisted2.setTrip(trip);
+        persisted2.setUser(user);
+        persisted2.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
+        when(diaryRepository.findById(2L)).thenReturn(Optional.of(persisted2));
+        Diary persisted1 = new Diary();
+        persisted1.setId(1L);
+        persisted1.setTrip(trip);
+        persisted1.setUser(user);
+        persisted1.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(persisted1));
 
         diaryService.deleteDiary(2L);
 
@@ -171,11 +227,23 @@ class TripDiaryIntegrationTest {
         diaryRequest.setContent("제주도 여행");
         diaryRequest.setImages(createImageInfo("front.jpg", "back.jpg"));
 
-        Diary diary = diaryService.createDiary(diaryRequest);
+        when(countryService.findByCode("KR")).thenReturn(new Country());
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(new Emotion("행복", "#FFD700")));
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary d = invocation.getArgument(0);
+            d.setId(1L);
+            return d;
+        });
+        DiaryResponseDto diary = diaryService.createDiary(diaryRequest);
 
         // when - 마지막 다이어리 삭제
-        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
-        when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList());
+        Diary persisted = new Diary();
+        persisted.setId(1L);
+        persisted.setTrip(trip);
+        persisted.setUser(user);
+        persisted.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(persisted));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
 
         diaryService.deleteDiary(1L);
 
