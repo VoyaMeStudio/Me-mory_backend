@@ -8,75 +8,68 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import zim.tave.memory.domain.Diary;
-import zim.tave.memory.domain.DiaryImage;
-import zim.tave.memory.domain.DiaryImage.CameraType;
 import zim.tave.memory.dto.CreateDiaryRequest;
 import zim.tave.memory.dto.DiaryResponseDto;
 import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
 import zim.tave.memory.dto.UpdateRepresentativeImageRequest;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.DiaryService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/diaries")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "Diary", description = "일기 관리 API")
 public class DiaryController {
 
     private final DiaryService diaryService;
 
-    @PostMapping
+	@PostMapping("/users/me/diaries")
     @Operation(summary = "일기 생성", description = "JWT 토큰으로 인증된 사용자의 일기를 생성합니다. 정면/후면 카메라 사진 각 1장씩, 총 2장의 이미지가 필요하며 그 중 1장을 대표 이미지로 설정해야 합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "일기 생성 성공",
+			@ApiResponse(responseCode = "201", description = "일기 생성 성공",
                     content = @Content(schema = @Schema(implementation = DiaryResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (필수 필드 누락, 이미지 개수 오류, 카메라 타입 누락 등)", content = @Content),
             @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
             @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    public ResponseEntity<DiaryResponseDto> createDiary(
+	public ResponseEntity<ApiResponseDto<DiaryResponseDto>> createDiary(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody CreateDiaryRequest request) {
         request.setUserId(userDetails.getUserId());
-        Diary diary = diaryService.createDiary(request);
-        return ResponseEntity.ok(DiaryResponseDto.from(diary));
+		DiaryResponseDto dto = diaryService.createDiary(request);
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponseDto.success(ResponseCode.CREATED, dto));
     }
 
-    // 일기 선택 필드 수정 - JWT 인증으로 본인 일기만 수정 가능
-    @PutMapping("/{diaryId}/optional-fields")
+	// 일기 선택 필드 수정 - JWT 인증으로 본인 일기만 수정 가능 (녹음 기능 제외)
+	@PatchMapping("/users/me/diaries/{diaryId}")
     @Operation(summary = "일기 선택 필드 수정", description = "JWT 토큰으로 인증된 사용자의 일기 선택적 필드들(감정, 날씨 등)을 수정합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "일기 수정 성공"),
+			@ApiResponse(responseCode = "200", description = "일기 수정 성공"),
             @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
             @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
             @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음", content = @Content)
     })
-    public ResponseEntity<Void> updateDiaryOptionalFields(
+	public ResponseEntity<ApiResponseDto<Void>> updateDiaryOptionalFields(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
+			@Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
             @RequestBody UpdateDiaryOptionalFieldsRequest request) {
-        Long userId = userDetails.getUserId();
-        Diary diary = diaryService.findOne(diaryId);
-
-        // 본인의 일기인지 확인
-        if (!diary.getUser().getId().equals(userId)) {
-            System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 수정 시도");
-            return ResponseEntity.status(403).build();
-        }
-
+		Long userId = userDetails.getUserId();
+		// 소유권 검증은 서비스에서 수행
         diaryService.updateDiaryOptionalFields(diaryId, request);
-        return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 
-    // 대표 이미지 변경 - JWT 인증으로 본인 일기만 수정 가능
-    @PutMapping("/{diaryId}/representative-image")
+	// 대표 이미지 변경 - JWT 인증으로 본인 일기만 수정 가능
+	@PatchMapping("/users/me/diaries/{diaryId}/representative-images")
     @Operation(summary = "대표 이미지 변경", description = "JWT 토큰으로 인증된 사용자의 일기 대표 이미지를 변경합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "대표 이미지 변경 성공"),
@@ -85,47 +78,38 @@ public class DiaryController {
             @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
             @ApiResponse(responseCode = "404", description = "일기 또는 이미지를 찾을 수 없음", content = @Content)
     })
-    public ResponseEntity<Void> updateRepresentativeImage(
+	public ResponseEntity<ApiResponseDto<Void>> updateRepresentativeImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
             @RequestBody UpdateRepresentativeImageRequest request) {
         if (request.getImageId() == null) {
-            return ResponseEntity.badRequest().build();
+			throw new zim.tave.memory.global.common.exception.CustomException(
+					zim.tave.memory.global.common.exception.ErrorCode.IMAGE_ID_REQUIRED
+			);
         }
 
         Long userId = userDetails.getUserId();
-        Diary diary = diaryService.findOne(diaryId);
-
-        // 본인의 일기인지 확인
-        if (!diary.getUser().getId().equals(userId)) {
-            System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 이미지 변경 시도");
-            return ResponseEntity.status(403).build();
-        }
-
         diaryService.updateRepresentativeImage(diaryId, request.getImageId());
-        return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 
     // 사용자별 전체 일기 목록 조회 - JWT 인증으로 개인 데이터 보호
-    @GetMapping
+	@GetMapping("/users/me/diaries")
     @Operation(summary = "내 전체 일기 목록 조회", description = "JWT 토큰으로 인증된 사용자의 모든 일기를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = DiaryResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content())
     })
-    public ResponseEntity<List<DiaryResponseDto>> getMyAllDiaries(
+	public ResponseEntity<ApiResponseDto<List<DiaryResponseDto>>> getMyAllDiaries(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        List<Diary> diaries = diaryService.findByUserId(userId);
-        List<DiaryResponseDto> diaryDtos = diaries.stream()
-                .map(DiaryResponseDto::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(diaryDtos);
+		Long userId = userDetails.getUserId();
+		List<DiaryResponseDto> diaryDtos = diaryService.findByUserId(userId);
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, diaryDtos));
     }
 
     // 특정 일기 상세 조회 - JWT 인증으로 본인 일기만 조회 가능하도록 보안 강화
-    @GetMapping("/{diaryId}")
+	@GetMapping("/users/me/diaries/{diaryId}")
     @Operation(summary = "일기 상세 조회", description = "JWT 토큰으로 인증된 사용자의 특정 일기를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 조회 성공",
@@ -134,23 +118,16 @@ public class DiaryController {
             @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
             @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음", content = @Content)
     })
-    public ResponseEntity<DiaryResponseDto> getDiary(
+	public ResponseEntity<ApiResponseDto<DiaryResponseDto>> getDiary(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
-        Long userId = userDetails.getUserId();
-        Diary diary = diaryService.findOne(diaryId);
-
-        // 본인의 일기인지 확인
-        if (!diary.getUser().getId().equals(userId)) {
-            System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 접근 시도");
-            return ResponseEntity.status(403).build();
-        }
-
-        return ResponseEntity.ok(DiaryResponseDto.from(diary));
+		Long userId = userDetails.getUserId();
+		DiaryResponseDto dto = diaryService.findOne(diaryId, userId);
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, dto));
     }
 
     // 내 여행별 일기 목록 조회 - JWT 인증으로 본인 여행의 일기만 조회
-    @GetMapping("/trip/{tripId}")
+	@GetMapping("/users/me/trips/{tripId}/diaries")
     @Operation(summary = "내 여행별 일기 목록 조회", description = "JWT 토큰으로 인증된 사용자의 특정 여행에 속한 모든 일기를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 일기 목록 조회 성공",
@@ -158,27 +135,17 @@ public class DiaryController {
             @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
             @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
     })
-    public ResponseEntity<List<DiaryResponseDto>> getMyDiariesByTripId(
+	public ResponseEntity<ApiResponseDto<List<DiaryResponseDto>>> getMyDiariesByTripId(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId) {
         Long userId = userDetails.getUserId();
-        List<Diary> diaries = diaryService.findByTripId(tripId);
-
-        // 본인의 여행인지 확인 (첫 번째 일기의 사용자 확인)
-        if (!diaries.isEmpty() && !diaries.get(0).getUser().getId().equals(userId)) {
-            System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 여행 " + tripId + " 일기 접근 시도");
-            return ResponseEntity.status(403).build();
-        }
-
-        List<DiaryResponseDto> diaryDtos = diaries.stream()
-                .map(DiaryResponseDto::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(diaryDtos);
+		List<DiaryResponseDto> diaryDtos = diaryService.findByTripId(tripId, userId);
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, diaryDtos));
     }
 
 
     // 일기 삭제 - JWT 인증으로 본인 일기만 삭제 가능
-    @DeleteMapping("/{diaryId}")
+	@DeleteMapping("/users/me/diaries/{diaryId}")
     @Operation(summary = "일기 삭제", description = "JWT 토큰으로 인증된 사용자의 특정 일기를 삭제합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 삭제 성공"),
@@ -186,19 +153,10 @@ public class DiaryController {
             @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
             @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음", content = @Content)
     })
-    public ResponseEntity<Void> deleteDiary(
+	public ResponseEntity<ApiResponseDto<Void>> deleteDiary(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
-        Long userId = userDetails.getUserId();
-        Diary diary = diaryService.findOne(diaryId);
-
-        // 본인의 일기인지 확인
-        if (!diary.getUser().getId().equals(userId)) {
-            System.out.println("권한 없음: 사용자 " + userId + "가 다른 사용자의 일기 " + diaryId + " 삭제 시도");
-            return ResponseEntity.status(403).build();
-        }
-
         diaryService.deleteDiary(diaryId);
-        return ResponseEntity.ok().build();
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }
