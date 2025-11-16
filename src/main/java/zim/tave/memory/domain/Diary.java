@@ -41,8 +41,6 @@ public class Diary {
 
     private String detailedLocation;
 
-    private String audioUrl;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emotionId")
     private Emotion emotion;
@@ -80,10 +78,9 @@ public class Diary {
         return diary;
     }
 
-    public void setOptionalFields(String detailedLocation, String audioUrl, 
+    public void setOptionalFields(String detailedLocation, 
                                  Emotion emotion, Weather weather) {
         this.detailedLocation = detailedLocation;
-        this.audioUrl = audioUrl;
         this.emotion = emotion;
         this.weather = weather;
     }

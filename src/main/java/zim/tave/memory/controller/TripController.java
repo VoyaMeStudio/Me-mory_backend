@@ -44,19 +44,6 @@ public class TripController {
     public ResponseEntity<ApiResponseDto<TripResponseDto>> createTrip(
             @RequestBody CreateTripRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        // DTO 검증
-        if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
-        if (request.getTripName().trim().length() > 14) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
-        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
         if (userDetails == null) {
             throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
         }
@@ -81,21 +68,6 @@ public class TripController {
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateTripRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        // DTO 검증
-        if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
-        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
-        // 날짜 순서 검증: startDate가 endDate보다 늦으면 안됨
-        if (request.getStartDate() != null && request.getEndDate() != null &&
-            request.getStartDate().isAfter(request.getEndDate())) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
         Long userId = userDetails.getUserId();
 
         tripService.updateTrip(tripId, request, userId);
@@ -133,12 +105,8 @@ public class TripController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getUserId();
-        Trip trip = tripService.findOne(tripId);
-
-        if (!trip.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
-        }
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, tripService.getTripDto(tripId)));
+		TripResponseDto dto = tripService.getTripDtoWithOwnershipCheck(tripId, userId);
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, dto));
     }
 
     @GetMapping("/{tripId}/representative-images")
@@ -155,11 +123,7 @@ public class TripController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getUserId();
-        Trip trip = tripService.findOne(tripId);
-
-        if (!trip.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
-        }
+		tripService.validateOwnership(tripId, userId);
 
         List<TripRepresentativeImageDto> representativeImages =
                 diaryService.getRepresentativeImagesByTripId(tripId);
@@ -180,18 +144,8 @@ public class TripController {
             @RequestBody UpdateRepresentativeImageRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        if (request.getImageId() == null) {
-            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
-        }
-
         Long userId = userDetails.getUserId();
-        Trip trip = tripService.findOne(tripId);
-
-        if (!trip.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
-        }
-
-        tripService.updateTripRepresentativeImage(tripId, request.getImageId());
+		tripService.updateTripRepresentativeImageWithOwnershipCheck(tripId, request.getImageId(), userId);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }

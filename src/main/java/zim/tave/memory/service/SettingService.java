@@ -20,7 +20,8 @@ public class SettingService {
     public void deleteAccount(Long userId) {
         // 연관 데이터 먼저 삭제
         visitedCountryRepository.deleteAllByUserId(userId);
-        diaryRepository.deleteAllByUserId(userId);
+		diaryRepository.deleteAllImagesByUserId(userId);
+		diaryRepository.deleteAllByUserId(userId);
 
         // 사용자 삭제
         User user = userRepository.findById(userId)

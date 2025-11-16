@@ -48,7 +48,7 @@ public class MyPageService {
         );
 
         // Statistics
-        Long diaryCount = diaryRepository.countByUserId(userId);
+		Long diaryCount = diaryRepository.countByUser_Id(userId);
         Long countryCount = visitedCountryRepository.countByUserId(userId);
         MyPageResponseDto.Statistics statistics = new MyPageResponseDto.Statistics(countryCount, diaryCount);
 

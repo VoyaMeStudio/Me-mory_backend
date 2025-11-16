@@ -9,10 +9,7 @@ import zim.tave.memory.dto.TripResponseDto;
 import zim.tave.memory.dto.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.DiaryRepository;
-import zim.tave.memory.repository.TripRepository;
-import zim.tave.memory.repository.TripThemeRepository;
-import zim.tave.memory.repository.UserRepository;
+import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,10 +22,21 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripThemeRepository tripThemeRepository;
     private final DiaryRepository diaryRepository;
+	private final DiaryImageRepository diaryImageRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
+        // 입력 검증
+        if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.TRIP_NAME_REQUIRED);
+        }
+        if (request.getTripName().trim().length() > 14) {
+            throw new CustomException(ErrorCode.TRIP_NAME_TOO_LONG);
+        }
+        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
+            throw new CustomException(ErrorCode.TRIP_DESCRIPTION_TOO_LONG);
+        }
         // 테마 처리: 테마가 선택되지 않으면 기본 테마(id=1)를 사용
         Long themeId = request.getThemeId();
         if (themeId == null) {
@@ -36,7 +44,7 @@ public class TripService {
         }
 
         TripTheme theme = tripThemeRepository.findById(themeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -61,6 +69,18 @@ public class TripService {
             throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
         }
 
+        // 입력 검증
+        if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (request.getStartDate() != null && request.getEndDate() != null
+                && request.getStartDate().isAfter(request.getEndDate())) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+
         if (request.getTripName() != null) {
             findTrip.setTripName(request.getTripName());
         }
@@ -71,7 +91,7 @@ public class TripService {
 
         if (request.getThemeId() != null) {
             TripTheme theme = tripThemeRepository.findById(request.getThemeId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
             findTrip.setTripTheme(theme);
         }
 
@@ -122,24 +142,45 @@ public class TripService {
         DiaryImage diaryImage = findDiaryImageById(imageId);
 
         if (!diaryImage.getDiary().getTrip().getId().equals(tripId)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+            throw new CustomException(ErrorCode.IMAGE_TRIP_MISMATCH);
         }
 
         if (!diaryImage.isRepresentative()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+            throw new CustomException(ErrorCode.IMAGE_NOT_REPRESENTATIVE);
         }
 
         trip.setRepresentativeImageUrl(diaryImage.getImageUrl());
     }
 
+    // 컨트롤러 단순화용: 소유권 검증
+    public void validateOwnership(Long tripId, Long userId) {
+        Trip trip = findOne(tripId);
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+    }
+
+    public TripResponseDto getTripDtoWithOwnershipCheck(Long tripId, Long userId) {
+        Trip trip = findOne(tripId);
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+        return buildTripResponseDto(trip);
+    }
+
+    @Transactional
+    public void updateTripRepresentativeImageWithOwnershipCheck(Long tripId, Long imageId, Long userId) {
+        if (imageId == null) {
+            throw new CustomException(ErrorCode.IMAGE_ID_REQUIRED);
+        }
+        validateOwnership(tripId, userId);
+        updateTripRepresentativeImage(tripId, imageId);
+    }
+
     // DiaryImage ID로 DiaryImage 찾기
     private DiaryImage findDiaryImageById(Long imageId) {
-        List<Diary> allDiaries = diaryRepository.findAll();
-        return allDiaries.stream()
-                .flatMap(diary -> diary.getDiaryImages().stream())
-                .filter(image -> image.getId().equals(imageId))
-                .findFirst()
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		return diaryImageRepository.findById(imageId)
+				.orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
     }
 
     public List<TripResponseDto> getTripsByUserId(Long userId) {

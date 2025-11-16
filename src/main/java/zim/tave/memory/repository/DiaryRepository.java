@@ -1,79 +1,28 @@
 package zim.tave.memory.repository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import zim.tave.memory.domain.Diary;
-import zim.tave.memory.domain.Trip;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
-public class DiaryRepository {
+public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    private final EntityManager em;
+	// 파생 쿼리 메소드
+	List<Diary> findByTrip_Id(Long tripId);
+	List<Diary> findByUser_Id(Long userId);
+	long countByUser_Id(Long userId);
 
-    public void save(Diary diary) {
-        if (diary.getId() == null) {
-            em.persist(diary);
-        } else {
-            em.merge(diary);
-        }
-    }
+	// 회원 탈퇴 시 DiaryImage -> Diary 순서로 일괄 삭제 (FK 제약 회피)
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("DELETE FROM DiaryImage di WHERE di.diary.id IN (SELECT d.id FROM Diary d WHERE d.user.id = :userId)")
+	void deleteAllImagesByUserId(@Param("userId") Long userId);
 
-    public Optional<Diary> findById(Long id) {
-        return Optional.ofNullable(em.find(Diary.class, id));
-    }
-
-    public Diary findByIdOrThrow(Long id) {
-        return findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다. ID=" + id));
-    }
-
-    public List<Diary> findAll() {
-        return em.createQuery("select d from Diary d", Diary.class).getResultList();
-    }
-
-    public List<Diary> findByTripId(Long tripId) {
-        return em.createQuery("select d from Diary d where d.trip.id = :tripId", Diary.class)
-                .setParameter("tripId", tripId)
-                .getResultList();
-    }
-
-    public List<Diary> findByUserId(Long userId) {
-        return em.createQuery("select d from Diary d where d.user.id = :userId", Diary.class)
-                .setParameter("userId", userId)
-                .getResultList();
-    }
-
-    public Long countByUserId(Long userId) {
-        return em.createQuery(
-                        "select count(d) from Diary d where d.user.id = :userId", Long.class)
-                .setParameter("userId", userId)
-                .getSingleResult();
-    }
-
-    public void delete(Diary diary) {
-        em.remove(diary);
-    }
-
-    // 회원 탈퇴용 정보 삭제
-    @Transactional
-    public void deleteAllByUserId(Long userId) {
-        List<Diary> diaries = findByUserId(userId);
-
-        for (Diary diary : diaries) {
-            // DiaryImage 먼저 삭제
-            em.createQuery("DELETE FROM DiaryImage d WHERE d.diary.id = :diaryId")
-                    .setParameter("diaryId", diary.getId())
-                    .executeUpdate();
-
-            // Diary 삭제
-            delete(diary);  // 기존에 정의한 delete(Diary diary) 활용
-        }
-    }
-
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("DELETE FROM Diary d WHERE d.user.id = :userId")
+	void deleteAllByUserId(@Param("userId") Long userId);
 }

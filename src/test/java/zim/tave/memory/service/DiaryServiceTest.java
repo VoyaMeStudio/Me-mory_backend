@@ -11,12 +11,18 @@ import static org.assertj.core.api.Assertions.*;
 
 import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.CreateDiaryRequest;
+import zim.tave.memory.dto.DiaryResponseDto;
 import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
+import zim.tave.memory.repository.DiaryImageRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.WeatherRepository;
+import zim.tave.memory.service.CountryService;
+import zim.tave.memory.service.VisitedCountryService;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -41,6 +47,15 @@ class DiaryServiceTest {
 
     @Mock
     private WeatherRepository weatherRepository;
+
+    @Mock
+    private DiaryImageRepository diaryImageRepository;
+
+    @Mock
+    private CountryService countryService;
+
+    @Mock
+    private VisitedCountryService visitedCountryService;
 
     @InjectMocks
     private DiaryService diaryService;
@@ -100,9 +115,20 @@ class DiaryServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        // defaults for country/emotion
+        Country country = new Country();
+        country.setCountryCode("KR");
+        country.setCountryName("대한민국");
+        when(countryService.findByCode("KR")).thenReturn(country);
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion));
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary saved = invocation.getArgument(0);
+            saved.setId(10L);
+            return saved;
+        });
 
         // when
-        Diary result = diaryService.createDiary(request);
+        DiaryResponseDto result = diaryService.createDiary(request);
 
         // then
         assertThat(result).isNotNull();
@@ -121,8 +147,8 @@ class DiaryServiceTest {
 
         // when & then
         assertThatThrownBy(() -> diaryService.createDiary(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("사용자를 찾을 수 없습니다.");
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
     }
 
     @Test
@@ -130,7 +156,6 @@ class DiaryServiceTest {
         // given
         UpdateDiaryOptionalFieldsRequest request = new UpdateDiaryOptionalFieldsRequest();
         request.setDetailedLocation("강남역 1번 출구");
-        request.setAudioUrl("audio/recording.mp3");
         request.setEmotionId(1L);
         request.setWeatherId(1L);
 
@@ -140,11 +165,10 @@ class DiaryServiceTest {
         when(weatherRepository.findById(1L)).thenReturn(Optional.of(weather));
 
         // when
-        diaryService.updateDiaryOptionalFields(1L, request);
+        diaryService.updateDiaryOptionalFields(1L, 1L, request);
 
         // then
         assertThat(diary.getDetailedLocation()).isEqualTo("강남역 1번 출구");
-        assertThat(diary.getAudioUrl()).isEqualTo("audio/recording.mp3");
         assertThat(diary.getEmotion()).isEqualTo(emotion);
         assertThat(diary.getWeather()).isEqualTo(weather);
     }
@@ -164,7 +188,7 @@ class DiaryServiceTest {
         diary.addDiaryImage(image2);
 
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
-        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        when(diaryImageRepository.findById(2L)).thenReturn(Optional.of(image2));
 
         // when
         diaryService.updateRepresentativeImage(1L, 2L);
@@ -178,18 +202,20 @@ class DiaryServiceTest {
     void 대표사진_변경_시_이미지_없음_예외_테스트() {
         // given
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+        when(diaryImageRepository.findById(999L)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> diaryService.updateRepresentativeImage(1L, 999L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이미지를 찾을 수 없습니다.");
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.IMAGE_NOT_FOUND);
     }
 
     @Test
     void 다이어리_삭제_테스트() {
         // given
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
-        when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList());
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
 
         // when
         diaryService.deleteDiary(1L);
@@ -206,7 +232,8 @@ class DiaryServiceTest {
         remainingDiary.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
         
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
-        when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList(remainingDiary));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(remainingDiary));
 
         // when
         diaryService.deleteDiary(1L);
@@ -220,27 +247,27 @@ class DiaryServiceTest {
     void 사용자별_다이어리_조회_테스트() {
         // given
         List<Diary> diaries = Arrays.asList(diary);
-        when(diaryRepository.findByUserId(1L)).thenReturn(diaries);
+        when(diaryRepository.findByUser_Id(1L)).thenReturn(diaries);
 
         // when
-        List<Diary> result = diaryService.findByUserId(1L);
+        List<DiaryResponseDto> result = diaryService.findByUserId(1L);
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(diary);
+        assertThat(result.get(0).getCity()).isEqualTo("서울");
     }
 
     @Test
     void 여행별_다이어리_조회_테스트() {
         // given
         List<Diary> diaries = Arrays.asList(diary);
-        when(diaryRepository.findByTripId(1L)).thenReturn(diaries);
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(diaries);
 
         // when
-        List<Diary> result = diaryService.findByTripId(1L);
+        List<DiaryResponseDto> result = diaryService.findByTripId(1L, 1L);
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(diary);
+        assertThat(result.get(0).getCity()).isEqualTo("서울");
     }
 } 

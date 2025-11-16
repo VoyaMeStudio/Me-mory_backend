@@ -52,17 +52,15 @@ class DiaryTest {
                                        LocalDateTime.now(), "테스트 내용");
         
         String detailedLocation = "강남역 1번 출구";
-        String audioUrl = "audio/recording.mp3";
         Emotion emotion = new Emotion("행복", "#FFD700");
         Weather weather = new Weather();
         weather.setName("맑음");
 
         // when
-        diary.setOptionalFields(detailedLocation, audioUrl, emotion, weather);
+        diary.setOptionalFields(detailedLocation, emotion, weather);
 
         // then
         assertThat(diary.getDetailedLocation()).isEqualTo(detailedLocation);
-        assertThat(diary.getAudioUrl()).isEqualTo(audioUrl);
         assertThat(diary.getEmotion()).isEqualTo(emotion);
         assertThat(diary.getWeather()).isEqualTo(weather);
     }
