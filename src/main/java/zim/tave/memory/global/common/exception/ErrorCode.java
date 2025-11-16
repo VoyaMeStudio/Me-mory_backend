@@ -22,6 +22,8 @@ public enum ErrorCode {
     DEFAULT_EMOTION_NOT_CONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "기본 감정 정보가 설정되어 있지 않습니다."),
     VISITED_COUNTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "방문 국가 기록을 찾을 수 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
+    TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 여행을 찾을 수 없습니다."),
+    TRIP_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 여행에 대한 수정 권한이 없습니다."),
     ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, "이미 로그아웃된 사용자입니다.");
 
 
