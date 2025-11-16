@@ -25,6 +25,7 @@ public class GlobalExceptionHandler {
 
         // ErrorCode -> ResponseCode 매핑
         ResponseCode responseCode = switch (errorCode) {
+            case INVALID_REQUEST -> ResponseCode.INVALID_REQUEST;
             case LOGIN_FAIL -> ResponseCode.LOGIN_FAIL;
             case USER_NOT_FOUND -> ResponseCode.USER_NOT_FOUND;
             case INVALID_TOKEN -> ResponseCode.INVALID_TOKEN;
@@ -34,7 +35,7 @@ public class GlobalExceptionHandler {
             case INVALID_COUNTRY_CODE -> ResponseCode.INVALID_COUNTRY_CODE;
             case INVALID_COUNTRY_EMOJI -> ResponseCode.INVALID_COUNTRY_EMOJI;
             case COUNTRY_NOT_FOUND -> ResponseCode.COUNTRY_NOT_FOUND;
-            case TRIP_NOT_FOUND -> ResponseCode.USER_NOT_FOUND;
+            case TRIP_NOT_FOUND -> ResponseCode.TRIP_NOT_FOUND;
             case EMOTION_NOT_FOUND -> ResponseCode.EMOTION_NOT_FOUND;
             case DEFAULT_EMOTION_NOT_CONFIGURED -> ResponseCode.DEFAULT_EMOTION_NOT_CONFIGURED;
             case VISITED_COUNTRY_NOT_FOUND -> ResponseCode.VISITED_COUNTRY_NOT_FOUND;

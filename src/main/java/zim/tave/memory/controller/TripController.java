@@ -57,6 +57,10 @@ public class TripController {
             return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
+        if (userDetails == null) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+
         Long userId = userDetails.getUserId();
         TripResponseDto dto = tripService.createTrip(request, userId);
 
