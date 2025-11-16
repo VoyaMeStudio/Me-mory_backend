@@ -23,6 +23,7 @@ public enum ResponseCode {
     ACCESS_DENIED(403, "접근 권한이 없습니다."),
     LOGIN_FAIL(401, "로그인 실패"),
     USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),
+    TRIP_NOT_FOUND(404, "여행을 찾을 수 없습니다."),
     COUNTRY_NOT_FOUND(404, "국가를 찾을 수 없습니다."),
     EMOTION_NOT_FOUND(404, "감정을 찾을 수 없습니다."),
     DEFAULT_EMOTION_NOT_CONFIGURED(500, "기본 감정 정보가 설정되어 있지 않습니다."),

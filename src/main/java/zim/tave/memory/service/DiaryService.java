@@ -7,13 +7,14 @@ import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.CreateDiaryRequest;
 import zim.tave.memory.dto.TripRepresentativeImageDto;
 import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.WeatherRepository;
 
-import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -70,10 +71,8 @@ public class DiaryService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         //여행 검증
-        Trip trip = tripRepository.findOne(request.getTripId());
-        if (trip == null) {
-            throw new IllegalArgumentException("여행을 찾을 수 없습니다. ID=" + request.getTripId());
-        }
+        Trip trip = tripRepository.findById(request.getTripId())
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
 
         //국가 검증
         Country country = countryService.findByCode(request.getCountryCode());
@@ -190,7 +189,8 @@ public class DiaryService {
         diaryRepository.delete(diary);
 
         // 다이어리 삭제 후 Trip의 종료 날짜를 업데이트
-        Trip trip = tripRepository.findOne(tripId);
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
         List<Diary> remaining = diaryRepository.findByTripId(tripId);
 
         if (remaining.isEmpty()) {

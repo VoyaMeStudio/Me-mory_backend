@@ -1,26 +1,31 @@
 package zim.tave.memory.service;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
-
 import zim.tave.memory.domain.Trip;
 import zim.tave.memory.domain.TripTheme;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.CreateTripRequest;
+import zim.tave.memory.dto.TripResponseDto;
 import zim.tave.memory.dto.UpdateTripRequest;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.TripThemeRepository;
+import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TripServiceTest {
@@ -30,6 +35,12 @@ class TripServiceTest {
 
     @Mock
     private TripThemeRepository tripThemeRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private DiaryRepository diaryRepository;
 
     @InjectMocks
     private TripService tripService;
@@ -64,9 +75,17 @@ class TripServiceTest {
         request.setThemeId(1L);
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> {
+            Trip t = invocation.getArgument(0);
+            t.setId(1L);
+            t.setStartDate(LocalDate.now());
+            t.setEndDate(LocalDate.now());
+            return t;
+        });
 
         // when
-        Trip result = tripService.createTrip(request, 1L);
+        TripResponseDto result = tripService.createTrip(request, 1L);
 
         // then
         assertThat(result).isNotNull();
@@ -84,8 +103,7 @@ class TripServiceTest {
 
         // when & then
         assertThatThrownBy(() -> tripService.createTrip(request, 1L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("테마를 찾을 수 없습니다.");
+                .isInstanceOf(CustomException.class);
     }
 
     @Test
@@ -95,13 +113,13 @@ class TripServiceTest {
         request.setTripName("수정된 여행명");
         request.setDescription("수정된 설명");
 
-        when(tripRepository.findOne(1L)).thenReturn(trip);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
         // when
         tripService.updateTrip(1L, request, 1L);
 
         // then
-        verify(tripRepository).findOne(1L);
+        verify(tripRepository).findById(1L);
         assertThat(trip.getTripName()).isEqualTo("수정된 여행명");
         assertThat(trip.getDescription()).isEqualTo("수정된 설명");
     }
@@ -116,7 +134,7 @@ class TripServiceTest {
         UpdateTripRequest request = new UpdateTripRequest();
         request.setThemeId(2L);
 
-        when(tripRepository.findOne(1L)).thenReturn(trip);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(tripThemeRepository.findById(2L)).thenReturn(Optional.of(newTheme));
 
         // when
@@ -127,17 +145,17 @@ class TripServiceTest {
     }
 
     @Test
-    void 사용자별_여행_조회_테스트() {
+    void 사용자별_여행_DTO_조회_테스트() {
         // given
         List<Trip> trips = Arrays.asList(trip);
-        when(tripRepository.findByUserId(1L)).thenReturn(trips);
+        when(tripRepository.findByUserIdWithDiaries(1L)).thenReturn(trips);
 
         // when
-        List<Trip> result = tripService.findByUserId(1L);
+        List<TripResponseDto> result = tripService.getTripsByUserId(1L);
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(trip);
+        assertThat(result.get(0).getTripName()).isEqualTo("제주도 여행");
     }
 
 //    @Test

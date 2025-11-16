@@ -1,68 +1,28 @@
 package zim.tave.memory.repository;
 
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import zim.tave.memory.domain.Trip;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
-public class TripRepository {
+public interface TripRepository extends JpaRepository<Trip, Long> {
 
-    private final EntityManager em;
+	List<Trip> findByUserId(Long userId);
 
-    public void save(Trip trip) {
-        if (trip.getId() == null) {
-            em.persist(trip);
-        } else {
-            em.merge(trip);
-        }
-    }
+	@Query("select distinct t from Trip t left join fetch t.diaries where t.user.id = :userId")
+	List<Trip> findByUserIdWithDiaries(@Param("userId") Long userId);
 
-    public Trip findOne(Long id) {
-        return em.find(Trip.class, id);
-    }
+	@Query("select t from Trip t where size(t.diaries) > 0")
+	List<Trip> findAllWithDiaries();
 
-    public List<Trip> findAll() {
-        return em.createQuery("select t from Trip t", Trip.class).getResultList();
-    }
+	@Modifying
+	@Query("update Trip t set t.endDate = (select cast(max(d.createdAt) as date) from Diary d where d.trip.id = :tripId) where t.id = :tripId")
+	void updateTripEndDate(@Param("tripId") Long tripId);
 
-    public List<Trip> findByUserId(Long userId) {
-        return em.createQuery("select t from Trip t where t.user.id = :userId", Trip.class)
-                .setParameter("userId", userId)
-                .getResultList();
-    }
-
-    // 다이어리가 하나 이상 있는 모든 여행 조회
-    public List<Trip> findAllWithDiaries() {
-        return em.createQuery("select t from Trip t where size(t.diaries) > 0", Trip.class)
-                .getResultList();
-    }
-
-    // 특정 사용자 모든 여행 조회 (없으면 null)
-    public List<Trip> findByUserIdWithDiaries(Long userId) {
-        return em.createQuery(
-                        "select distinct t from Trip t " +
-                                "left join fetch t.diaries " +
-                                "where t.user.id = :userId", Trip.class)
-                .setParameter("userId", userId)
-                .getResultList();
-    }
-
-    // 여행의 마지막 다이어리 날짜를 기준으로 종료 날짜 업데이트
-    public void updateTripEndDate(Long tripId) {
-        em.createQuery("UPDATE Trip t SET t.endDate = (SELECT CAST(MAX(d.createdAt) AS date) FROM Diary d WHERE d.trip.id = :tripId) WHERE t.id = :tripId")
-                .setParameter("tripId", tripId)
-                .executeUpdate();
-    }
-
-    // 여행의 마지막 다이어리 날짜 조회
-    public LocalDate findLastDiaryDateByTripId(Long tripId) {
-        return em.createQuery("SELECT CAST(MAX(d.createdAt) AS date) FROM Diary d WHERE d.trip.id = :tripId", LocalDate.class)
-                .setParameter("tripId", tripId)
-                .getSingleResult();
-    }
+	@Query("select cast(max(d.createdAt) as date) from Diary d where d.trip.id = :tripId")
+	LocalDate findLastDiaryDateByTripId(@Param("tripId") Long tripId);
 }
