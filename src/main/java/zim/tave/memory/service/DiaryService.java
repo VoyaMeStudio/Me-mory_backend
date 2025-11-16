@@ -144,6 +144,9 @@ public class DiaryService {
 
     @Transactional
     public void updateRepresentativeImage(Long diaryId, Long imageId) {
+		if (imageId == null) {
+			throw new CustomException(ErrorCode.IMAGE_ID_REQUIRED);
+		}
 		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
 		checkDiaryOwnership(diary.getUser().getId(), diary); // ownership check defensive
         diary.getDiaryImages().forEach(img -> img.setRepresentative(false));

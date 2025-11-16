@@ -82,12 +82,6 @@ public class DiaryController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
             @RequestBody UpdateRepresentativeImageRequest request) {
-        if (request.getImageId() == null) {
-			throw new zim.tave.memory.global.common.exception.CustomException(
-					zim.tave.memory.global.common.exception.ErrorCode.IMAGE_ID_REQUIRED
-			);
-        }
-
         Long userId = userDetails.getUserId();
         diaryService.updateRepresentativeImage(diaryId, request.getImageId());
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));

@@ -34,7 +34,10 @@ public enum ErrorCode {
     IMAGE_TRIP_MISMATCH(HttpStatus.BAD_REQUEST, "해당 이미지는 이 여행에 속하지 않습니다."),
     IMAGE_NOT_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "대표 이미지가 아닙니다."),
     TRIP_THEME_NOT_FOUND(HttpStatus.NOT_FOUND, "여행 테마를 찾을 수 없습니다."),
-    WEATHER_NOT_FOUND(HttpStatus.NOT_FOUND, "날씨를 찾을 수 없습니다.");
+    WEATHER_NOT_FOUND(HttpStatus.NOT_FOUND, "날씨를 찾을 수 없습니다."),
+    TRIP_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "여행명은 필수입니다."),
+    TRIP_NAME_TOO_LONG(HttpStatus.BAD_REQUEST, "여행명은 최대 14자입니다."),
+    TRIP_DESCRIPTION_TOO_LONG(HttpStatus.BAD_REQUEST, "여행 설명은 최대 56자입니다.");
 
 
 

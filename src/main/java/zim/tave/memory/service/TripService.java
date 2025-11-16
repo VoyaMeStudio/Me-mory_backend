@@ -30,6 +30,16 @@ public class TripService {
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
+        // 입력 검증
+        if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.TRIP_NAME_REQUIRED);
+        }
+        if (request.getTripName().trim().length() > 14) {
+            throw new CustomException(ErrorCode.TRIP_NAME_TOO_LONG);
+        }
+        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
+            throw new CustomException(ErrorCode.TRIP_DESCRIPTION_TOO_LONG);
+        }
         // 테마 처리: 테마가 선택되지 않으면 기본 테마(id=1)를 사용
         Long themeId = request.getThemeId();
         if (themeId == null) {
@@ -60,6 +70,18 @@ public class TripService {
 
         if (!findTrip.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+
+        // 입력 검증
+        if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (request.getStartDate() != null && request.getEndDate() != null
+                && request.getStartDate().isAfter(request.getEndDate())) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
 
         if (request.getTripName() != null) {
@@ -131,6 +153,31 @@ public class TripService {
         }
 
         trip.setRepresentativeImageUrl(diaryImage.getImageUrl());
+    }
+
+    // 컨트롤러 단순화용: 소유권 검증
+    public void validateOwnership(Long tripId, Long userId) {
+        Trip trip = findOne(tripId);
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+    }
+
+    public TripResponseDto getTripDtoWithOwnershipCheck(Long tripId, Long userId) {
+        Trip trip = findOne(tripId);
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+        return buildTripResponseDto(trip);
+    }
+
+    @Transactional
+    public void updateTripRepresentativeImageWithOwnershipCheck(Long tripId, Long imageId, Long userId) {
+        if (imageId == null) {
+            throw new CustomException(ErrorCode.IMAGE_ID_REQUIRED);
+        }
+        validateOwnership(tripId, userId);
+        updateTripRepresentativeImage(tripId, imageId);
     }
 
     // DiaryImage ID로 DiaryImage 찾기

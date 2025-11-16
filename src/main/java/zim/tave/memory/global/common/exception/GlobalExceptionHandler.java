@@ -51,6 +51,9 @@ public class GlobalExceptionHandler {
             case IMAGE_NOT_REPRESENTATIVE -> ResponseCode.IMAGE_NOT_REPRESENTATIVE;
             case TRIP_THEME_NOT_FOUND -> ResponseCode.TRIP_THEME_NOT_FOUND;
             case WEATHER_NOT_FOUND -> ResponseCode.WEATHER_NOT_FOUND;
+            case TRIP_NAME_REQUIRED -> ResponseCode.TRIP_NAME_REQUIRED;
+            case TRIP_NAME_TOO_LONG -> ResponseCode.TRIP_NAME_TOO_LONG;
+            case TRIP_DESCRIPTION_TOO_LONG -> ResponseCode.TRIP_DESCRIPTION_TOO_LONG;
             default -> ResponseCode.SERVER_ERROR;
         };
 

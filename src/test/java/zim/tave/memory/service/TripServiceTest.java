@@ -13,7 +13,9 @@ import zim.tave.memory.dto.CreateTripRequest;
 import zim.tave.memory.dto.TripResponseDto;
 import zim.tave.memory.dto.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
+import zim.tave.memory.repository.DiaryImageRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.TripThemeRepository;
 import zim.tave.memory.repository.UserRepository;
@@ -41,6 +43,9 @@ class TripServiceTest {
 
     @Mock
     private DiaryRepository diaryRepository;
+
+    @Mock
+    private DiaryImageRepository diaryImageRepository;
 
     @InjectMocks
     private TripService tripService;
@@ -107,6 +112,17 @@ class TripServiceTest {
     }
 
     @Test
+    void 여행_생성_검증_실패_여행명_누락() {
+        // given
+        CreateTripRequest request = new CreateTripRequest();
+        request.setTripName("   ");
+        // when & then
+        assertThatThrownBy(() -> tripService.createTrip(request, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TRIP_NAME_REQUIRED);
+    }
+
+    @Test
     void 여행_수정_테스트() {
         // given
         UpdateTripRequest request = new UpdateTripRequest();
@@ -145,6 +161,21 @@ class TripServiceTest {
     }
 
     @Test
+    void 여행_수정_검증_실패_길이초과_및_날짜역전() {
+        // given
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setTripName("이름이너무너무길어서열네자를초과합니다");
+        request.setDescription("x".repeat(57));
+        request.setStartDate(LocalDate.of(2024, 2, 1));
+        request.setEndDate(LocalDate.of(2024, 1, 1));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        // when & then
+        assertThatThrownBy(() -> tripService.updateTrip(1L, request, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.VALIDATION_ERROR);
+    }
+
+    @Test
     void 사용자별_여행_DTO_조회_테스트() {
         // given
         List<Trip> trips = Arrays.asList(trip);
@@ -156,6 +187,27 @@ class TripServiceTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTripName()).isEqualTo("제주도 여행");
+    }
+
+    @Test
+    void 소유권_검증_실패시_FORBIDDEN() {
+        // given
+        User other = new User();
+        other.setId(2L);
+        trip.setUser(other);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        // when & then
+        assertThatThrownBy(() -> tripService.getTripDtoWithOwnershipCheck(1L, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TRIP_UPDATE_FORBIDDEN);
+    }
+
+    @Test
+    void 여행_대표이미지_설정_소유권_및_imageId_null_검증() {
+        // imageId null
+        assertThatThrownBy(() -> tripService.updateTripRepresentativeImageWithOwnershipCheck(1L, null, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.IMAGE_ID_REQUIRED);
     }
 
 //    @Test
