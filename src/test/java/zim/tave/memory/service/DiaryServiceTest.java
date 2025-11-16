@@ -160,6 +160,7 @@ class DiaryServiceTest {
         request.setWeatherId(1L);
 
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion));
         when(weatherRepository.findById(1L)).thenReturn(Optional.of(weather));
 

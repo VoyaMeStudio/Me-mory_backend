@@ -36,6 +36,8 @@ public class User {
     private boolean status;
     private LocalDate birth;
     private String nationality;
+    @Column(nullable = false)
+    private boolean isRegistered; // 회원가입 완료 여 (true = 가입 완료)
 
     //마이페이지 Statistics 정보
     private Long diaryCount; //일기 수
