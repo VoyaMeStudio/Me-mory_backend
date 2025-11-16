@@ -99,7 +99,7 @@ class DiaryServiceTest {
         request.setImages(Arrays.asList(imageInfo1, imageInfo2));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(tripRepository.findOne(1L)).thenReturn(trip);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
         // when
         Diary result = diaryService.createDiary(request);
@@ -135,6 +135,7 @@ class DiaryServiceTest {
         request.setWeatherId(1L);
 
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion));
         when(weatherRepository.findById(1L)).thenReturn(Optional.of(weather));
 
@@ -163,6 +164,7 @@ class DiaryServiceTest {
         diary.addDiaryImage(image2);
 
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
         // when
         diaryService.updateRepresentativeImage(1L, 2L);

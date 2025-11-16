@@ -18,6 +18,7 @@ import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.TripThemeRepository;
+import zim.tave.memory.dto.TripResponseDto;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -77,9 +78,9 @@ class TripDiaryIntegrationTest {
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
 
-        Trip createdTrip = tripService.createTrip(tripRequest, 1L);
+        TripResponseDto createdTrip = tripService.createTrip(tripRequest, 1L);
         assertThat(createdTrip.getStartDate()).isEqualTo(LocalDate.now());
-        assertThat(createdTrip.getEndDate()).isNull(); // 아직 다이어리가 없음
+        assertThat(createdTrip.getEndDate()).isEqualTo(LocalDate.now());
 
         // when - 다이어리 생성
         CreateDiaryRequest diaryRequest = new CreateDiaryRequest();
@@ -103,14 +104,14 @@ class TripDiaryIntegrationTest {
         diaryRequest.setImages(Arrays.asList(imageInfo1, imageInfo2));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(tripRepository.findOne(1L)).thenReturn(createdTrip);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
         Diary createdDiary = diaryService.createDiary(diaryRequest);
 
         // then
-        assertThat(createdDiary.getTrip()).isEqualTo(createdTrip);
-        assertThat(createdTrip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 15));
-        assertThat(createdTrip.getDiaries()).hasSize(1);
+        assertThat(createdDiary.getTrip()).isEqualTo(trip);
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 15));
+        assertThat(trip.getDiaries()).hasSize(1);
     }
 
     @Test
@@ -118,7 +119,7 @@ class TripDiaryIntegrationTest {
         // given - 여행과 다이어리들 생성
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(tripRepository.findOne(1L)).thenReturn(trip);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
         // 첫 번째 다이어리 생성
         CreateDiaryRequest diaryRequest1 = new CreateDiaryRequest();
@@ -159,7 +160,7 @@ class TripDiaryIntegrationTest {
         // given
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(tripRepository.findOne(1L)).thenReturn(trip);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
         CreateDiaryRequest diaryRequest = new CreateDiaryRequest();
         diaryRequest.setUserId(1L);
