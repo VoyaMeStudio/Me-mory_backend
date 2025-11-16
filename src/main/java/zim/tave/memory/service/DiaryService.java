@@ -112,8 +112,23 @@ public class DiaryService {
     }
 
     @Transactional
-    public void updateDiaryOptionalFields(Long diaryId, UpdateDiaryOptionalFieldsRequest request) {
+    public void updateDiaryOptionalFields(Long userId, Long diaryId, UpdateDiaryOptionalFieldsRequest request) {
 		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+        checkDiaryOwnership(userId, diary);
+
+        // 장소명(도시)
+        if (request.getCity() != null && !request.getCity().isBlank()) {
+            diary.setCity(request.getCity());
+        }
+        // 상세 위치
+        if (request.getDetailedLocation() != null) {
+            diary.setDetailedLocation(request.getDetailedLocation());
+        }
+        // 기록(본문)
+        if (request.getContent() != null) {
+            diary.setContent(request.getContent());
+        }
+
         Emotion emotion = null;
         if (request.getEmotionId() != null) {
             emotion = emotionRepository.findById(request.getEmotionId())
@@ -124,7 +139,7 @@ public class DiaryService {
             weather = weatherRepository.findById(request.getWeatherId())
                     .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
         }
-        diary.setOptionalFields(request.getDetailedLocation(), emotion, weather);
+        diary.setOptionalFields(diary.getDetailedLocation(), emotion, weather);
     }
 
     @Transactional

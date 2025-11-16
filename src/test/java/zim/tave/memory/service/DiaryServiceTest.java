@@ -164,7 +164,7 @@ class DiaryServiceTest {
         when(weatherRepository.findById(1L)).thenReturn(Optional.of(weather));
 
         // when
-        diaryService.updateDiaryOptionalFields(1L, request);
+        diaryService.updateDiaryOptionalFields(1L, 1L, request);
 
         // then
         assertThat(diary.getDetailedLocation()).isEqualTo("강남역 1번 출구");

@@ -64,7 +64,7 @@ public class DiaryController {
             @RequestBody UpdateDiaryOptionalFieldsRequest request) {
 		Long userId = userDetails.getUserId();
 		// 소유권 검증은 서비스에서 수행
-        diaryService.updateDiaryOptionalFields(diaryId, request);
+        diaryService.updateDiaryOptionalFields(userId, diaryId, request);
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 
