@@ -28,13 +28,14 @@ public class SettingController {
     @Operation(summary = "회원탈퇴", description = "사용자 계정을 삭제")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원탈퇴 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자입니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류, 존재하지 않는 사용자 등", content = @Content())
     })
-    @DeleteMapping()
-    public ResponseEntity<String> delete(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    @DeleteMapping("/users/me")
+    public ResponseEntity<ApiResponseDto<Void>> deleteAccount(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getUserId();
         settingService.deleteAccount(userId);
-        return ResponseEntity.ok("회원탈퇴 완료");
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.USER_DELETE_SUCCESS, null));
     }
 
     @Operation(summary = "회원 정보 수정", description = "로그인한 사용자의 이름, 생년월일, 국적 정보를 수정합니다.")

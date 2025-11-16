@@ -15,6 +15,7 @@ public enum ResponseCode {
     JOIN_SUCCESS(200, "회원가입에 성공하였습니다."),
     VISITED_COUNTRIES_FETCH_SUCCESS(200, "방문한 국가 목록을 성공적으로 조회하였습니다."),
     USER_UPDATE_SUCCESS(200, "회원 정보가 성공적으로 수정되었습니다."),
+    USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),

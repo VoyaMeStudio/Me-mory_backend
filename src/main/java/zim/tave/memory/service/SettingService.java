@@ -26,15 +26,23 @@ public class SettingService {
 
     @Transactional
     public void deleteAccount(Long userId) {
-        // 연관 데이터 먼저 삭제
-        visitedCountryRepository.deleteAllByUserId(userId);
-		diaryRepository.deleteAllImagesByUserId(userId);
-		diaryRepository.deleteAllByUserId(userId);
+        try {
+            //사용자 존재 여부 확인
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 사용자 삭제
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        userRepository.delete(user);
+            // 연관 데이터 삭제
+            visitedCountryRepository.deleteAllByUserId(userId);
+            diaryRepository.deleteAllImagesByUserId(userId);
+            diaryRepository.deleteAllByUserId(userId);
+
+            userRepository.delete(user);
+
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     public UserResponseDto updateUserInfo(Long userId, UpdateUserRequestDto requestDto) {
