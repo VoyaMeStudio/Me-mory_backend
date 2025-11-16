@@ -45,6 +45,7 @@ public class LoginService {
         newUser.setProfileImageUrl(kakaoUserInfo.getProfileImageUrl());
         newUser.setCreatedAt(LocalDate.now());
         newUser.setStatus(true);
+        newUser.setRegistered(false);
 
         // 기본값 세팅 (join에서 업데이트됨)
         newUser.setSurName(null);

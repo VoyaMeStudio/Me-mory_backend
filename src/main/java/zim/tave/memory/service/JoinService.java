@@ -23,6 +23,10 @@ public class JoinService {
         User user = userRepository.findByKakaoId(requestDto.getKakaoId())
                 .orElseThrow(() -> new CustomException(ErrorCode.KAKAO_LOGIN_REQUIRED));
 
+        if (user.isRegistered()) {
+            throw new CustomException(ErrorCode.ALREADY_JOINED);
+        }
+
         user.setKakaoId(requestDto.getKakaoId());
         user.setProfileImageUrl(requestDto.getProfileImageUrl());
         user.setSurName(requestDto.getSurName());
