@@ -54,6 +54,9 @@ public class GlobalExceptionHandler {
             case TRIP_NAME_REQUIRED -> ResponseCode.TRIP_NAME_REQUIRED;
             case TRIP_NAME_TOO_LONG -> ResponseCode.TRIP_NAME_TOO_LONG;
             case TRIP_DESCRIPTION_TOO_LONG -> ResponseCode.TRIP_DESCRIPTION_TOO_LONG;
+            case KAKAO_LOGIN_REQUIRED -> ResponseCode.KAKAO_LOGIN_REQUIRED;
+            case INCOMPLETE_USER_INFO -> ResponseCode.INCOMPLETE_USER_INFO;
+            case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
             default -> ResponseCode.SERVER_ERROR;
         };
 

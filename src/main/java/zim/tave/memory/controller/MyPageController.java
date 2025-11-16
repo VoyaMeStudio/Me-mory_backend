@@ -20,7 +20,7 @@ import zim.tave.memory.service.MyPageService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/mypage")
+@RequestMapping("/api/users/me")
 @Tag(name = "MyPage-Controller", description = "마이페이지 조회")
 public class MyPageController {
 
