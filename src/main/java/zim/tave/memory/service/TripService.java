@@ -3,16 +3,16 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zim.tave.memory.domain.*;
+import zim.tave.memory.domain.DiaryImage;
+import zim.tave.memory.domain.Trip;
+import zim.tave.memory.domain.TripTheme;
+import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.CreateTripRequest;
 import zim.tave.memory.dto.TripResponseDto;
 import zim.tave.memory.dto.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.DiaryRepository;
-import zim.tave.memory.repository.TripRepository;
-import zim.tave.memory.repository.TripThemeRepository;
-import zim.tave.memory.repository.UserRepository;
+import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +25,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripThemeRepository tripThemeRepository;
     private final DiaryRepository diaryRepository;
+	private final DiaryImageRepository diaryImageRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -36,7 +37,7 @@ public class TripService {
         }
 
         TripTheme theme = tripThemeRepository.findById(themeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -71,7 +72,7 @@ public class TripService {
 
         if (request.getThemeId() != null) {
             TripTheme theme = tripThemeRepository.findById(request.getThemeId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
             findTrip.setTripTheme(theme);
         }
 
@@ -122,11 +123,11 @@ public class TripService {
         DiaryImage diaryImage = findDiaryImageById(imageId);
 
         if (!diaryImage.getDiary().getTrip().getId().equals(tripId)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+            throw new CustomException(ErrorCode.IMAGE_TRIP_MISMATCH);
         }
 
         if (!diaryImage.isRepresentative()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+            throw new CustomException(ErrorCode.IMAGE_NOT_REPRESENTATIVE);
         }
 
         trip.setRepresentativeImageUrl(diaryImage.getImageUrl());
@@ -134,12 +135,8 @@ public class TripService {
 
     // DiaryImage ID로 DiaryImage 찾기
     private DiaryImage findDiaryImageById(Long imageId) {
-        List<Diary> allDiaries = diaryRepository.findAll();
-        return allDiaries.stream()
-                .flatMap(diary -> diary.getDiaryImages().stream())
-                .filter(image -> image.getId().equals(imageId))
-                .findFirst()
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		return diaryImageRepository.findById(imageId)
+				.orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
     }
 
     public List<TripResponseDto> getTripsByUserId(Long userId) {

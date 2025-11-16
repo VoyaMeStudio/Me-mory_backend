@@ -5,15 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.CreateDiaryRequest;
+import zim.tave.memory.dto.DiaryResponseDto;
 import zim.tave.memory.dto.TripRepresentativeImageDto;
 import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.DiaryRepository;
-import zim.tave.memory.repository.TripRepository;
-import zim.tave.memory.repository.UserRepository;
-import zim.tave.memory.repository.EmotionRepository;
-import zim.tave.memory.repository.WeatherRepository;
+import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,25 +27,26 @@ public class DiaryService {
     private final TripRepository tripRepository;
     private final EmotionRepository emotionRepository;
     private final WeatherRepository weatherRepository;
+	private final DiaryImageRepository diaryImageRepository;
     private final CountryService countryService;
     private final VisitedCountryService visitedCountryService;
 
     // 이미지 검증&저장
     private void validateAndAttachImages(Diary diary, List<CreateDiaryRequest.DiaryImageInfo> images) {
         if (images == null || images.size() != 2) {
-            throw new IllegalArgumentException("이미지는 반드시 2장이어야 합니다. (FRONT/BACK)");
+			throw new CustomException(ErrorCode.IMAGE_COUNT_INVALID);
         }
 
         boolean hasFront = images.stream().anyMatch(img -> img.getCameraType() == DiaryImage.CameraType.FRONT);
         boolean hasBack = images.stream().anyMatch(img -> img.getCameraType() == DiaryImage.CameraType.BACK);
 
         if (!hasFront || !hasBack) {
-            throw new IllegalArgumentException("FRONT/BACK 카메라 사진이 모두 필요합니다.");
+			throw new CustomException(ErrorCode.CAMERA_TYPES_REQUIRED);
         }
 
         long representativeCount = images.stream().filter(CreateDiaryRequest.DiaryImageInfo::isRepresentative).count();
         if (representativeCount != 1) {
-            throw new IllegalArgumentException("대표 이미지는 정확히 1장이어야 합니다.");
+			throw new CustomException(ErrorCode.REPRESENTATIVE_IMAGE_REQUIRED);
         }
 
         for (int i = 0; i < images.size(); i++) {
@@ -64,11 +62,11 @@ public class DiaryService {
     }
 
     @Transactional
-    public Diary createDiary(CreateDiaryRequest request) {
+	public DiaryResponseDto createDiary(CreateDiaryRequest request) {
 
         // 사용자 검증
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         //여행 검증
         Trip trip = tripRepository.findById(request.getTripId())
@@ -76,20 +74,18 @@ public class DiaryService {
 
         //국가 검증
         Country country = countryService.findByCode(request.getCountryCode());
-        if (country == null) {
-            throw new IllegalArgumentException("유효하지 않은 국가 코드입니다. CODE=" + request.getCountryCode());
-        }
+        if (country == null) throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
 
         // 감정 검증 (기본 = 1)
         Emotion emotion = emotionRepository.findById(
                         Optional.ofNullable(request.getEmotionId()).orElse(1L))
-                .orElseThrow(() -> new IllegalArgumentException("감정을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.EMOTION_NOT_FOUND));
 
         //날씨 검증
         Weather weather = null;
         if (request.getWeatherId() != null) {
             weather = weatherRepository.findById(request.getWeatherId())
-                    .orElseThrow(() -> new IllegalArgumentException("날씨를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
         }
 
         // Diary 생성
@@ -101,9 +97,9 @@ public class DiaryService {
 
         //선택 필드 설정
         diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), emotion, weather);
-        diaryRepository.save(diary);
+		Diary saved = diaryRepository.save(diary);
 
-        trip.updateEndDate(diary.getCreatedAt().toLocalDate());
+		trip.updateEndDate(saved.getCreatedAt().toLocalDate());
 
         // VisitedCountry 등록
         try {
@@ -112,53 +108,60 @@ public class DiaryService {
             System.err.println("VisitedCountry 등록 실패: " + e.getMessage());
         }
 
-        return diary;
+		return convertToDto(saved);
     }
 
     @Transactional
     public void updateDiaryOptionalFields(Long diaryId, UpdateDiaryOptionalFieldsRequest request) {
-        Diary diary = diaryRepository.findByIdOrThrow(diaryId);
+		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
         Emotion emotion = null;
         if (request.getEmotionId() != null) {
             emotion = emotionRepository.findById(request.getEmotionId())
-                    .orElseThrow(() -> new IllegalArgumentException("감정을 찾을 수 없습니다."));
+					.orElseThrow(() -> new CustomException(ErrorCode.EMOTION_NOT_FOUND));
         }
         Weather weather = null;
         if (request.getWeatherId() != null) {
             weather = weatherRepository.findById(request.getWeatherId())
-                    .orElseThrow(() -> new IllegalArgumentException("날씨를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
         }
         diary.setOptionalFields(request.getDetailedLocation(), request.getAudioUrl(), emotion, weather);
     }
 
     @Transactional
     public void updateRepresentativeImage(Long diaryId, Long imageId) {
-        Diary diary = diaryRepository.findByIdOrThrow(diaryId);
+		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+		checkDiaryOwnership(diary.getUser().getId(), diary); // ownership check defensive
         diary.getDiaryImages().forEach(img -> img.setRepresentative(false));
 
-        DiaryImage selected = diary.getDiaryImages().stream()
-                .filter(img -> img.getId().equals(imageId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID=" + imageId));
+        DiaryImage selected = diaryImageRepository.findById(imageId)
+                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 
         selected.setRepresentative(true);
     }
 
-    public Diary findOne(Long diaryId) {
-        return diaryRepository.findByIdOrThrow(diaryId);
+	public DiaryResponseDto findOne(Long diaryId, Long userId) {
+		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+		checkDiaryOwnership(userId, diary);
+		return convertToDto(diary);
     }
 
-    public List<Diary> findByTripId(Long tripId) {
-        return diaryRepository.findByTripId(tripId);
+	public List<DiaryResponseDto> findByTripId(Long tripId, Long userId) {
+		List<Diary> diaries = diaryRepository.findByTrip_Id(tripId);
+		if (!diaries.isEmpty() && !diaries.get(0).getUser().getId().equals(userId)) {
+			throw new CustomException(ErrorCode.ACCESS_DENIED);
+		}
+		return diaries.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    public List<Diary> findByUserId(Long userId) {
-        return diaryRepository.findByUserId(userId);
+	public List<DiaryResponseDto> findByUserId(Long userId) {
+		return diaryRepository.findByUser_Id(userId).stream()
+				.map(this::convertToDto)
+				.collect(Collectors.toList());
     }
 
     // 여행별 대표사진 조회
     public List<TripRepresentativeImageDto> getRepresentativeImagesByTripId(Long tripId) {
-        List<Diary> diaries = diaryRepository.findByTripId(tripId);
+		List<Diary> diaries = diaryRepository.findByTrip_Id(tripId);
 
         return diaries.stream()
                 .filter(diary -> diary.getDiaryImages() != null && !diary.getDiaryImages().isEmpty())
@@ -184,14 +187,15 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(Long diaryId) {
-        Diary diary = diaryRepository.findByIdOrThrow(diaryId);
+		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+		checkDiaryOwnership(diary.getUser().getId(), diary);
         Long tripId = diary.getTrip().getId();
-        diaryRepository.delete(diary);
+		diaryRepository.delete(diary);
 
         // 다이어리 삭제 후 Trip의 종료 날짜를 업데이트
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
-        List<Diary> remaining = diaryRepository.findByTripId(tripId);
+		List<Diary> remaining = diaryRepository.findByTrip_Id(tripId);
 
         if (remaining.isEmpty()) {
             trip.setEndDate(null);
@@ -204,13 +208,48 @@ public class DiaryService {
         }
     }
 
-    // DiaryImage ID로 DiaryImage 찾기
-    public DiaryImage findDiaryImageById(Long imageId) {
-        List<Diary> allDiaries = diaryRepository.findAll();
-        return allDiaries.stream()
-                .flatMap(diary -> diary.getDiaryImages().stream())
-                .filter(image -> image.getId().equals(imageId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID: " + imageId));
+	private void checkDiaryOwnership(Long userId, Diary diary) {
+		if (!diary.getUser().getId().equals(userId)) {
+			throw new CustomException(ErrorCode.ACCESS_DENIED);
+		}
     }
+
+	private DiaryResponseDto convertToDto(Diary diary) {
+		DiaryResponseDto.DiaryResponseDtoBuilder builder = DiaryResponseDto.builder()
+				.id(diary.getId())
+				.city(diary.getCity())
+				.detailedLocation(diary.getDetailedLocation())
+				.dateTime(diary.getDateTime())
+				.createdAt(diary.getCreatedAt())
+				.content(diary.getContent())
+				.audioUrl(diary.getAudioUrl())
+				.tripId(diary.getTrip() != null ? diary.getTrip().getId() : null)
+				.tripName(diary.getTrip() != null ? diary.getTrip().getTripName() : null);
+
+		if (diary.getCountry() != null) {
+			builder.countryName(diary.getCountry().getCountryName())
+					.countryEmoji(diary.getCountry().getEmoji());
+		}
+		if (diary.getEmotion() != null) {
+			builder.emotionColor(diary.getEmotion().getColorCode())
+					.emotionName(diary.getEmotion().getName());
+		}
+		if (diary.getWeather() != null) {
+			builder.weather(diary.getWeather().getName())
+					.weatherIconUrl(diary.getWeather().getIconUrl());
+		}
+
+		List<DiaryResponseDto.DiaryImageDto> images = diary.getDiaryImages().stream()
+				.map(img -> DiaryResponseDto.DiaryImageDto.builder()
+						.id(img.getId())
+						.imageUrl(img.getImageUrl())
+						.cameraType(img.getCameraType().name())
+						.isRepresentative(img.isRepresentative())
+						.imageOrder(img.getImageOrder())
+						.build())
+				.collect(Collectors.toList());
+
+		builder.images(images);
+		return builder.build();
+	}
 }
