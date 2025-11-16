@@ -13,20 +13,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.domain.Trip;
-import zim.tave.memory.dto.CreateTripRequest;
-import zim.tave.memory.dto.TripRepresentativeImageDto;
-import zim.tave.memory.dto.TripResponseDto;
-import zim.tave.memory.dto.UpdateRepresentativeImageRequest;
-import zim.tave.memory.dto.UpdateTripRequest;
+import zim.tave.memory.dto.*;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.DiaryService;
 import zim.tave.memory.service.TripService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/trips")
+@RequestMapping("/api/users/me/trips")
 @RequiredArgsConstructor
 @Tag(name = "Trip", description = "여행 관리 API")
 public class TripController {
@@ -37,34 +36,39 @@ public class TripController {
     @PostMapping
     @Operation(summary = "여행 생성", description = "새로운 여행을 생성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "여행 생성 성공",
+            @ApiResponse(responseCode = "201", description = "여행 생성 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 누락 또는 만료)", content = @Content()),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content)
     })
-    public ResponseEntity<TripResponseDto> createTrip(
+    public ResponseEntity<ApiResponseDto<TripResponseDto>> createTrip(
             @RequestBody CreateTripRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         // DTO 검증
         if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
         if (request.getTripName().trim().length() > 14) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
+        }
+
+        if (userDetails == null) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
         }
 
         Long userId = userDetails.getUserId();
-        Trip trip = tripService.createTrip(request, userId);
+        TripResponseDto dto = tripService.createTrip(request, userId);
 
-        return ResponseEntity.ok(TripResponseDto.from(trip));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDto.success(ResponseCode.CREATED, dto));
     }
 
-    @PutMapping("/{tripId}")
+    @PatchMapping("/{tripId}")
     @Operation(summary = "여행 수정", description = "기존 여행 정보를 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 수정 성공"),
@@ -73,29 +77,29 @@ public class TripController {
             @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
             @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
-    public ResponseEntity<Void> updateTrip(
+    public ResponseEntity<ApiResponseDto<Void>> updateTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateTripRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         // DTO 검증
         if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
         // 날짜 순서 검증: startDate가 endDate보다 늦으면 안됨
         if (request.getStartDate() != null && request.getEndDate() != null &&
             request.getStartDate().isAfter(request.getEndDate())) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
         Long userId = userDetails.getUserId();
 
         tripService.updateTrip(tripId, request, userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 
     @GetMapping
@@ -106,16 +110,13 @@ public class TripController {
             @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
             @ApiResponse(responseCode = "404", description = "해당 사용자의 여행 없음", content = @Content)
     })
-    public ResponseEntity<List<TripResponseDto>> getAllTrips(
+    public ResponseEntity<ApiResponseDto<List<TripResponseDto>>> getAllTrips(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getUserId();
-        List<Trip> trips = tripService.findByUserId(userId);
+        List<TripResponseDto> dtos = tripService.getTripsByUserId(userId);
 
-        List<TripResponseDto> tripDtos = trips.stream()
-                .map(TripResponseDto::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tripDtos);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, dtos));
     }
 
     @GetMapping("/{tripId}")
@@ -127,7 +128,7 @@ public class TripController {
             @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
             @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
-    public ResponseEntity<TripResponseDto> getTrip(
+    public ResponseEntity<ApiResponseDto<TripResponseDto>> getTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -135,25 +136,9 @@ public class TripController {
         Trip trip = tripService.findOne(tripId);
 
         if (!trip.getUser().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
         }
-        return ResponseEntity.ok(TripResponseDto.from(trip));
-    }
-
-    @GetMapping("/user/{userId}")
-    @Operation(summary = "사용자별 여행 목록 조회", description = "특정 사용자의 모든 여행을 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "사용자 여행 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음", content = @Content)
-    })
-    public ResponseEntity<List<TripResponseDto>> getTripsByUserId(
-            @Parameter(description = "사용자 ID", required = true) @PathVariable Long userId) {
-        List<Trip> trips = tripService.findByUserId(userId);
-        List<TripResponseDto> tripDtos = trips.stream()
-                .map(TripResponseDto::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tripDtos);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, tripService.getTripDto(tripId)));
     }
 
     @GetMapping("/{tripId}/representative-images")
@@ -165,7 +150,7 @@ public class TripController {
             @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
             @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
-    public ResponseEntity<List<TripRepresentativeImageDto>> getRepresentativeImages(
+    public ResponseEntity<ApiResponseDto<List<TripRepresentativeImageDto>>> getRepresentativeImages(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -173,12 +158,12 @@ public class TripController {
         Trip trip = tripService.findOne(tripId);
 
         if (!trip.getUser().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
         }
 
         List<TripRepresentativeImageDto> representativeImages =
                 diaryService.getRepresentativeImagesByTripId(tripId);
-        return ResponseEntity.ok(representativeImages);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, representativeImages));
     }
 
     @PutMapping("/{tripId}/representative-image")
@@ -190,27 +175,23 @@ public class TripController {
             @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
             @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
     })
-    public ResponseEntity<Void> updateTripRepresentativeImage(
+    public ResponseEntity<ApiResponseDto<Void>> updateTripRepresentativeImage(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateRepresentativeImageRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         if (request.getImageId() == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, null));
         }
 
         Long userId = userDetails.getUserId();
         Trip trip = tripService.findOne(tripId);
 
         if (!trip.getUser().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
         }
 
-        try {
-            tripService.updateTripRepresentativeImage(tripId, request.getImageId());
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        tripService.updateTripRepresentativeImage(tripId, request.getImageId());
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }

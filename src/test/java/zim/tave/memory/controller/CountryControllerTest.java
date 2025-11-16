@@ -107,7 +107,9 @@ class CountryControllerTest {
         visited.setEmotion(emotion);
         visited.setColor("#FF6B6B");
 
-        given(visitedCountryService.getVisitedCountries(1L)).willReturn(List.of(visited));
+        given(visitedCountryService.getVisitedCountries(1L)).willReturn(List.of(
+                zim.tave.memory.dto.VisitedCountryResponseDto.from(visited)
+        ));
 
         mockMvc.perform(get("/api/users/me/visited-countries"))
                 .andExpect(status().isOk())
@@ -141,7 +143,8 @@ class CountryControllerTest {
         visited.setEmotion(emotion);
         visited.setColor("#FF6B6B");
 
-        given(visitedCountryService.registerVisitedCountry(eq(5L), eq("KR"), eq(2L))).willReturn(visited);
+        given(visitedCountryService.registerVisitedCountry(eq(5L), eq("KR"), eq(2L)))
+                .willReturn(zim.tave.memory.dto.VisitedCountryResponseDto.from(visited));
 
         mockMvc.perform(post("/api/users/me/visited-countries")
                         .contentType(MediaType.APPLICATION_JSON)

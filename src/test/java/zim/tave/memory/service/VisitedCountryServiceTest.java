@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Country;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.domain.VisitedCountry;
+import zim.tave.memory.dto.VisitedCountryResponseDto;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
@@ -37,20 +37,20 @@ public class VisitedCountryServiceTest {
         Emotion emotion2 = createTestEmotion("슬픔1", "#0000FF");
         
         // when: 첫 번째 등록
-        VisitedCountry first = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
-        assertThat(first.getEmotion().getName()).isEqualTo("행복1");
+        VisitedCountryResponseDto first = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
+        assertThat(first.getEmotionName()).isEqualTo("행복1");
 
         // 두 번째 등록 (감정 변경)
-        VisitedCountry updated = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion2.getId());
+        VisitedCountryResponseDto updated = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion2.getId());
 
-        List<VisitedCountry> visitedList = visitedCountryService.getVisitedCountries(user.getId());
+        List<VisitedCountryResponseDto> visitedList = visitedCountryService.getVisitedCountries(user.getId());
 
         // then: 하나의 기록만 존재하고, 두 번째 감정으로 업데이트됨
         assertThat(visitedList).hasSize(1);
-        assertThat(first.getEmotion().getName()).isEqualTo("슬픔1");
-        assertThat(updated.getEmotion().getName()).isEqualTo("슬픔1");
-        assertThat(visitedList.get(0).getCountry().getCountryCode()).isEqualTo("KR1");
-        assertThat(visitedList.get(0).getEmotion().getName()).isEqualTo("슬픔1");
+        assertThat(first.getEmotionName()).isEqualTo("슬픔1");
+        assertThat(updated.getEmotionName()).isEqualTo("슬픔1");
+        assertThat(visitedList.get(0).getCountryCode()).isEqualTo("KR1");
+        assertThat(visitedList.get(0).getEmotionName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getColor()).isEqualTo("#0000FF");
     }
 
@@ -62,13 +62,13 @@ public class VisitedCountryServiceTest {
         Emotion emotion = createTestEmotion("설렘", "#FDD7DE");
 
         // when
-        VisitedCountry result = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
+        VisitedCountryResponseDto result = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
 
         // then
         assertThat(result.getVisitedCountryId()).isNotNull();
-        assertThat(result.getUser().getId()).isEqualTo(user.getId());
-        assertThat(result.getCountry().getCountryCode()).isEqualTo("KRNEW");
-        assertThat(result.getEmotion().getName()).isEqualTo("설렘");
+        assertThat(result.getUserId()).isEqualTo(user.getId());
+        assertThat(result.getCountryCode()).isEqualTo("KRNEW");
+        assertThat(result.getEmotionName()).isEqualTo("설렘");
         assertThat(result.getColor()).isEqualTo("#FDD7DE");
     }
 
@@ -100,12 +100,12 @@ public class VisitedCountryServiceTest {
         visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
         
         // when: 방문 국가 목록 조회
-        List<VisitedCountry> visitedList = visitedCountryService.getVisitedCountries(user.getId());
+        List<VisitedCountryResponseDto> visitedList = visitedCountryService.getVisitedCountries(user.getId());
         
         // then: 조회된 목록 확인
         assertThat(visitedList).hasSize(1);
-        assertThat(visitedList.get(0).getUser().getId()).isEqualTo(user.getId());
-        assertThat(visitedList.get(0).getCountry().getCountryCode()).isEqualTo(country.getCountryCode());
+        assertThat(visitedList.get(0).getUserId()).isEqualTo(user.getId());
+        assertThat(visitedList.get(0).getCountryCode()).isEqualTo(country.getCountryCode());
     }
 
     // 헬퍼 메서드들
