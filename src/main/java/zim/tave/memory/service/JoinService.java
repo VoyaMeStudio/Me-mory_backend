@@ -36,6 +36,7 @@ public class JoinService {
         user.setNationality(requestDto.getNationality());
         user.setCreatedAt(LocalDate.now());
         user.setStatus(true);
+        user.setRegistered(true);
 
         //마이페이지 Statistics 정보
         user.setDiaryCount(0L);
