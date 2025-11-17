@@ -28,9 +28,9 @@ public class StoredTripResponseDto {
 
     public static StoredTripResponseDto from(Trip trip) {
         return StoredTripResponseDto.builder()
-                .tripId(trip.getTripId())
+                .tripId(trip.getId())
                 .tripName(trip.getTripName())
-                .themeId(trip.getTripTheme().getTripThemeId()) // 연관 관계 기반 접근
+                .themeId(trip.getTripTheme() != null ? trip.getTripTheme().getId() : null)
                 .representativeImageUrl(trip.getRepresentativeImageUrl())
                 .build();
     }

@@ -16,6 +16,7 @@ public enum ResponseCode {
     VISITED_COUNTRIES_FETCH_SUCCESS(200, "방문한 국가 목록을 성공적으로 조회하였습니다."),
     USER_UPDATE_SUCCESS(200, "회원 정보가 성공적으로 수정되었습니다."),
     USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
+    STORED_TRIP_FOUND_SUCCESS(200, "보관된 여행 목록을 성공적으로 조회하였습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),
@@ -51,7 +52,8 @@ public enum ResponseCode {
     INCOMPLETE_USER_INFO(400, "회원 정보 입력을 완료해주세요."),
     ALREADY_JOINED(409, "이미 가입된 사용자입니다."),
     UNAUTHORIZED_USER(401, "인증되지 않은 사용자입니다."),
-    MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요.");
+    MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요."),
+    STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다.");
 
     private final int code;
     private final String message;
