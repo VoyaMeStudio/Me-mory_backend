@@ -47,14 +47,14 @@ public class SettingService {
 
     public UserResponseDto updateUserInfo(Long userId, UpdateUserRequestDto requestDto) {
 
-        // 1️⃣ 사용자 조회
+        // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 2️⃣ 필수 필드 검증 (하나라도 비어 있으면 예외)
+        // 필수 필드 검증 (하나라도 비어 있으면 예외)
         validateFields(requestDto);
 
-        // 3️⃣ null이 아닌 필드만 업데이트
+        // null이 아닌 필드만 업데이트
         if (requestDto.getSurName() != null)
             user.setSurName(requestDto.getSurName());
         if (requestDto.getFirstName() != null)
@@ -66,10 +66,8 @@ public class SettingService {
         if (requestDto.getNationality() != null)
             user.setNationality(requestDto.getNationality());
 
-        // 4️⃣ 저장 (변경 없더라도 안전)
         userRepository.save(user);
 
-        // 5️⃣ 응답 DTO 생성
         return new UserResponseDto(
                 user.getId(),
                 user.getKakaoId(),
@@ -85,7 +83,6 @@ public class SettingService {
         );
     }
 
-    // ✅ 필수 필드 유효성 검사
     private void validateFields(UpdateUserRequestDto dto) {
         if (isNullOrEmpty(dto.getSurName()) ||
                 isNullOrEmpty(dto.getFirstName()) ||

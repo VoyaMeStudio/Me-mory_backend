@@ -28,6 +28,10 @@ public class Trip {
 
     private LocalDate endDate;
 
+    private Boolean isStored; //보관 여부 확인
+
+    private Boolean isPast; //과거 여행 여부 확인
+
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
