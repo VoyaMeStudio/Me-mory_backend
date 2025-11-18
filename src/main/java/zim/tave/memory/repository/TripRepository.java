@@ -25,4 +25,9 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
 	@Query("select cast(max(d.createdAt) as date) from Diary d where d.trip.id = :tripId")
 	LocalDate findLastDiaryDateByTripId(@Param("tripId") Long tripId);
+
+    @Query("SELECT t FROM Trip t " +
+            "WHERE t.user.id = :userId " +
+            "AND t.isStored = true ")
+    List<Trip> findStoredTripsByUserId(@Param("userId") Long userId);
 }
