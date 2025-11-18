@@ -21,7 +21,7 @@ import zim.tave.memory.service.TripService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/storage")
-@Tag(name = "Storgae", description = "보관된 여행/일기 관리 API")
+@Tag(name = "Storage", description = "보관된 여행/일기 관리 API")
 public class StorageController {
 
     private final StorageService storageService;
@@ -33,7 +33,7 @@ public class StorageController {
             @ApiResponse(responseCode = "404", description = "보관된 여행 정보를 찾을 수 없습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류로 인해 보관된 여행 조회에 실패하였습니다.")
     })
-    @GetMapping("/stored")
+    @GetMapping("/trips")
     public ResponseEntity<ApiResponseDto<StoredTripListResponseDto>> getStoredTrips(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
