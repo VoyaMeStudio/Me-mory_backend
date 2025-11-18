@@ -54,6 +54,7 @@ public enum ResponseCode {
     UNAUTHORIZED_USER(401, "인증되지 않은 사용자입니다."),
     MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요."),
     STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다.");
+    MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요.");
 
     private final int code;
     private final String message;

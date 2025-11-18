@@ -66,8 +66,10 @@ public class SettingService {
         if (requestDto.getNationality() != null)
             user.setNationality(requestDto.getNationality());
 
+        // 4️⃣ 저장 (변경 없더라도 안전)
         userRepository.save(user);
 
+        // 5️⃣ 응답 DTO 생성
         return new UserResponseDto(
                 user.getId(),
                 user.getKakaoId(),
@@ -83,6 +85,7 @@ public class SettingService {
         );
     }
 
+    // ✅ 필수 필드 유효성 검사
     private void validateFields(UpdateUserRequestDto dto) {
         if (isNullOrEmpty(dto.getSurName()) ||
                 isNullOrEmpty(dto.getFirstName()) ||
