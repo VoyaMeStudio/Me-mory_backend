@@ -45,7 +45,6 @@ public enum ErrorCode {
     NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 필드가 존재하지 않습니다."),
     MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
     STORED_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "보관된 여행 정보를 찾을 수 없습니다.");
-    MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요.");
 
 
 
