@@ -13,9 +13,6 @@ public enum ResponseCode {
     LOGOUT_SUCCESS(200, "로그아웃 성공"),
     LOGIN_SUCCESS(200, "로그인에 성공하였습니다."),
     JOIN_SUCCESS(200, "회원가입에 성공하였습니다."),
-    VISITED_COUNTRIES_FETCH_SUCCESS(200, "방문한 국가 목록을 성공적으로 조회하였습니다."),
-    USER_UPDATE_SUCCESS(200, "회원 정보가 성공적으로 수정되었습니다."),
-    USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),
@@ -46,12 +43,10 @@ public enum ResponseCode {
     WEATHER_NOT_FOUND(404, "날씨를 찾을 수 없습니다."),
     TRIP_NAME_REQUIRED(400, "여행명은 필수입니다."),
     TRIP_NAME_TOO_LONG(400, "여행명은 최대 14자입니다."),
-    TRIP_DESCRIPTION_TOO_LONG(400, "여행 설명은 최대 56자입니다."),
+    TRIP_DESCRIPTION_TOO_LONG(400, "여행 설명은 최대 56자입니다.");
     KAKAO_LOGIN_REQUIRED(400, "카카오 로그인을 먼저 진행해주세요."),
     INCOMPLETE_USER_INFO(400, "회원 정보 입력을 완료해주세요."),
-    ALREADY_JOINED(409, "이미 가입된 사용자입니다."),
-    UNAUTHORIZED_USER(401, "인증되지 않은 사용자입니다."),
-    MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요.");
+    ALREADY_JOINED(409, "이미 가입된 사용자입니다.");
 
     private final int code;
     private final String message;
