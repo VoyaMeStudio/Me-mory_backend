@@ -7,6 +7,7 @@ import zim.tave.memory.domain.Country;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.domain.VisitedCountry;
+import zim.tave.memory.dto.VisitedCountryListResponseDto;
 import zim.tave.memory.dto.VisitedCountryResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
@@ -16,6 +17,8 @@ import zim.tave.memory.repository.VisitedCountryRepository;
 import zim.tave.memory.util.CountryValidator;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -68,7 +71,7 @@ public class VisitedCountryService {
 
         // 기존 기록이 있는지 확인
         var existingVisitedCountry = visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(userId, normalizedCode);
-        
+
         if (existingVisitedCountry.isPresent()) {
             // 기존 기록이 있으면 감정과 색상 업데이트 후 반환
             VisitedCountry visited = existingVisitedCountry.get();
@@ -97,5 +100,40 @@ public class VisitedCountryService {
         VisitedCountry visitedCountry = visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(userId, normalizedCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.VISITED_COUNTRY_NOT_FOUND));
         visitedCountryRepository.delete(visitedCountry);
+    }
+
+    // ✅ 방문 국가 목록 조회
+    public VisitedCountryListResponseDto getVisitedCountryList(Long userId) {
+        // 유저 검증
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 방문 국가 조회 (중복 제거)
+        List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
+
+        if (visitedCountries.isEmpty()) {
+            throw new CustomException(ErrorCode.VISITED_COUNTRY_NOT_FOUND);
+        }
+
+        // ✅ ISO 코드 기준 중복 제거
+        Map<String, Country> uniqueCountries = visitedCountries.stream()
+                .collect(Collectors.toMap(
+                        vc -> vc.getCountry().getCountryCode(),
+                        VisitedCountry::getCountry,
+                        (existing, duplicate) -> existing  // 중복 제거
+                ));
+
+        // ✅ 국가 코드 / 이름 리스트로 변환
+        List<VisitedCountryListResponseDto.VisitedCountryItem> countryItems = uniqueCountries.values().stream()
+                .map(country -> new VisitedCountryListResponseDto.VisitedCountryItem(
+                        country.getCountryCode(),
+                        country.getCountryName()
+                ))
+                .toList();
+
+        // ✅ 총 방문 국가 수 (User 테이블의 visitedCountryCount 사용)
+        Long countryCount = user.getVisitedCountryCount();
+
+        return new VisitedCountryListResponseDto(countryCount, countryItems);
     }
 }
