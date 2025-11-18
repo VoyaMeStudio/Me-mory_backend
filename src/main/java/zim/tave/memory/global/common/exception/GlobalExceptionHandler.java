@@ -57,6 +57,8 @@ public class GlobalExceptionHandler {
             case KAKAO_LOGIN_REQUIRED -> ResponseCode.KAKAO_LOGIN_REQUIRED;
             case INCOMPLETE_USER_INFO -> ResponseCode.INCOMPLETE_USER_INFO;
             case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
+            case UNAUTHORIZED_USER -> ResponseCode.UNAUTHORIZED_USER;
+            case MISSING_REQUIRED_FIELDS -> ResponseCode.MISSING_REQUIRED_FIELDS;
             default -> ResponseCode.SERVER_ERROR;
         };
 

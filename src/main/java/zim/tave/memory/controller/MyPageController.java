@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.dto.MyPageResponseDto;
+import zim.tave.memory.dto.VisitedCountryListResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.MyPageService;
+import zim.tave.memory.service.VisitedCountryService;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ import zim.tave.memory.service.MyPageService;
 public class MyPageController {
 
     private final MyPageService myPageService;
+    private final VisitedCountryService visitedCountryService;
 
     @Operation(summary = "마이페이지 조회", description = "JWT 토큰 이용하여 마이페이지 조회")
     @ApiResponses(value = {
@@ -42,6 +45,24 @@ public class MyPageController {
         MyPageResponseDto responseDto = myPageService.getMyPage(userId);
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, responseDto));
+    }
+
+    @Operation(summary = "방문 국가 목록 조회", description = "현재 로그인한 사용자의 방문 국가 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "방문 국가 조회 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "방문한 국가 정보를 찾을 수 없습니다."),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다."),
+            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 방문 국가 조회에 실패하였습니다.")
+    })
+    @GetMapping("/visitedcountries")
+    public ResponseEntity<ApiResponseDto<VisitedCountryListResponseDto>> getVisitedCountries(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getUserId();
+        VisitedCountryListResponseDto response = visitedCountryService.getVisitedCountryList(userId);
+
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.VISITED_COUNTRIES_FETCH_SUCCESS, response));
     }
 
     /*
