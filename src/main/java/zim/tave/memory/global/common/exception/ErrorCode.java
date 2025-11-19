@@ -44,7 +44,8 @@ public enum ErrorCode {
     UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
     NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 필드가 존재하지 않습니다."),
     MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
-    STORED_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "보관된 여행 정보를 찾을 수 없습니다.");
+    STORED_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "보관된 여행 정보를 찾을 수 없습니다."),
+    CANNOT_ADD_DIARY_TO_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행에는 일기를 추가할 수 없습니다.");
 
 
 

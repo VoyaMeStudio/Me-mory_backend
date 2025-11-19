@@ -3,13 +3,20 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zim.tave.memory.domain.*;
+import zim.tave.memory.domain.DiaryImage;
+import zim.tave.memory.domain.Trip;
+import zim.tave.memory.domain.TripTheme;
+import zim.tave.memory.domain.User;
+import zim.tave.memory.dto.CreatePastTripRequest;
 import zim.tave.memory.dto.CreateTripRequest;
 import zim.tave.memory.dto.TripResponseDto;
 import zim.tave.memory.dto.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.*;
+import zim.tave.memory.repository.DiaryImageRepository;
+import zim.tave.memory.repository.TripRepository;
+import zim.tave.memory.repository.TripThemeRepository;
+import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,9 +28,9 @@ public class TripService {
 
     private final TripRepository tripRepository;
     private final TripThemeRepository tripThemeRepository;
-    private final DiaryRepository diaryRepository;
 	private final DiaryImageRepository diaryImageRepository;
     private final UserRepository userRepository;
+    private final VisitedCountryService visitedCountryService;
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
@@ -37,6 +44,8 @@ public class TripService {
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             throw new CustomException(ErrorCode.TRIP_DESCRIPTION_TOO_LONG);
         }
+        validateTripPeriod(request.getStartDate(), request.getEndDate());
+
         // 테마 처리: 테마가 선택되지 않으면 기본 테마(id=1)를 사용
         Long themeId = request.getThemeId();
         if (themeId == null) {
@@ -51,7 +60,47 @@ public class TripService {
 
 
         Trip trip = Trip.createTrip(user, request.getTripName(), request.getDescription(), theme);
+        trip.setStartDate(request.getStartDate());
+        trip.setEndDate(request.getEndDate());
+        trip.setIsPast(false);
+        trip.setIsStored(false);
         Trip saved = tripRepository.save(trip);
+        return buildTripResponseDto(saved);
+    }
+
+    @Transactional
+    public TripResponseDto createPastTrip(CreatePastTripRequest request, Long userId) {
+        if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.TRIP_NAME_REQUIRED);
+        }
+        if (request.getTripName().trim().length() > 14) {
+            throw new CustomException(ErrorCode.TRIP_NAME_TOO_LONG);
+        }
+        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
+            throw new CustomException(ErrorCode.TRIP_DESCRIPTION_TOO_LONG);
+        }
+        validateTripPeriod(request.getStartDate(), request.getEndDate());
+        if (request.getCountryCodes() == null || request.getCountryCodes().isEmpty()) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        TripTheme theme = tripThemeRepository.findById(1L)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
+
+        Trip trip = Trip.createTrip(user, request.getTripName(), request.getDescription(), theme);
+        trip.setStartDate(request.getStartDate());
+        trip.setEndDate(request.getEndDate());
+        trip.setIsPast(true);
+        trip.setIsStored(false);
+
+        Trip saved = tripRepository.save(trip);
+
+        request.getCountryCodes().forEach(countryCode ->
+                visitedCountryService.registerVisitedCountry(userId, countryCode, request.getEmotionId()));
+
         return buildTripResponseDto(saved);
     }
 
@@ -191,6 +240,27 @@ public class TripService {
     public TripResponseDto getTripDto(Long tripId) {
         Trip trip = findOne(tripId);
         return buildTripResponseDto(trip);
+    }
+
+    @Transactional
+    public void storeTrip(Long tripId, Long userId, boolean isStored) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+
+        trip.setIsStored(isStored);
+    }
+
+    private void validateTripPeriod(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
     }
 
     private TripResponseDto buildTripResponseDto(Trip trip) {
