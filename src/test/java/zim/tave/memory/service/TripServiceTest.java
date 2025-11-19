@@ -47,6 +47,9 @@ class TripServiceTest {
     @Mock
     private DiaryImageRepository diaryImageRepository;
 
+    @Mock
+    private VisitedCountryService visitedCountryService;
+
     @InjectMocks
     private TripService tripService;
 
@@ -69,6 +72,8 @@ class TripServiceTest {
         trip.setDescription("제주도 3박 4일 여행");
         trip.setUser(user);
         trip.setTripTheme(tripTheme);
+        trip.setStartDate(LocalDate.of(2024, 1, 1));
+        trip.setEndDate(LocalDate.of(2024, 1, 5));
     }
 
     @Test
@@ -78,14 +83,14 @@ class TripServiceTest {
         request.setTripName("제주도 여행");
         request.setDescription("제주도 3박 4일 여행");
         request.setThemeId(1L);
+        request.setStartDate(LocalDate.of(2024, 1, 1));
+        request.setEndDate(LocalDate.of(2024, 1, 5));
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> {
             Trip t = invocation.getArgument(0);
             t.setId(1L);
-            t.setStartDate(LocalDate.now());
-            t.setEndDate(LocalDate.now());
             return t;
         });
 
@@ -105,6 +110,8 @@ class TripServiceTest {
         request.setTripName("제주도 여행");
         request.setDescription("설명");
         request.setThemeId(999L);
+        request.setStartDate(LocalDate.of(2024, 2, 1));
+        request.setEndDate(LocalDate.of(2024, 2, 10));
 
         when(tripThemeRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -118,6 +125,8 @@ class TripServiceTest {
         // given
         CreateTripRequest request = new CreateTripRequest();
         request.setTripName("   ");
+        request.setStartDate(LocalDate.of(2024, 3, 1));
+        request.setEndDate(LocalDate.of(2024, 3, 5));
         // when & then
         assertThatThrownBy(() -> tripService.createTrip(request, 1L))
                 .isInstanceOf(CustomException.class)

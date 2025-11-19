@@ -96,13 +96,15 @@ class TripDiaryIntegrationTest {
         tripRequest.setTripName("제주도 여행");
         tripRequest.setDescription("제주도 3박 4일 여행");
         tripRequest.setThemeId(1L);
+        tripRequest.setStartDate(LocalDate.now());
+        tripRequest.setEndDate(LocalDate.now().plusDays(3));
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         TripResponseDto createdTrip = tripService.createTrip(tripRequest, 1L);
-        assertThat(createdTrip.getStartDate()).isEqualTo(LocalDate.now());
-        assertThat(createdTrip.getEndDate()).isEqualTo(LocalDate.now());
+        assertThat(createdTrip.getStartDate()).isEqualTo(tripRequest.getStartDate());
+        assertThat(createdTrip.getEndDate()).isEqualTo(tripRequest.getEndDate());
 
         // when - 다이어리 생성
         CreateDiaryRequest diaryRequest = new CreateDiaryRequest();
@@ -172,7 +174,7 @@ class TripDiaryIntegrationTest {
             d.setId(1L);
             return d;
         });
-        DiaryResponseDto diary1 = diaryService.createDiary(diaryRequest1);
+        diaryService.createDiary(diaryRequest1);
 
         // 두 번째 다이어리 생성
         CreateDiaryRequest diaryRequest2 = new CreateDiaryRequest();
@@ -189,7 +191,7 @@ class TripDiaryIntegrationTest {
             d.setId(2L);
             return d;
         });
-        DiaryResponseDto diary2 = diaryService.createDiary(diaryRequest2);
+        diaryService.createDiary(diaryRequest2);
 
         // when - 마지막 다이어리 삭제
         Diary persisted2 = new Diary();
@@ -234,7 +236,7 @@ class TripDiaryIntegrationTest {
             d.setId(1L);
             return d;
         });
-        DiaryResponseDto diary = diaryService.createDiary(diaryRequest);
+        diaryService.createDiary(diaryRequest);
 
         // when - 마지막 다이어리 삭제
         Diary persisted = new Diary();
