@@ -53,7 +53,11 @@ public enum ResponseCode {
     ALREADY_JOINED(409, "이미 가입된 사용자입니다."),
     UNAUTHORIZED_USER(401, "인증되지 않은 사용자입니다."),
     MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요."),
-    STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다.");
+    STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다."),
+    FILE_EMPTY(400, "업로드할 파일이 비어있습니다."),
+    FILE_TOO_LARGE(400, "파일 크기가 허용 범위를 초과했습니다."),
+    FILE_TYPE_NOT_ALLOWED(400, "지원하지 않는 파일 형식입니다."),
+    FILE_UPLOAD_FAILED(500, "파일 업로드에 실패했습니다.");
 
     private final int code;
     private final String message;

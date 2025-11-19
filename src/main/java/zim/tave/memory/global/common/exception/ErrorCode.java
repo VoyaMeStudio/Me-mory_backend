@@ -45,7 +45,11 @@ public enum ErrorCode {
     NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 필드가 존재하지 않습니다."),
     MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
     STORED_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "보관된 여행 정보를 찾을 수 없습니다."),
-    CANNOT_ADD_DIARY_TO_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행에는 일기를 추가할 수 없습니다.");
+    CANNOT_ADD_DIARY_TO_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행에는 일기를 추가할 수 없습니다."),
+    FILE_EMPTY(HttpStatus.BAD_REQUEST, "업로드할 파일이 비어있습니다."),
+    FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "파일 크기가 허용 범위를 초과했습니다."),
+    FILE_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
 
 
 
