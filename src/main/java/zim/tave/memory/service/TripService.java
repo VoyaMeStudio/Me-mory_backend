@@ -55,8 +55,7 @@ public class TripService {
         TripTheme theme = tripThemeRepository.findById(themeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = loadUser(userId);
 
 
         Trip trip = Trip.createTrip(user, request.getTripName(), request.getDescription(), theme);
@@ -84,8 +83,7 @@ public class TripService {
             throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = loadUser(userId);
 
         TripTheme theme = tripThemeRepository.findById(1L)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
@@ -111,6 +109,7 @@ public class TripService {
 
     @Transactional
     public void updateTrip(Long tripId, UpdateTripRequest request, Long userId) {
+        ensureAuthenticated(userId);
         Trip findTrip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
 
@@ -167,6 +166,7 @@ public class TripService {
     }
 
     public List<Trip> findByUserId(Long userId) {
+        ensureAuthenticated(userId);
         return tripRepository.findByUserIdWithDiaries(userId);
     }
 
@@ -203,6 +203,7 @@ public class TripService {
 
     // 컨트롤러 단순화용: 소유권 검증
     public void validateOwnership(Long tripId, Long userId) {
+        ensureAuthenticated(userId);
         Trip trip = findOne(tripId);
         if (!trip.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
@@ -210,6 +211,7 @@ public class TripService {
     }
 
     public TripResponseDto getTripDtoWithOwnershipCheck(Long tripId, Long userId) {
+        ensureAuthenticated(userId);
         Trip trip = findOne(tripId);
         if (!trip.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
@@ -233,6 +235,7 @@ public class TripService {
     }
 
     public List<TripResponseDto> getTripsByUserId(Long userId) {
+        ensureAuthenticated(userId);
         List<Trip> trips = tripRepository.findByUserIdWithDiaries(userId);
         return trips.stream().map(this::buildTripResponseDto).toList();
     }
@@ -244,6 +247,7 @@ public class TripService {
 
     @Transactional
     public void storeTrip(Long tripId, Long userId, boolean isStored) {
+        ensureAuthenticated(userId);
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
 
@@ -261,6 +265,18 @@ public class TripService {
         if (startDate.isAfter(endDate)) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
+    }
+// 인증 여부 검증
+    private void ensureAuthenticated(Long userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+    }
+// 사용자 조회
+    private User loadUser(Long userId) {
+        ensureAuthenticated(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     private TripResponseDto buildTripResponseDto(Trip trip) {

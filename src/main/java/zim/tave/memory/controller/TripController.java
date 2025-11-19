@@ -12,13 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import zim.tave.memory.domain.Trip;
 import zim.tave.memory.dto.*;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
-import zim.tave.memory.global.common.exception.CustomException;
-import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.DiaryService;
 import zim.tave.memory.service.TripService;
 
@@ -43,12 +39,7 @@ public class TripController {
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> createTrip(
             @RequestBody CreateTripRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
-        }
-
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
         TripResponseDto dto = tripService.createTrip(request, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -67,9 +58,7 @@ public class TripController {
     public ResponseEntity<ApiResponseDto<Void>> updateTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateTripRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
         tripService.updateTrip(tripId, request, userId);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
@@ -83,9 +72,7 @@ public class TripController {
             @ApiResponse(responseCode = "404", description = "해당 사용자의 여행 없음", content = @Content)
     })
     public ResponseEntity<ApiResponseDto<List<TripResponseDto>>> getAllTrips(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
         List<TripResponseDto> dtos = tripService.getTripsByUserId(userId);
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, dtos));
@@ -102,9 +89,7 @@ public class TripController {
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> getTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
 		TripResponseDto dto = tripService.getTripDtoWithOwnershipCheck(tripId, userId);
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, dto));
     }
@@ -120,9 +105,7 @@ public class TripController {
     })
     public ResponseEntity<ApiResponseDto<List<TripRepresentativeImageDto>>> getRepresentativeImages(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
 		tripService.validateOwnership(tripId, userId);
 
         List<TripRepresentativeImageDto> representativeImages =
@@ -142,9 +125,7 @@ public class TripController {
     public ResponseEntity<ApiResponseDto<Void>> updateTripRepresentativeImage(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestBody UpdateRepresentativeImageRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
 		tripService.updateTripRepresentativeImageWithOwnershipCheck(tripId, request.getImageId(), userId);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
@@ -159,11 +140,7 @@ public class TripController {
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> createPastTrip(
             @RequestBody CreatePastTripRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
-        }
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
         TripResponseDto dto = tripService.createPastTrip(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseDto.success(ResponseCode.CREATED, dto));
@@ -180,11 +157,7 @@ public class TripController {
     public ResponseEntity<ApiResponseDto<Void>> storeTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
             @RequestParam boolean isStored,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
-        }
-        Long userId = userDetails.getUserId();
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
         tripService.storeTrip(tripId, userId, isStored);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
