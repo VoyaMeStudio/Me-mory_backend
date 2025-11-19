@@ -39,14 +39,8 @@ public class FileController {
             String contentType = response.contentType();
             String fileName = key.substring(key.lastIndexOf("/") + 1);
             
-            // 오디오 파일의 경우 브라우저에서 바로 재생되도록 Content-Type 설정
-            if (key.toLowerCase().contains("audio/") || key.toLowerCase().endsWith(".m4a")) {
-                headers.setContentType(MediaType.parseMediaType("audio/mp4"));
-                headers.add("Content-Disposition", "inline; filename=\"" + fileName + "\"");
-                System.out.println("FileController - Audio file detected, setting Content-Type: audio/mp4");
-            }
             // HEIF 파일의 경우 브라우저 호환성을 위해 적절한 Content-Type 설정
-            else if (key.toLowerCase().contains(".heic") || 
+            if (key.toLowerCase().contains(".heic") || 
                 (contentType != null && contentType.contains("heif"))) {
                 headers.setContentType(MediaType.parseMediaType("image/heic"));
                 // HEIF는 브라우저 지원이 제한적이므로 다운로드 유도

@@ -21,9 +21,6 @@ import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.WeatherRepository;
-import zim.tave.memory.service.CountryService;
-import zim.tave.memory.service.VisitedCountryService;
-
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -160,7 +157,6 @@ class DiaryServiceTest {
         request.setWeatherId(1L);
 
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
-        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion));
         when(weatherRepository.findById(1L)).thenReturn(Optional.of(weather));
 

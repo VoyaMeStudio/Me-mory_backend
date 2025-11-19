@@ -46,3 +46,21 @@ server:
     max-http-header-size: 102400   # 100KB in byt
   #max-http-request-size: 500MB     # 기존 server.tomcat.max-http-post-size 대체
 
+memory:
+  file-upload:
+    max-file-size: 524288000
+    allowed-image-types:
+      - image/jpeg
+      - image/jpg
+      - image/png
+      - image/gif
+      - image/webp
+      - image/heic
+    allowed-image-extensions:
+      - ".jpg"
+      - ".jpeg"
+      - ".png"
+      - ".gif"
+      - ".webp"
+      - ".heic"
+
