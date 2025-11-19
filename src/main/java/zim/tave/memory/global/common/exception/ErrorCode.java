@@ -40,7 +40,11 @@ public enum ErrorCode {
     TRIP_DESCRIPTION_TOO_LONG(HttpStatus.BAD_REQUEST, "여행 설명은 최대 56자입니다."),
     KAKAO_LOGIN_REQUIRED(HttpStatus.BAD_REQUEST, "카카오 로그인을 먼저 진행해주세요."),
     INCOMPLETE_USER_INFO(HttpStatus.BAD_REQUEST, "회원 정보 입력을 완료해주세요."),
-    ALREADY_JOINED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다.");
+    ALREADY_JOINED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
+    UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
+    NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 필드가 존재하지 않습니다."),
+    MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
+    STORED_TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "보관된 여행 정보를 찾을 수 없습니다.");
 
 
 
