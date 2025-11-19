@@ -19,15 +19,8 @@ public class FileUploadController {
     private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList(
             "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/heic"
     );
-    private static final List<String> ALLOWED_AUDIO_TYPES = Arrays.asList(
-            "audio/mpeg", "audio/mp3", "audio/wav", "audio/m4a", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/ogg"
-    );
-    
     private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList(
             ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic"
-    );
-    private static final List<String> ALLOWED_AUDIO_EXTENSIONS = Arrays.asList(
-            ".mp3", ".wav", ".m4a", ".aac", ".ogg"
     );
 
     @PostMapping("/upload")
@@ -62,16 +55,6 @@ public class FileUploadController {
                 if (!validContentType && !validExtension) {
                     return ResponseEntity.badRequest()
                             .body("지원하지 않는 이미지 형식입니다. 지원 형식: JPG, PNG, GIF, WebP, HEIC (현재: " + contentType + ", " + fileExtension + ")");
-                }
-            }
-            
-            if ("audio".equals(type)) {
-                boolean validContentType = contentType != null && ALLOWED_AUDIO_TYPES.contains(contentType);
-                boolean validExtension = ALLOWED_AUDIO_EXTENSIONS.contains(fileExtension);
-                
-                if (!validContentType && !validExtension) {
-                    return ResponseEntity.badRequest()
-                            .body("지원하지 않는 오디오 형식입니다. 지원 형식: MP3, WAV, M4A, AAC, OGG (현재: " + contentType + ", " + fileExtension + ")");
                 }
             }
             
