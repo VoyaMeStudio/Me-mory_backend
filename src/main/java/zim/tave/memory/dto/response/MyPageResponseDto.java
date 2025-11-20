@@ -3,6 +3,11 @@ package zim.tave.memory.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import zim.tave.memory.domain.User;
+import zim.tave.memory.domain.VisitedCountry;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
@@ -49,6 +54,32 @@ public class MyPageResponseDto {
 
         @Schema(description = "사용자가 작성한 일기 수", example = "1")
         private Long diaryCount;
+    }
+
+    public static MyPageResponseDto from(
+            User user,
+            String formattedBirth,
+            Long diaryCount,
+            Long countryCount,
+            List<VisitedCountry> visitedCountries
+    ) {
+        UserInfo userInfo = new UserInfo(
+                user.getId(),
+                user.getProfileImageUrl(),
+                user.getSurName().toUpperCase(),
+                user.getFirstName().toUpperCase(),
+                user.getKoreanName(),
+                formattedBirth,
+                user.getNationality()
+        );
+
+        Statistics statistics = new Statistics(countryCount, diaryCount);
+
+        String flags = visitedCountries.stream()
+                .map(vc -> vc.getCountry().getEmoji())
+                .collect(Collectors.joining());
+
+        return new MyPageResponseDto(userInfo, statistics, flags);
     }
 
 }

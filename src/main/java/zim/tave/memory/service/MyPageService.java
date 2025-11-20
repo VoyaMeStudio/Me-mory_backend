@@ -25,7 +25,6 @@ public class MyPageService {
 
     public MyPageResponseDto getMyPage(Long userId) {
 
-        // Get user by userId
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -36,29 +35,14 @@ public class MyPageService {
 
         String formattedBirth = birthFormatter(user.getBirth());
 
-        // UserInfo
-        MyPageResponseDto.UserInfo userInfo = new MyPageResponseDto.UserInfo(
-                user.getId(),
-                user.getProfileImageUrl(),
-                user.getSurName().toUpperCase(),
-                user.getFirstName().toUpperCase(),
-                user.getKoreanName(),
-                formattedBirth,
-                user.getNationality()
-        );
-
         // Statistics
-		Long diaryCount = diaryRepository.countByUser_Id(userId);
+        Long diaryCount = diaryRepository.countByUser_Id(userId);
         Long countryCount = visitedCountryRepository.countByUserId(userId);
-        MyPageResponseDto.Statistics statistics = new MyPageResponseDto.Statistics(countryCount, diaryCount);
 
         // Flags
         List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
-        String flags = visitedCountries.stream()
-                .map(vc -> vc.getCountry().getEmoji())
-                .collect(Collectors.joining());
 
-        return new MyPageResponseDto(userInfo, statistics, flags);
+        return MyPageResponseDto.from(user, formattedBirth, diaryCount, countryCount, visitedCountries);
     }
 
     private String birthFormatter(LocalDate birth) {
