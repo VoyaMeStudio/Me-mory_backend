@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import zim.tave.memory.service.SettingService;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 @Tag(name = "Setting-controller", description = "설정 조회(로그아웃, 회원 탈퇴)")
+@SecurityRequirement(name = "bearerAuth")
 public class SettingController {
 
     private final SettingService settingService;

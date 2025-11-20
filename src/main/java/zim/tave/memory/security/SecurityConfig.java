@@ -41,6 +41,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
+                                "/api/weathers/**",
+                                "/api/emotions/**",
+                                "/api/trip-themes/**",
                                 "/api/test/**"
                         ).permitAll() // 로그인, 회원가입은 예외
                         .anyRequest().authenticated()

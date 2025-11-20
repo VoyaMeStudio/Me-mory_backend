@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,7 @@ public class CountryController {
     private final CountryService countryService;
 
     @Operation(summary = "국가 검색", description = "공통 마스터 데이터에서 국가 목록을 키워드로 검색합니다.")
+    @SecurityRequirements
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "검색 성공",
             content = @Content(schema = @Schema(implementation = CountrySearchResponse.class))),
@@ -81,6 +84,7 @@ public class CountryController {
     }
 
     @Operation(summary = "방문 국가 목록 조회", description = "JWT 토큰으로 인증된 사용자의 방문 국가 및 감정 정보를 조회합니다.")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "조회 성공",
             content = @Content(schema = @Schema(implementation = VisitedCountryListResponse.class))),
@@ -143,6 +147,7 @@ public class CountryController {
     }
 
     @Operation(summary = "방문 국가 등록 또는 업데이트", description = "사용자의 방문 국가를 등록하거나 감정 정보를 업데이트합니다.")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "등록 또는 업데이트 성공",
             content = @Content(schema = @Schema(implementation = VisitedCountrySingleResponse.class))),
@@ -239,6 +244,7 @@ public class CountryController {
     }
 
     @Operation(summary = "방문 국가 삭제", description = "사용자의 방문 국가를 삭제합니다.")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "삭제 성공",
             content = @Content(schema = @Schema(implementation = VoidResponse.class))),

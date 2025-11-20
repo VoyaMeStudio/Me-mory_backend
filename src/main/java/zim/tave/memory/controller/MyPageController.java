@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import zim.tave.memory.service.VisitedCountryService;
 @RequiredArgsConstructor
 @RequestMapping("/api/users/me")
 @Tag(name = "MyPage-Controller", description = "마이페이지 조회")
+@SecurityRequirement(name = "bearerAuth")
 public class MyPageController {
 
     private final MyPageService myPageService;
