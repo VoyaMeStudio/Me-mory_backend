@@ -30,10 +30,6 @@ public class StorageService {
             // 2️⃣ isStored = true 인 여행만 조회
             List<Trip> storedTrips = tripRepository.findStoredTripsByUserId(userId);
 
-            if (storedTrips.isEmpty()) {
-                throw new CustomException(ErrorCode.STORED_TRIP_NOT_FOUND);
-            }
-
             // 3️⃣ DTO 변환 후 반환
             return StoredTripListResponseDto.from(storedTrips);
 
