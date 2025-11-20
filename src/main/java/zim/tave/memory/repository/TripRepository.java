@@ -20,6 +20,15 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	@Query("select t from Trip t where size(t.diaries) > 0")
 	List<Trip> findAllWithDiaries();
 
+	@Query("""
+			select distinct t from Trip t
+			left join fetch t.diaries d
+			left join fetch d.diaryImages di
+			left join fetch d.country c
+			where t.user.id = :userId and (t.isStored = false or t.isStored is null)
+			""")
+	List<Trip> findActiveTripsWithDetails(@Param("userId") Long userId);
+
 	@Modifying
 	@Query("update Trip t set t.endDate = coalesce((select cast(max(d.createdAt) as date) from Diary d where d.trip.id = :tripId), t.startDate) where t.id = :tripId")
 	void updateTripEndDate(@Param("tripId") Long tripId);

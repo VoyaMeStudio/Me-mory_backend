@@ -16,6 +16,7 @@ import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;
 import zim.tave.memory.util.CountryValidator;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,6 +101,18 @@ public class VisitedCountryService {
         VisitedCountry visitedCountry = visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(userId, normalizedCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.VISITED_COUNTRY_NOT_FOUND));
         visitedCountryRepository.delete(visitedCountry);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, VisitedCountry> getVisitedCountryMap(Long userId) {
+        List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
+        return visitedCountries.stream()
+                .collect(Collectors.toMap(
+                        vc -> vc.getCountry().getCountryCode(),
+                        vc -> vc,
+                        (existing, duplicate) -> existing,
+                        LinkedHashMap::new
+                ));
     }
 
     // ✅ 방문 국가 목록 조회
