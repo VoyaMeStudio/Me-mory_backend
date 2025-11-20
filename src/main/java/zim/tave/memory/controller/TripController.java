@@ -260,4 +260,33 @@ public class TripController {
         tripService.storeTrip(tripId, userId, isStored);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
+
+    @DeleteMapping("/users/me/trips/{tripId}")
+    @Operation(summary = "여행 삭제", description = "사용자의 여행을 삭제합니다.")
+    @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER,
+            ErrorCode.ACCESS_DENIED, ErrorCode.TRIP_UPDATE_FORBIDDEN, ErrorCode.TRIP_NOT_FOUND})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "여행 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = """
+                    권한이 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - ACCESS_DENIED: 접근 권한이 없습니다.
+                    - TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 수정 권한이 없습니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content)
+    })
+    public ResponseEntity<ApiResponseDto<Void>> deleteTrip(
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
+        tripService.deleteTrip(tripId, userId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
 }

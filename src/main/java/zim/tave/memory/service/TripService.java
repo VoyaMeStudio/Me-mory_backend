@@ -258,6 +258,19 @@ public class TripService {
         trip.setIsStored(isStored);
     }
 
+    @Transactional
+    public void deleteTrip(Long tripId, Long userId) {
+        ensureAuthenticated(userId);
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+
+        tripRepository.delete(trip);
+    }
+
     private void validateTripPeriod(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
