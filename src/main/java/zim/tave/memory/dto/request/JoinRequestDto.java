@@ -12,12 +12,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class JoinRequestDto {
 
-    @Schema(description = "카카오 사용자 ID(필수)", example = "4317757086")
-    private String kakaoId;
-
-    @Schema(description = "프로필 이미지 URL(필수)", example = "http://img1.kakaocdn.net/profile.jpeg")
-    private String profileImageUrl;
-
     @Schema(description = "사용자 성(필수)", example = "KANG")
     private String surName;
 
