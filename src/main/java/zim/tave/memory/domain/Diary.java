@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +64,7 @@ public class Diary {
         image.setDiary(this);
     }
 
-    public static Diary createDiary(User user, Trip trip, Country country, String city, 
+    public static Diary createDiary(User user, Trip trip, Country country, String city,
                                    LocalDateTime dateTime, String content) {
         Diary diary = new Diary();
         diary.setUser(user);
@@ -74,7 +73,7 @@ public class Diary {
         diary.setCity(city);
         diary.setDateTime(dateTime);
         diary.setContent(content);
-        diary.setCreatedAt(LocalDateTime.now());
+        diary.setCreatedAt(dateTime != null ? dateTime : LocalDateTime.now());
         return diary;
     }
 

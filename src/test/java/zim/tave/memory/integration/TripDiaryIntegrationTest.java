@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 @ExtendWith(MockitoExtension.class)
 class TripDiaryIntegrationTest {
@@ -96,13 +97,16 @@ class TripDiaryIntegrationTest {
         tripRequest.setTripName("제주도 여행");
         tripRequest.setDescription("제주도 3박 4일 여행");
         tripRequest.setThemeId(1L);
+        tripRequest.setStartDate(LocalDate.now());
+        tripRequest.setEndDate(LocalDate.now().plusDays(3));
 
+        mockTripSave(1L);
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         TripResponseDto createdTrip = tripService.createTrip(tripRequest, 1L);
-        assertThat(createdTrip.getStartDate()).isEqualTo(LocalDate.now());
-        assertThat(createdTrip.getEndDate()).isEqualTo(LocalDate.now());
+        assertThat(createdTrip.getStartDate()).isEqualTo(tripRequest.getStartDate());
+        assertThat(createdTrip.getEndDate()).isEqualTo(tripRequest.getEndDate());
 
         // when - 다이어리 생성
         CreateDiaryRequest diaryRequest = new CreateDiaryRequest();
@@ -135,23 +139,18 @@ class TripDiaryIntegrationTest {
         Emotion defaultEmotion = new Emotion("행복", "#FFD700");
         defaultEmotion.setId(1L);
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(defaultEmotion));
-        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
-            Diary d = invocation.getArgument(0);
-            if (d.getId() == null) d.setId(1L);
-            return d;
-        });
+        mockDiarySaveWithAutoId(1L);
 
         DiaryResponseDto createdDiary = diaryService.createDiary(diaryRequest);
 
         // then
         assertThat(createdDiary.getTripId()).isEqualTo(trip.getId());
-        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 15));
+        assertThat(trip.getEndDate()).isEqualTo(diaryRequest.getDateTime().toLocalDate());
     }
 
     @Test
     void 다이어리_삭제_시_여행_종료날짜_재계산_테스트() {
         // given - 여행과 다이어리들 생성
-        when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
@@ -167,12 +166,8 @@ class TripDiaryIntegrationTest {
 
         when(countryService.findByCode("KR")).thenReturn(new Country());
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(new Emotion("행복", "#FFD700")));
-        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
-            Diary d = invocation.getArgument(0);
-            d.setId(1L);
-            return d;
-        });
-        DiaryResponseDto diary1 = diaryService.createDiary(diaryRequest1);
+        mockDiarySaveWithAutoId(1L);
+        diaryService.createDiary(diaryRequest1);
 
         // 두 번째 다이어리 생성
         CreateDiaryRequest diaryRequest2 = new CreateDiaryRequest();
@@ -184,12 +179,7 @@ class TripDiaryIntegrationTest {
         diaryRequest2.setContent("제주도 마지막 날");
         diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
 
-        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
-            Diary d = invocation.getArgument(0);
-            d.setId(2L);
-            return d;
-        });
-        DiaryResponseDto diary2 = diaryService.createDiary(diaryRequest2);
+        diaryService.createDiary(diaryRequest2);
 
         // when - 마지막 다이어리 삭제
         Diary persisted2 = new Diary();
@@ -214,7 +204,6 @@ class TripDiaryIntegrationTest {
     @Test
     void 모든_다이어리_삭제_시_종료날짜_null_테스트() {
         // given
-        when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
@@ -229,12 +218,8 @@ class TripDiaryIntegrationTest {
 
         when(countryService.findByCode("KR")).thenReturn(new Country());
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(new Emotion("행복", "#FFD700")));
-        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
-            Diary d = invocation.getArgument(0);
-            d.setId(1L);
-            return d;
-        });
-        DiaryResponseDto diary = diaryService.createDiary(diaryRequest);
+        mockDiarySaveWithAutoId(1L);
+        diaryService.createDiary(diaryRequest);
 
         // when - 마지막 다이어리 삭제
         Diary persisted = new Diary();
@@ -263,5 +248,30 @@ class TripDiaryIntegrationTest {
         imageInfo2.setRepresentative(false);
 
         return Arrays.asList(imageInfo1, imageInfo2);
+    }
+
+    private void mockTripSave(long startingId) {
+        AtomicLong idGenerator = new AtomicLong(startingId);
+        when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> {
+            Trip savedTrip = invocation.getArgument(0);
+            if (savedTrip.getId() == null) {
+                savedTrip.setId(idGenerator.getAndIncrement());
+            }
+            return savedTrip;
+        });
+    }
+
+    private void mockDiarySaveWithAutoId(long startingId) {
+        AtomicLong idGenerator = new AtomicLong(startingId);
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary diary = invocation.getArgument(0);
+            if (diary.getId() == null) {
+                diary.setId(idGenerator.getAndIncrement());
+            }
+            if (diary.getCreatedAt() == null && diary.getDateTime() != null) {
+                diary.setCreatedAt(diary.getDateTime());
+            }
+            return diary;
+        });
     }
 }
