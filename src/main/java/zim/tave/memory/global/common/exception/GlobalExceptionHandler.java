@@ -59,7 +59,6 @@ public class GlobalExceptionHandler {
             case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
             case UNAUTHORIZED_USER -> ResponseCode.UNAUTHORIZED_USER;
             case MISSING_REQUIRED_FIELDS -> ResponseCode.MISSING_REQUIRED_FIELDS;
-            case STORED_TRIP_NOT_FOUND -> ResponseCode.STORED_TRIP_NOT_FOUND;
             case FILE_EMPTY -> ResponseCode.FILE_EMPTY;
             case FILE_TOO_LARGE -> ResponseCode.FILE_TOO_LARGE;
             case FILE_TYPE_NOT_ALLOWED -> ResponseCode.FILE_TYPE_NOT_ALLOWED;
