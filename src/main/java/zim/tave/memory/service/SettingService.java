@@ -22,10 +22,10 @@ public class SettingService {
 
     @Transactional
     public void deleteAccount(Long userId) {
+        //사용자 존재 여부 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         try {
-            //사용자 존재 여부 확인
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             // 연관 데이터 삭제
             visitedCountryRepository.deleteAllByUserId(userId);
@@ -62,26 +62,12 @@ public class SettingService {
         if (requestDto.getNationality() != null)
             user.setNationality(requestDto.getNationality());
 
-        // 4️⃣ 저장 (변경 없더라도 안전)
         userRepository.save(user);
 
-        // 5️⃣ 응답 DTO 생성
-        return new UserResponseDto(
-                user.getId(),
-                user.getKakaoId(),
-                user.getProfileImageUrl(),
-                user.getSurName(),
-                user.getFirstName(),
-                user.getKoreanName(),
-                user.getBirth(),
-                user.getNationality(),
-                user.getDiaryCount(),
-                user.getVisitedCountryCount(),
-                user.getFlags()
-        );
+        return UserResponseDto.from(user);
     }
 
-    // ✅ 필수 필드 유효성 검사
+    //필수 필드 null 여부 검사
     private void validateFields(UpdateUserRequestDto dto) {
         if (isNullOrEmpty(dto.getSurName()) ||
                 isNullOrEmpty(dto.getFirstName()) ||

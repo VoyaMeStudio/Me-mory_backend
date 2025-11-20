@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zim.tave.memory.domain.User;
+import zim.tave.memory.dto.response.UserResponseDto;
 
 import java.time.LocalDate;
 
@@ -29,4 +31,20 @@ public class UpdateUserRequestDto {
 
     @Schema(description = "국적", example = "REPUBLIC OF KOREA")
     private String nationality;
+
+    public static UserResponseDto from(User user) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getKakaoId(),
+                user.getProfileImageUrl(),
+                user.getSurName(),
+                user.getFirstName(),
+                user.getKoreanName(),
+                user.getBirth(),
+                user.getNationality(),
+                user.getDiaryCount(),
+                user.getVisitedCountryCount(),
+                user.getFlags()
+        );
+    }
 }
