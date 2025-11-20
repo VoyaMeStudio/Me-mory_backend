@@ -3,6 +3,7 @@ package zim.tave.memory.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import zim.tave.memory.domain.Country;
 
 @Getter
 @AllArgsConstructor
@@ -17,4 +18,12 @@ public class CountrySearchResponseDto {
     
     @Schema(description = "국가 이모지", example = "🇰🇷")
     private final String emoji;
+
+    public static CountrySearchResponseDto from(Country country) {
+        return new CountrySearchResponseDto(
+                country.getCountryCode(),
+                country.getCountryName(),
+                country.getEmoji()
+        );
+    }
 }
