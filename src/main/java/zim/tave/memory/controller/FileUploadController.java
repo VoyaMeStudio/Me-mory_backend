@@ -3,6 +3,7 @@ package zim.tave.memory.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -37,10 +38,40 @@ public class FileUploadController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "파일 업로드 성공",
                     content = @Content(schema = @Schema(implementation = StringResponse.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (파일이 비어있거나, 타입이 잘못되었거나, 파일 크기 초과, 허용되지 않는 파일 형식)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 오류 (파일 업로드 실패)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - FILE_EMPTY: 업로드할 파일이 비어있습니다.
+                    - FILE_TOO_LARGE: 파일 크기가 허용 범위를 초과했습니다.
+                    - FILE_TYPE_NOT_ALLOWED: 지원하지 않는 파일 형식입니다.
+                    - INVALID_REQUEST: 타입이 잘못되었습니다. (현재 'images'만 지원)
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "FILE_EMPTY 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "업로드할 파일이 비어있습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa48)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "500", description = "서버 오류입니다. 다음 에러 코드가 발생할 수 있습니다:\n- FILE_UPLOAD_FAILED: 파일 업로드에 실패했습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "FILE_UPLOAD_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 500,
+                                              "message": "파일 업로드에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa49)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<String>> uploadFile(
             @Parameter(description = "업로드할 파일", required = true)

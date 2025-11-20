@@ -3,6 +3,7 @@ package zim.tave.memory.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,10 +39,34 @@ public class CountryController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "검색 성공",
             content = @Content(schema = @Schema(implementation = CountrySearchResponse.class))),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "500", description = "서버 오류",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        @ApiResponse(responseCode = "400", description = "잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:\n- VALIDATION_ERROR: 요청 값이 올바르지 않습니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "VALIDATION_ERROR 예시",
+                            value = """
+                                    {
+                                      "code": 400,
+                                      "message": "요청 값이 올바르지 않습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa50)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "서버 오류 예시",
+                            value = """
+                                    {
+                                      "code": 500,
+                                      "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa51)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            ))
     })
     @GetMapping("/countries")
     public ResponseEntity<ApiResponseDto<List<CountrySearchResponseDto>>> searchCountries(
@@ -59,12 +84,53 @@ public class CountryController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "조회 성공",
             content = @Content(schema = @Schema(implementation = VisitedCountryListResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "403", description = "접근 권한 없음",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "500", description = "서버 오류",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        @ApiResponse(responseCode = "401", description = """
+                인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                """,
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "AUTHENTICATION_FAILED 예시",
+                            value = """
+                                    {
+                                      "code": 401,
+                                      "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa52)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "ACCESS_DENIED 예시",
+                            value = """
+                                    {
+                                      "code": 403,
+                                      "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa53)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "서버 오류 예시",
+                            value = """
+                                    {
+                                      "code": 500,
+                                      "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa54)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            ))
     })
     @GetMapping("/users/me/visited-countries")
     public ResponseEntity<ApiResponseDto<List<VisitedCountryResponseDto>>> getVisitedCountries(
@@ -80,14 +146,76 @@ public class CountryController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "등록 또는 업데이트 성공",
             content = @Content(schema = @Schema(implementation = VisitedCountrySingleResponse.class))),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "403", description = "접근 권한 없음",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "500", description = "서버 오류",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        @ApiResponse(responseCode = "400", description = """
+                잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - INVALID_COUNTRY_CODE: 올바르지 않은 국가 코드입니다.
+                - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                """,
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "INVALID_COUNTRY_CODE 예시",
+                            value = """
+                                    {
+                                      "code": 400,
+                                      "message": "올바르지 않은 국가 코드입니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa55)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "401", description = """
+                인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                """,
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "AUTHENTICATION_FAILED 예시",
+                            value = """
+                                    {
+                                      "code": 401,
+                                      "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa56)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "404", description = """
+                리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                - COUNTRY_NOT_FOUND: 국가를 찾을 수 없습니다.
+                - USER_NOT_FOUND: 사용자를 찾을 수 없습니다.
+                - EMOTION_NOT_FOUND: 감정을 찾을 수 없습니다.
+                """,
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "COUNTRY_NOT_FOUND 예시",
+                            value = """
+                                    {
+                                      "code": 404,
+                                      "message": "국가를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa57)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "500", description = "서버 오류입니다. 다음 에러 코드가 발생할 수 있습니다:\n- DEFAULT_EMOTION_NOT_CONFIGURED: 기본 감정 정보가 설정되어 있지 않습니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "서버 오류 예시",
+                            value = """
+                                    {
+                                      "code": 500,
+                                      "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa58)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            ))
     })
     @PostMapping("/users/me/visited-countries")
     public ResponseEntity<ApiResponseDto<VisitedCountryResponseDto>> registerVisitedCountry(
@@ -114,14 +242,81 @@ public class CountryController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "삭제 성공",
             content = @Content(schema = @Schema(implementation = VoidResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "403", description = "접근 권한 없음",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "404", description = "방문 국가를 찾을 수 없음",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "500", description = "서버 오류",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        @ApiResponse(responseCode = "400", description = "잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:\n- INVALID_COUNTRY_CODE: 올바르지 않은 국가 코드입니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "INVALID_COUNTRY_CODE 예시",
+                            value = """
+                                    {
+                                      "code": 400,
+                                      "message": "올바르지 않은 국가 코드입니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa59)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "401", description = """
+                인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                """,
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "AUTHENTICATION_FAILED 예시",
+                            value = """
+                                    {
+                                      "code": 401,
+                                      "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa60)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "403", description = "접근 권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "ACCESS_DENIED 예시",
+                            value = """
+                                    {
+                                      "code": 403,
+                                      "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa61)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "404", description = "방문 국가를 찾을 수 없습니다.\n- VISITED_COUNTRY_NOT_FOUND: 방문 국가 기록을 찾을 수 없습니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "VISITED_COUNTRY_NOT_FOUND 예시",
+                            value = """
+                                    {
+                                      "code": 404,
+                                      "message": "방문 국가 기록을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa62)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            )),
+        @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "서버 오류 예시",
+                            value = """
+                                    {
+                                      "code": 500,
+                                      "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa63)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            ))
     })
     @DeleteMapping("/users/me/visited-countries/{countryCode}")
     public ResponseEntity<ApiResponseDto<Void>> deleteVisitedCountry(

@@ -3,6 +3,7 @@ package zim.tave.memory.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -37,12 +38,81 @@ public class DiaryController {
     @ApiResponses(value = {
 			@ApiResponse(responseCode = "201", description = "일기 생성 성공",
                     content = @Content(schema = @Schema(implementation = DiaryResponse.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (필수 필드 누락, 이미지 개수 오류, 카메라 타입 누락 등)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - IMAGE_COUNT_INVALID: 이미지는 반드시 2장이어야 합니다. (FRONT/BACK)
+                    - CAMERA_TYPES_REQUIRED: FRONT/BACK 카메라 사진이 모두 필요합니다.
+                    - REPRESENTATIVE_IMAGE_REQUIRED: 대표 이미지는 정확히 1장이어야 합니다.
+                    - INVALID_COUNTRY_CODE: 올바르지 않은 국가 코드입니다.
+                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                    - CANNOT_ADD_DIARY_TO_PAST_TRIP: 과거 여행에는 일기를 추가할 수 없습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "IMAGE_COUNT_INVALID 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "이미지는 반드시 2장이어야 합니다. (FRONT/BACK) (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa64)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa65)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = """
+                    리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - USER_NOT_FOUND: 사용자를 찾을 수 없습니다.
+                    - TRIP_NOT_FOUND: 해당 여행을 찾을 수 없습니다.
+                    - EMOTION_NOT_FOUND: 감정을 찾을 수 없습니다.
+                    - WEATHER_NOT_FOUND: 날씨를 찾을 수 없습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "해당 여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa66)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "서버 오류 예시",
+                                    value = """
+                                            {
+                                              "code": 500,
+                                              "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa67)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<DiaryResponseDto>> createDiary(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -64,12 +134,58 @@ public class DiaryController {
     @ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "일기 수정 성공",
                     content = @Content(schema = @Schema(implementation = VoidResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa68)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa69)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = """
+                    일기를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - DIARY_NOT_FOUND: 일기를 찾을 수 없습니다.
+                    - EMOTION_NOT_FOUND: 감정을 찾을 수 없습니다.
+                    - WEATHER_NOT_FOUND: 날씨를 찾을 수 없습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "DIARY_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "일기를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa70)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<Void>> updateDiaryOptionalFields(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -92,14 +208,71 @@ public class DiaryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "대표 이미지 변경 성공",
                     content = @Content(schema = @Schema(implementation = VoidResponse.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "일기 또는 이미지를 찾을 수 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:\n- IMAGE_ID_REQUIRED: 이미지 ID가 필요합니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "IMAGE_ID_REQUIRED 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "이미지 ID가 필요합니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa71)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa72)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa73)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = """
+                    리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - DIARY_NOT_FOUND: 일기를 찾을 수 없습니다.
+                    - IMAGE_NOT_FOUND: 이미지를 찾을 수 없습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "DIARY_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "일기를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa74)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<Void>> updateRepresentativeImage(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -120,8 +293,25 @@ public class DiaryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = DiaryListResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa75)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<List<DiaryResponseDto>>> getMyAllDiaries(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -136,12 +326,53 @@ public class DiaryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 조회 성공",
                     content = @Content(schema = @Schema(implementation = DiaryResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa76)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa77)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없습니다.\n- DIARY_NOT_FOUND: 일기를 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "DIARY_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "일기를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa78)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<DiaryResponseDto>> getDiary(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -157,10 +388,53 @@ public class DiaryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 일기 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = DiaryListResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa79)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa80)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 해당 여행을 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "해당 여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa81)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<List<DiaryResponseDto>>> getMyDiariesByTripId(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -177,12 +451,53 @@ public class DiaryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 삭제 성공",
                     content = @Content(schema = @Schema(implementation = VoidResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa82)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa83)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없습니다.\n- DIARY_NOT_FOUND: 일기를 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "DIARY_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "일기를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa84)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
 	public ResponseEntity<ApiResponseDto<Void>> deleteDiary(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,

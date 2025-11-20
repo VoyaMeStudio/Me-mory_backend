@@ -4,6 +4,7 @@ package zim.tave.memory.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -35,12 +36,53 @@ public class StorageController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "보관된 여행 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = StoredTripListResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다.",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "보관된 여행 정보를 찾을 수 없습니다.",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 보관된 여행 조회에 실패하였습니다.",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "UNAUTHORIZED_USER 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증되지 않은 사용자입니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf109)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "보관된 여행 정보를 찾을 수 없습니다.\n- STORED_TRIP_NOT_FOUND: 보관된 여행 정보를 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "STORED_TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "보관된 여행 정보를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf110)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "서버 오류 예시",
+                                    value = """
+                                            {
+                                              "code": 500,
+                                              "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf111)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     @GetMapping("/trips")
     public ResponseEntity<ApiResponseDto<StoredTripListResponseDto>> getStoredTrips(

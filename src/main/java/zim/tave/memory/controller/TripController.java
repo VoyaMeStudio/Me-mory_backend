@@ -3,6 +3,7 @@ package zim.tave.memory.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.dto.*;
+import zim.tave.memory.dto.swagger.ErrorResponse;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.service.DiaryService;
@@ -34,8 +36,59 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "여행 생성 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 누락 또는 만료)", content = @Content()),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content)
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - TRIP_NAME_REQUIRED: 여행명은 필수입니다.
+                    - TRIP_NAME_TOO_LONG: 여행명은 최대 14자입니다.
+                    - TRIP_DESCRIPTION_TOO_LONG: 여행 설명은 최대 56자입니다.
+                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NAME_REQUIRED 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "여행명은 필수입니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa85)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa86)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:\n- TRIP_THEME_NOT_FOUND: 여행 테마를 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_THEME_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행 테마를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa87)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> createTrip(
             @RequestBody CreateTripRequest request,
@@ -50,10 +103,73 @@ public class TripController {
     @Operation(summary = "여행 수정", description = "기존 여행 정보를 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 수정 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - TRIP_NAME_REQUIRED: 여행명은 필수입니다.
+                    - TRIP_NAME_TOO_LONG: 여행명은 최대 14자입니다.
+                    - TRIP_DESCRIPTION_TOO_LONG: 여행 설명은 최대 56자입니다.
+                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NAME_TOO_LONG 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "여행명은 최대 14자입니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa88)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa89)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.\n- TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 수정 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa90)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa91)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<Void>> updateTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
@@ -68,8 +184,25 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 목록 조회 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
-            @ApiResponse(responseCode = "404", description = "해당 사용자의 여행 없음", content = @Content)
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa92)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<List<TripResponseDto>>> getAllTrips(
             @AuthenticationPrincipal(expression = "userId") Long userId) {
@@ -83,9 +216,53 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 조회 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa93)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.\n- TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 수정 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa94)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa95)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> getTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
@@ -99,9 +276,53 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "대표사진 조회 성공",
                     content = @Content(schema = @Schema(implementation = TripRepresentativeImageDto.class))),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa96)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa97)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa98)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<List<TripRepresentativeImageDto>>> getRepresentativeImages(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
@@ -117,10 +338,76 @@ public class TripController {
     @Operation(summary = "여행 대표사진 설정", description = "여행의 대표사진을 설정합니다. 해당 여행에 속한 다이어리의 대표사진 중에서 선택할 수 있습니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 대표사진 설정 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-            @ApiResponse(responseCode = "404", description = "여행 또는 이미지를 찾을 수 없음", content = @Content),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (JWT 누락 또는 만료)", content = @Content),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (본인 소유 아님)", content = @Content)
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - IMAGE_ID_REQUIRED: 이미지 ID가 필요합니다.
+                    - IMAGE_NOT_REPRESENTATIVE: 대표 이미지가 아닙니다.
+                    - IMAGE_TRIP_MISMATCH: 해당 이미지는 이 여행에 속하지 않습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "IMAGE_ID_REQUIRED 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "이미지 ID가 필요합니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cfa99)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf100)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.\n- TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 수정 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf101)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = """
+                    리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.
+                    - IMAGE_NOT_FOUND: 이미지를 찾을 수 없습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf102)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<Void>> updateTripRepresentativeImage(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
@@ -135,8 +422,60 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "과거 여행 생성 성공",
                     content = @Content(schema = @Schema(implementation = TripResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content)
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - TRIP_NAME_REQUIRED: 여행명은 필수입니다.
+                    - TRIP_NAME_TOO_LONG: 여행명은 최대 14자입니다.
+                    - TRIP_DESCRIPTION_TOO_LONG: 여행 설명은 최대 56자입니다.
+                    - MISSING_REQUIRED_FIELDS: 값을 입력해주세요.
+                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "MISSING_REQUIRED_FIELDS 예시",
+                                    value = """
+                                            {
+                                              "code": 400,
+                                              "message": "값을 입력해주세요. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf103)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf104)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:\n- TRIP_THEME_NOT_FOUND: 여행 테마를 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_THEME_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행 테마를 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf105)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> createPastTrip(
             @RequestBody CreatePastTripRequest request,
@@ -150,9 +489,53 @@ public class TripController {
     @Operation(summary = "여행 보관 상태 변경", description = "여행을 보관하거나 보관 해제합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "보관 상태 변경 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
-            @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "AUTHENTICATION_FAILED 예시",
+                                    value = """
+                                            {
+                                              "code": 401,
+                                              "message": "인증에 실패했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf106)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "ACCESS_DENIED 예시",
+                                    value = """
+                                            {
+                                              "code": 403,
+                                              "message": "접근 권한이 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf107)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    )),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "TRIP_NOT_FOUND 예시",
+                                    value = """
+                                            {
+                                              "code": 404,
+                                              "message": "여행을 찾을 수 없습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf108)",
+                                              "data": null
+                                            }
+                                            """
+                            )
+                    ))
     })
     public ResponseEntity<ApiResponseDto<Void>> storeTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,

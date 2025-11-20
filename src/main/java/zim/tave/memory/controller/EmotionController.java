@@ -2,6 +2,7 @@ package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,8 +30,20 @@ public class EmotionController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "조회 성공",
             content = @Content(schema = @Schema(implementation = EmotionListResponse.class))),
-        @ApiResponse(responseCode = "500", description = "서버 오류",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                            name = "서버 오류 예시",
+                            value = """
+                                    {
+                                      "code": 500,
+                                      "message": "서버 오류가 발생했습니다. (errorId: 0cde4715-c546-4af5-ae2e-6c2c324cf115)",
+                                      "data": null
+                                    }
+                                    """
+                    )
+            ))
     })
     @GetMapping("")
     public ResponseEntity<List<Emotion>> getAllEmotions() {
