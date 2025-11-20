@@ -102,7 +102,7 @@ public class VisitedCountryService {
         visitedCountryRepository.delete(visitedCountry);
     }
 
-    // ✅ 방문 국가 목록 조회
+    // 마이페이지 - 방문 국가 목록 조회 (중복X)
     public VisitedCountryListResponseDto getVisitedCountryList(Long userId) {
         // 유저 검증
         User user = userRepository.findById(userId)
@@ -111,11 +111,12 @@ public class VisitedCountryService {
         // 방문 국가 조회 (중복 제거)
         List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
 
+        // 방문 국가 없으면 빈 리스트 리턴
         if (visitedCountries.isEmpty()) {
-            throw new CustomException(ErrorCode.VISITED_COUNTRY_NOT_FOUND);
+            return VisitedCountryListResponseDto.empty();
         }
 
-        // ✅ ISO 코드 기준 중복 제거
+        //ISO 중복 제거
         Map<String, Country> uniqueCountries = visitedCountries.stream()
                 .collect(Collectors.toMap(
                         vc -> vc.getCountry().getCountryCode(),
@@ -123,17 +124,8 @@ public class VisitedCountryService {
                         (existing, duplicate) -> existing  // 중복 제거
                 ));
 
-        // ✅ 국가 코드 / 이름 리스트로 변환
-        List<VisitedCountryListResponseDto.VisitedCountryItem> countryItems = uniqueCountries.values().stream()
-                .map(country -> new VisitedCountryListResponseDto.VisitedCountryItem(
-                        country.getCountryCode(),
-                        country.getCountryName()
-                ))
-                .toList();
-
-        // ✅ 총 방문 국가 수 (User 테이블의 visitedCountryCount 사용)
         Long countryCount = user.getVisitedCountryCount();
 
-        return new VisitedCountryListResponseDto(countryCount, countryItems);
+        return VisitedCountryListResponseDto.from(countryCount, uniqueCountries.values());
     }
 }

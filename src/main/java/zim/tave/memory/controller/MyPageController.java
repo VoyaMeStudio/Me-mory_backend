@@ -70,33 +70,38 @@ public class MyPageController {
     }
 
     @Operation(summary = "방문 국가 목록 조회", description = "현재 로그인한 사용자의 방문 국가 목록을 조회합니다.")
+    @ApiErrorCodeExamples({
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER,
+            ErrorCode.USER_NOT_FOUND,
+            ErrorCode.VISITED_COUNTRY_NOT_FOUND
+    })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "방문 국가 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "방문한 국가 정보를 찾을 수 없습니다."),
-            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다."),
+            @ApiResponse(responseCode = "200", description = "방문 국가 조회 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                잘못된 요청입니다.
+                """, content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                인증 실패입니다. 다음 오류가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED
+                - INVALID_TOKEN
+                - UNAUTHORIZED_USER
+                """, content = @Content),
+            @ApiResponse(responseCode = "404", description = """
+                리소스를 찾을 수 없습니다:
+                - USER_NOT_FOUND: 사용자를 찾을 수 없습니다.
+                - VISITED_COUNTRY_NOT_FOUND: 방문한 국가 정보가 없습니다.
+                """, content = @Content),
             @ApiResponse(responseCode = "500", description = "서버 오류로 인해 방문 국가 조회에 실패하였습니다.")
     })
-    @GetMapping("/visitedcountries")
+    @GetMapping("/mypage-visited-countries")
     public ResponseEntity<ApiResponseDto<VisitedCountryListResponseDto>> getVisitedCountries(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
 
-        Long userId = userDetails.getUserId();
         VisitedCountryListResponseDto response = visitedCountryService.getVisitedCountryList(userId);
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.VISITED_COUNTRIES_FETCH_SUCCESS, response));
     }
 
-    /*
-    //에러 테스트 코드
-    @GetMapping("/test-error")
-    public ResponseEntity<ApiResponseDto<MyPageResponseDto>> testError(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Long userId = userDetails.getUserId();
-        MyPageResponseDto responseDto = myPageService.getErrorExample(userId);
-
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, responseDto));
-    }
-     */
 }
