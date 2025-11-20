@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
-import zim.tave.memory.dto.StoredTripListResponseDto;
+import zim.tave.memory.dto.response.StoredTripListResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;

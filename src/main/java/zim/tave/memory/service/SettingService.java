@@ -4,17 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.domain.VisitedCountry;
-import zim.tave.memory.dto.UpdateUserRequestDto;
-import zim.tave.memory.dto.UserResponseDto;
+import zim.tave.memory.dto.request.UpdateUserRequestDto;
+import zim.tave.memory.dto.response.UserResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

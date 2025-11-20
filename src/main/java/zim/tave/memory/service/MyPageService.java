@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.domain.VisitedCountry;
-import zim.tave.memory.dto.MyPageResponseDto;
+import zim.tave.memory.dto.response.MyPageResponseDto;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;

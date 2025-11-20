@@ -1,4 +1,4 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

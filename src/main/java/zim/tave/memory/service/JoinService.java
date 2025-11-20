@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.JoinRequestDto;
+import zim.tave.memory.dto.request.JoinRequestDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.UserRepository;

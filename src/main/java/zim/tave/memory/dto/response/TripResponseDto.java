@@ -1,4 +1,4 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

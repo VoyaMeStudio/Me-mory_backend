@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Trip;
-import zim.tave.memory.dto.StoredTripListResponseDto;
+import zim.tave.memory.dto.response.StoredTripListResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.TripRepository;
