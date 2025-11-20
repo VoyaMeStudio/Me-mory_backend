@@ -64,6 +64,15 @@ public class GlobalExceptionHandler {
             case FILE_TOO_LARGE -> ResponseCode.FILE_TOO_LARGE;
             case FILE_TYPE_NOT_ALLOWED -> ResponseCode.FILE_TYPE_NOT_ALLOWED;
             case FILE_UPLOAD_FAILED -> ResponseCode.FILE_UPLOAD_FAILED;
+
+            //카카오 로그인
+            case KAKAO_TOKEN_MISSING -> ResponseCode.KAKAO_TOKEN_MISSING;
+            case KAKAO_INVALID_TOKEN -> ResponseCode.KAKAO_INVALID_TOKEN;
+            case KAKAO_UNAUTHORIZED -> ResponseCode.KAKAO_UNAUTHORIZED;
+            case KAKAO_SERVER_ERROR -> ResponseCode.KAKAO_SERVER_ERROR;
+            case KAKAO_RESPONSE_PARSING_ERROR -> ResponseCode.KAKAO_RESPONSE_PARSING_ERROR;
+            case KAKAO_API_UNKNOWN_ERROR -> ResponseCode.KAKAO_API_UNKNOWN_ERROR;
+
             default -> ResponseCode.SERVER_ERROR;
         };
 

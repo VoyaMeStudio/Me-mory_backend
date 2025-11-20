@@ -49,7 +49,15 @@ public enum ErrorCode {
     FILE_EMPTY(HttpStatus.BAD_REQUEST, "업로드할 파일이 비어있습니다."),
     FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "파일 크기가 허용 범위를 초과했습니다."),
     FILE_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
-    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+
+    // 카카오로그인 관련 에러
+    KAKAO_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "카카오 액세스 토큰이 누락되었습니다."),
+    KAKAO_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않거나 만료된 카카오 액세스 토큰입니다."),
+    KAKAO_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "카카오 API 접근 권한이 없습니다."),
+    KAKAO_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 서버 오류입니다."),
+    KAKAO_RESPONSE_PARSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 응답 데이터를 처리할 수 없습니다."),
+    KAKAO_API_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),;
 
 
 

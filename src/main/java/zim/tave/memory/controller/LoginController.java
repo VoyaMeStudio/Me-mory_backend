@@ -35,12 +35,29 @@ public class LoginController {
     @Operation(summary = "카카오 로그인 요청",
             description = "카카오 사용자 인증 후 토큰 발급, 토큰 이용하여 백엔드 서버가 로그인 처리")
     @SecurityRequirements
-    @ApiErrorCodeExamples({ErrorCode.INVALID_TOKEN, ErrorCode.INTERNAL_SERVER_ERROR})
+    @ApiErrorCodeExamples({
+            ErrorCode.KAKAO_TOKEN_MISSING,
+            ErrorCode.KAKAO_INVALID_TOKEN,
+            ErrorCode.KAKAO_UNAUTHORIZED,
+            ErrorCode.KAKAO_SERVER_ERROR,
+            ErrorCode.INTERNAL_SERVER_ERROR
+    })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공",
-                    content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (client id 오류, 만료된 authorization code 등)", content = @Content()),
-            @ApiResponse(responseCode = "500", description = "서버 오류, 유효하지 않은 토큰", content = @Content())
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                잘못된 요청입니다. 다음 오류가 발생할 수 있습니다:
+                - KAKAO_TOKEN_MISSING: 카카오 Access Token이 누락되었습니다.
+                """, content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                카카오 인증 실패입니다. 다음 오류가 발생할 수 있습니다:
+                - KAKAO_INVALID_TOKEN: 유효하지 않거나 만료된 카카오 Access Token입니다.
+                - KAKAO_UNAUTHORIZED: 카카오 API 접근 권한이 없습니다.
+                """, content = @Content),
+            @ApiResponse(responseCode = "500", description = """
+                서버 오류입니다. 다음 오류가 발생할 수 있습니다:
+                - KAKAO_SERVER_ERROR: 카카오 서버 문제로 사용자 정보를 가져올 수 없습니다.
+                - INTERNAL_SERVER_ERROR: 로그인 처리 중 알 수 없는 오류가 발생했습니다.
+                """, content = @Content)
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLogin(
