@@ -16,6 +16,7 @@ import zim.tave.memory.dto.CreateDiaryRequest;
 import zim.tave.memory.dto.DiaryResponseDto;
 import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
 import zim.tave.memory.dto.UpdateRepresentativeImageRequest;
+import zim.tave.memory.dto.swagger.*;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.security.CustomUserDetails;
@@ -35,13 +36,21 @@ public class DiaryController {
     @Operation(summary = "일기 생성", description = "JWT 토큰으로 인증된 사용자의 일기를 생성합니다. 정면/후면 카메라 사진 각 1장씩, 총 2장의 이미지가 필요하며 그 중 1장을 대표 이미지로 설정해야 합니다.")
     @ApiResponses(value = {
 			@ApiResponse(responseCode = "201", description = "일기 생성 성공",
-                    content = @Content(schema = @Schema(implementation = DiaryResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (필수 필드 누락, 이미지 개수 오류, 카메라 타입 누락 등)", content = @Content),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+                    content = @Content(schema = @Schema(implementation = DiaryResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (필수 필드 누락, 이미지 개수 오류, 카메라 타입 누락 등)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<DiaryResponseDto>> createDiary(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "일기 생성 요청 DTO",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CreateDiaryRequest.class))
+            )
             @RequestBody CreateDiaryRequest request) {
         request.setUserId(userDetails.getUserId());
 		DiaryResponseDto dto = diaryService.createDiary(request);
@@ -53,14 +62,23 @@ public class DiaryController {
 	@PatchMapping("/users/me/diaries/{diaryId}")
     @Operation(summary = "일기 선택 필드 수정", description = "JWT 토큰으로 인증된 사용자의 일기 선택적 필드들(감정, 날씨 등)을 수정합니다.")
     @ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "일기 수정 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
-            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음", content = @Content)
+			@ApiResponse(responseCode = "200", description = "일기 수정 성공",
+                    content = @Content(schema = @Schema(implementation = VoidResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<Void>> updateDiaryOptionalFields(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
 			@Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "일기 선택 필드 수정 요청 DTO",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = UpdateDiaryOptionalFieldsRequest.class))
+            )
             @RequestBody UpdateDiaryOptionalFieldsRequest request) {
 		Long userId = userDetails.getUserId();
 		// 소유권 검증은 서비스에서 수행
@@ -72,17 +90,26 @@ public class DiaryController {
 	@PatchMapping("/users/me/diaries/{diaryId}/representative-images")
     @Operation(summary = "대표 이미지 변경", description = "JWT 토큰으로 인증된 사용자의 일기 대표 이미지를 변경합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "대표 이미지 변경 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
-            @ApiResponse(responseCode = "404", description = "일기 또는 이미지를 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "200", description = "대표 이미지 변경 성공",
+                    content = @Content(schema = @Schema(implementation = VoidResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "일기 또는 이미지를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<Void>> updateRepresentativeImage(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "대표 이미지 변경 요청 DTO",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = UpdateRepresentativeImageRequest.class))
+            )
             @RequestBody UpdateRepresentativeImageRequest request) {
-        Long userId = userDetails.getUserId();
         diaryService.updateRepresentativeImage(diaryId, request.getImageId());
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
@@ -92,11 +119,12 @@ public class DiaryController {
     @Operation(summary = "내 전체 일기 목록 조회", description = "JWT 토큰으로 인증된 사용자의 모든 일기를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = DiaryResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content())
+                    content = @Content(schema = @Schema(implementation = DiaryListResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<List<DiaryResponseDto>>> getMyAllDiaries(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
 		Long userId = userDetails.getUserId();
 		List<DiaryResponseDto> diaryDtos = diaryService.findByUserId(userId);
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, diaryDtos));
@@ -107,13 +135,16 @@ public class DiaryController {
     @Operation(summary = "일기 상세 조회", description = "JWT 토큰으로 인증된 사용자의 특정 일기를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일기 조회 성공",
-                    content = @Content(schema = @Schema(implementation = DiaryResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
-            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음", content = @Content)
+                    content = @Content(schema = @Schema(implementation = DiaryResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<DiaryResponseDto>> getDiary(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
 		Long userId = userDetails.getUserId();
 		DiaryResponseDto dto = diaryService.findOne(diaryId, userId);
@@ -125,12 +156,14 @@ public class DiaryController {
     @Operation(summary = "내 여행별 일기 목록 조회", description = "JWT 토큰으로 인증된 사용자의 특정 여행에 속한 모든 일기를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "여행 일기 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = DiaryResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음", content = @Content)
+                    content = @Content(schema = @Schema(implementation = DiaryListResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<List<DiaryResponseDto>>> getMyDiariesByTripId(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId) {
         Long userId = userDetails.getUserId();
 		List<DiaryResponseDto> diaryDtos = diaryService.findByTripId(tripId, userId);
@@ -142,13 +175,17 @@ public class DiaryController {
 	@DeleteMapping("/users/me/diaries/{diaryId}")
     @Operation(summary = "일기 삭제", description = "JWT 토큰으로 인증된 사용자의 특정 일기를 삭제합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "일기 삭제 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content()),
-            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)", content = @Content()),
-            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음", content = @Content)
+            @ApiResponse(responseCode = "200", description = "일기 삭제 성공",
+                    content = @Content(schema = @Schema(implementation = VoidResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "권한 없음 (다른 사용자의 일기)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 	public ResponseEntity<ApiResponseDto<Void>> deleteDiary(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
         diaryService.deleteDiary(diaryId);
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));

@@ -68,7 +68,7 @@ public class CountryController {
     })
     @GetMapping("/users/me/visited-countries")
     public ResponseEntity<ApiResponseDto<List<VisitedCountryResponseDto>>> getVisitedCountries(
-        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getUserId();
         List<VisitedCountryResponseDto> visitedCountries = visitedCountryService.getVisitedCountries(userId);
@@ -91,7 +91,7 @@ public class CountryController {
     })
     @PostMapping("/users/me/visited-countries")
     public ResponseEntity<ApiResponseDto<VisitedCountryResponseDto>> registerVisitedCountry(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "방문 국가 등록 요청 DTO (countryCode, emotionId)",
             required = true,
@@ -125,7 +125,7 @@ public class CountryController {
     })
     @DeleteMapping("/users/me/visited-countries/{countryCode}")
     public ResponseEntity<ApiResponseDto<Void>> deleteVisitedCountry(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "삭제할 국가 코드", example = "KR")
         @PathVariable String countryCode
     ) {

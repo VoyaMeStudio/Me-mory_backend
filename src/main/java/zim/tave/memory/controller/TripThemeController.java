@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.domain.TripTheme;
 import zim.tave.memory.dto.TripThemeResponseDto;
+import zim.tave.memory.dto.swagger.ErrorResponse;
+import zim.tave.memory.dto.swagger.TripThemeListResponse;
 import zim.tave.memory.repository.TripThemeRepository;
 
 import java.util.List;
@@ -30,8 +32,9 @@ public class TripThemeController {
     @Operation(summary = "테마 목록 조회", description = "모든 여행 테마 목록을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "테마 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = TripThemeResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+                    content = @Content(schema = @Schema(implementation = TripThemeListResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<List<TripThemeResponseDto>> getAllThemes() {
         List<TripTheme> themes = tripThemeRepository.findAllByOrderById();

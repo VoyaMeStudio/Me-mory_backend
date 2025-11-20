@@ -1,5 +1,12 @@
 package zim.tave.memory.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import zim.tave.memory.config.FileUploadProperties;
+import zim.tave.memory.dto.swagger.ErrorResponse;
+import zim.tave.memory.dto.swagger.StringResponse;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.CustomException;
@@ -17,14 +26,27 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "FileUpload", description = "파일 업로드 API")
 public class FileUploadController {
 
     private final S3Uploader s3Uploader;
     private final FileUploadProperties fileUploadProperties;
 
     @PostMapping("/upload")
-    public ResponseEntity<ApiResponseDto<String>> uploadFile(@RequestParam("file") MultipartFile file,
-                                                             @RequestParam("type") String type) {
+    @Operation(summary = "파일 업로드", description = "이미지 파일을 S3에 업로드하고 URL을 반환합니다. 현재는 'images' 타입만 지원합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파일 업로드 성공",
+                    content = @Content(schema = @Schema(implementation = StringResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (파일이 비어있거나, 타입이 잘못되었거나, 파일 크기 초과, 허용되지 않는 파일 형식)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류 (파일 업로드 실패)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<ApiResponseDto<String>> uploadFile(
+            @Parameter(description = "업로드할 파일", required = true)
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "파일 타입 (현재 'images'만 지원)", required = true, example = "images")
+            @RequestParam("type") String type) {
         validateFile(file, type);
 
         try {

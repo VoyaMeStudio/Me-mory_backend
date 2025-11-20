@@ -1,6 +1,7 @@
 package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.dto.WeatherResponseDto;
+import zim.tave.memory.dto.swagger.ErrorResponse;
+import zim.tave.memory.dto.swagger.WeatherListResponse;
+import zim.tave.memory.dto.swagger.WeatherSingleResponse;
 import zim.tave.memory.service.WeatherService;
 
 import java.util.List;
@@ -26,8 +30,9 @@ public class WeatherController {
     @Operation(summary = "날씨 목록 조회", description = "사용 가능한 모든 날씨 목록을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "날씨 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = WeatherResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content())
+                    content = @Content(schema = @Schema(implementation = WeatherListResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<List<WeatherResponseDto>> getAllWeathers() {
         List<WeatherResponseDto> weathers = weatherService.getAllWeathers();
@@ -38,10 +43,13 @@ public class WeatherController {
     @Operation(summary = "특정 날씨 조회", description = "ID로 특정 날씨 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "날씨 조회 성공",
-                    content = @Content(schema = @Schema(implementation = WeatherResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "날씨를 찾을 수 없음")
+                    content = @Content(schema = @Schema(implementation = WeatherSingleResponse.class))),
+            @ApiResponse(responseCode = "404", description = "날씨를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public WeatherResponseDto getWeatherById(@PathVariable Long weatherId) {
+    public WeatherResponseDto getWeatherById(
+            @Parameter(description = "날씨 ID", required = true, example = "1")
+            @PathVariable Long weatherId) {
         return weatherService.getWeatherById(weatherId);
     }
 } 
