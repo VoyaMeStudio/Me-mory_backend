@@ -50,7 +50,6 @@ public class FileUploadController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "FILE_EMPTY 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -64,7 +63,6 @@ public class FileUploadController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "FILE_UPLOAD_FAILED 예시",
                                     value = """
                                             {
                                               "code": 500,

@@ -48,7 +48,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NAME_REQUIRED 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -67,7 +66,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -81,7 +79,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_THEME_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -115,7 +112,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NAME_TOO_LONG 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -134,7 +130,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -148,7 +143,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -162,7 +156,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -195,7 +188,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -241,7 +233,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -255,7 +246,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -287,7 +277,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -301,7 +290,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -315,7 +303,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -349,7 +336,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "IMAGE_ID_REQUIRED 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -368,7 +354,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -382,7 +367,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -400,7 +384,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -435,7 +418,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "MISSING_REQUIRED_FIELDS 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -454,7 +436,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -468,7 +449,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_THEME_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -500,7 +480,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -514,7 +493,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -528,7 +506,6 @@ public class TripController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,

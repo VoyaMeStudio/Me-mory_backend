@@ -52,7 +52,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "IMAGE_COUNT_INVALID 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -71,7 +70,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -91,7 +89,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -105,7 +102,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "서버 오류 예시",
                                     value = """
                                             {
                                               "code": 500,
@@ -145,7 +141,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -159,7 +154,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -178,7 +172,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "DIARY_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -214,7 +207,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "IMAGE_ID_REQUIRED 예시",
                                     value = """
                                             {
                                               "code": 400,
@@ -233,7 +225,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "AUTHENTICATION_FAILED 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -247,7 +238,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "ACCESS_DENIED 예시",
                                     value = """
                                             {
                                               "code": 403,
@@ -265,7 +255,6 @@ public class DiaryController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "DIARY_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,

@@ -38,7 +38,6 @@ public class WeatherController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "서버 오류 예시",
                                     value = """
                                             {
                                               "code": 500,
@@ -63,7 +62,6 @@ public class WeatherController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "WEATHER_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,

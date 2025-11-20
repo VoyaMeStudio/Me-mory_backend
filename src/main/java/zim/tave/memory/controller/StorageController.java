@@ -47,7 +47,6 @@ public class StorageController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "UNAUTHORIZED_USER 예시",
                                     value = """
                                             {
                                               "code": 401,
@@ -61,7 +60,6 @@ public class StorageController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "STORED_TRIP_NOT_FOUND 예시",
                                     value = """
                                             {
                                               "code": 404,
@@ -75,7 +73,6 @@ public class StorageController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "서버 오류 예시",
                                     value = """
                                             {
                                               "code": 500,

@@ -46,7 +46,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "VALIDATION_ERROR 예시",
                             value = """
                                     {
                                       "code": 400,
@@ -60,7 +59,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "서버 오류 예시",
                             value = """
                                     {
                                       "code": 500,
@@ -97,7 +95,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "AUTHENTICATION_FAILED 예시",
                             value = """
                                     {
                                       "code": 401,
@@ -111,7 +108,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "ACCESS_DENIED 예시",
                             value = """
                                     {
                                       "code": 403,
@@ -125,7 +121,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "서버 오류 예시",
                             value = """
                                     {
                                       "code": 500,
@@ -159,7 +154,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "INVALID_COUNTRY_CODE 예시",
                             value = """
                                     {
                                       "code": 400,
@@ -178,7 +172,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "AUTHENTICATION_FAILED 예시",
                             value = """
                                     {
                                       "code": 401,
@@ -197,7 +190,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "COUNTRY_NOT_FOUND 예시",
                             value = """
                                     {
                                       "code": 404,
@@ -211,7 +203,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "서버 오류 예시",
                             value = """
                                     {
                                       "code": 500,
@@ -252,7 +243,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "INVALID_COUNTRY_CODE 예시",
                             value = """
                                     {
                                       "code": 400,
@@ -271,7 +261,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "AUTHENTICATION_FAILED 예시",
                             value = """
                                     {
                                       "code": 401,
@@ -285,7 +274,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "ACCESS_DENIED 예시",
                             value = """
                                     {
                                       "code": 403,
@@ -299,7 +287,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "VISITED_COUNTRY_NOT_FOUND 예시",
                             value = """
                                     {
                                       "code": 404,
@@ -313,7 +300,6 @@ public class CountryController {
             content = @Content(
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(
-                            name = "서버 오류 예시",
                             value = """
                                     {
                                       "code": 500,

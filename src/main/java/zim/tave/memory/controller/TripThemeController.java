@@ -40,7 +40,6 @@ public class TripThemeController {
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
                             examples = @ExampleObject(
-                                    name = "서버 오류 예시",
                                     value = """
                                             {
                                               "code": 500,
