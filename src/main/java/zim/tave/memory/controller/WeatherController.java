@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
-import zim.tave.memory.dto.WeatherResponseDto;
+import zim.tave.memory.dto.response.WeatherResponseDto;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.service.WeatherService;
 
@@ -52,4 +52,4 @@ public class WeatherController {
             @PathVariable Long weatherId) {
         return weatherService.getWeatherById(weatherId);
     }
-} 
+}

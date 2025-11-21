@@ -1,4 +1,4 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

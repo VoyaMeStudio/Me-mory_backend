@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.MyPageResponseDto;
+import zim.tave.memory.dto.response.MyPageResponseDto;
 import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 

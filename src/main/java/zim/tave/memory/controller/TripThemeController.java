@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.domain.TripTheme;
-import zim.tave.memory.dto.TripThemeResponseDto;
+import zim.tave.memory.dto.response.TripThemeResponseDto;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.TripThemeRepository;
 

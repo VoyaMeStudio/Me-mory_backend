@@ -10,9 +10,9 @@ import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 
 import zim.tave.memory.domain.*;
-import zim.tave.memory.dto.CreateTripRequest;
-import zim.tave.memory.dto.CreateDiaryRequest;
-import zim.tave.memory.dto.DiaryResponseDto;
+import zim.tave.memory.dto.request.CreateTripRequest;
+import zim.tave.memory.dto.request.CreateDiaryRequest;
+import zim.tave.memory.dto.response.DiaryResponseDto;
 import zim.tave.memory.service.TripService;
 import zim.tave.memory.service.DiaryService;
 import zim.tave.memory.repository.TripRepository;
@@ -24,7 +24,7 @@ import zim.tave.memory.repository.WeatherRepository;
 import zim.tave.memory.repository.DiaryImageRepository;
 import zim.tave.memory.service.CountryService;
 import zim.tave.memory.service.VisitedCountryService;
-import zim.tave.memory.dto.TripResponseDto;
+import zim.tave.memory.dto.response.TripResponseDto;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;

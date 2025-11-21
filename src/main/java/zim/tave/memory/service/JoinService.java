@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.JoinRequestDto;
+import zim.tave.memory.dto.request.JoinRequestDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.UserRepository;
@@ -18,17 +18,21 @@ public class JoinService {
     private final UserRepository userRepository;
 
     @Transactional
-    public User join(JoinRequestDto requestDto) {
+    public User join(Long userId, JoinRequestDto requestDto) {
 
-        User user = userRepository.findByKakaoId(requestDto.getKakaoId())
-                .orElseThrow(() -> new CustomException(ErrorCode.KAKAO_LOGIN_REQUIRED));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // DB에서 카톡 아이디 조회하여 로그인 여부 검증
+        if (user.getKakaoId() == null) {
+            throw new CustomException(ErrorCode.KAKAO_LOGIN_REQUIRED);
+        }
 
         if (user.isRegistered()) {
             throw new CustomException(ErrorCode.ALREADY_JOINED);
         }
 
-        user.setKakaoId(requestDto.getKakaoId());
-        user.setProfileImageUrl(requestDto.getProfileImageUrl());
+        // 초기 정보 입력
         user.setSurName(requestDto.getSurName());
         user.setFirstName(requestDto.getFirstName());
         user.setKoreanName(requestDto.getKoreanName());

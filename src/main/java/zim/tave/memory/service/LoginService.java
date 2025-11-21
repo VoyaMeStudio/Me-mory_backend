@@ -4,8 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.LoginRequestDto;
-import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.dto.request.LoginRequestDto;
+import zim.tave.memory.dto.response.LoginResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.jwt.JwtUtil;
@@ -24,19 +24,18 @@ public class LoginService {
     private final JwtUtil jwtUtil;
 
     public LoginResponseDto login(LoginRequestDto request) {
+
+        if (request.getAccessToken() == null || request.getAccessToken().isBlank()) {
+            throw new CustomException(ErrorCode.KAKAO_TOKEN_MISSING);
+        }
+
         KakaoUserInfo kakaoUserInfo = kakaoApiClient.getKakaoUserInfo(request.getAccessToken());
         User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoId()).orElse(null);
 
+
         if (user != null) {
-            // 기존 회원
             String token = jwtUtil.generateToken(user.getId(), user.getKakaoId());
-            return new LoginResponseDto(
-                    user.getId(),
-                    true,
-                    user.getKakaoId(),
-                    user.getProfileImageUrl(),
-                    token
-            );
+            return LoginResponseDto.from(user, token, true);
         }
 
         // 처음 로그인한 사용자 → User 생성
@@ -46,30 +45,15 @@ public class LoginService {
         newUser.setCreatedAt(LocalDate.now());
         newUser.setStatus(true);
         newUser.setRegistered(false);
-
-        // 기본값 세팅 (join에서 업데이트됨)
-        newUser.setSurName(null);
-        newUser.setFirstName(null);
-        newUser.setKoreanName(null);
-        newUser.setBirth(null);
-        newUser.setNationality(null);
         newUser.setDiaryCount(0L);
         newUser.setVisitedCountryCount(0L);
         newUser.setFlags("");
-
         User savedUser = userRepository.save(newUser);
 
         //JWT AT 발급
         String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getKakaoId());
 
-        return new LoginResponseDto(
-                savedUser.getId(),
-                false,
-                savedUser.getKakaoId(),
-                savedUser.getProfileImageUrl(),
-                token
-
-        );
+        return LoginResponseDto.from(savedUser, token, false);
     }
 
     @Transactional
