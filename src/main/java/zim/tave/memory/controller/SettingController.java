@@ -97,4 +97,23 @@ public class SettingController {
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.USER_UPDATE_SUCCESS, updatedUser));
     }
+
+    @Operation(summary = "회원 정보 수정", description = "로그인한 사용자의 이름, 생년월일, 국적 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보 수정 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "수정할 필드가 존재하지 않습니다."),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다."),
+            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 회원 정보 수정 실패")
+    })
+    @PutMapping("/users/me")
+    public ResponseEntity<ApiResponseDto<UserResponseDto>> updateUserInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody UpdateUserRequestDto requestDto) {
+
+        Long userId = userDetails.getUserId();
+        UserResponseDto updatedUser = settingService.updateUserInfo(userId, requestDto);
+
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.USER_UPDATE_SUCCESS, updatedUser));
+    }
 }
