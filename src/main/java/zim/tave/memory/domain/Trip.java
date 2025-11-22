@@ -24,9 +24,15 @@ public class Trip {
     @Column(length = 56)
     private String description;
 
+    @Column(nullable = false)
     private LocalDate startDate;
 
+    @Column(nullable = false)
     private LocalDate endDate;
+
+    private Boolean isStored = false; //보관 여부 확인
+
+    private Boolean isPast = false; //과거 여행 여부 확인
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,8 +54,14 @@ public class Trip {
 
     @PrePersist
     protected void onCreate() {
-        this.startDate = LocalDate.now();
+        if (this.startDate == null) {
+            this.startDate = LocalDate.now();
+        }
+        if (this.endDate == null) {
+            this.endDate = this.startDate;
+        }
     }
+    // 만약 입력 없으면 오늘 날짜로 설정
 
     public void addDiary(Diary diary) {
         diaries.add(diary);

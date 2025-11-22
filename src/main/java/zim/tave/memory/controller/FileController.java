@@ -1,5 +1,11 @@
 package zim.tave.memory.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -14,6 +20,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "File", description = "파일 다운로드 API")
 public class FileController {
 
     private final S3Client s3Client;
@@ -22,7 +29,15 @@ public class FileController {
     private String bucket;
 
     @GetMapping("/api/files")
-    public ResponseEntity<InputStreamResource> getFile(@RequestParam String key) {
+    @Operation(summary = "파일 다운로드", description = "S3에 저장된 파일을 다운로드합니다. 이미지 파일의 경우 브라우저에서 직접 표시됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파일 다운로드 성공",
+                    content = @Content(mediaType = "application/octet-stream")),
+            @ApiResponse(responseCode = "404", description = "파일을 찾을 수 없음")
+    })
+    public ResponseEntity<InputStreamResource> getFile(
+            @Parameter(description = "S3 파일 키 (경로 포함)", required = true, example = "images/2024/01/01/abc123.jpg")
+            @RequestParam String key) {
         try {
             System.out.println("FileController - Requested key: " + key);
             System.out.println("FileController - Bucket: " + bucket);
@@ -39,14 +54,8 @@ public class FileController {
             String contentType = response.contentType();
             String fileName = key.substring(key.lastIndexOf("/") + 1);
             
-            // 오디오 파일의 경우 브라우저에서 바로 재생되도록 Content-Type 설정
-            if (key.toLowerCase().contains("audio/") || key.toLowerCase().endsWith(".m4a")) {
-                headers.setContentType(MediaType.parseMediaType("audio/mp4"));
-                headers.add("Content-Disposition", "inline; filename=\"" + fileName + "\"");
-                System.out.println("FileController - Audio file detected, setting Content-Type: audio/mp4");
-            }
             // HEIF 파일의 경우 브라우저 호환성을 위해 적절한 Content-Type 설정
-            else if (key.toLowerCase().contains(".heic") || 
+            if (key.toLowerCase().contains(".heic") || 
                 (contentType != null && contentType.contains("heif"))) {
                 headers.setContentType(MediaType.parseMediaType("image/heic"));
                 // HEIF는 브라우저 지원이 제한적이므로 다운로드 유도

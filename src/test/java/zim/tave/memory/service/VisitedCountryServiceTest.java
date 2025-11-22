@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Country;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.VisitedCountryResponseDto;
+import zim.tave.memory.dto.response.VisitedCountryResponseDto;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
@@ -35,7 +35,7 @@ public class VisitedCountryServiceTest {
         Country country = createTestCountry("KR1", "대한민국1", "🇰🇷");
         Emotion emotion1 = createTestEmotion("행복1", "#FFD700");
         Emotion emotion2 = createTestEmotion("슬픔1", "#0000FF");
-        
+
         // when: 첫 번째 등록
         VisitedCountryResponseDto first = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
         assertThat(first.getEmotionName()).isEqualTo("행복1");
@@ -78,7 +78,7 @@ public class VisitedCountryServiceTest {
         User user = createTestUser("testKakao2");
         Country country = createTestCountry("KR2", "대한민국2", "🇰🇷");
         Emotion emotion = createTestEmotion("행복2", "#FFD700");
-        
+
         // when & then: 방문 여부 확인
         boolean before = visitedCountryService.alreadyVisited(user.getId(), country.getCountryCode());
         assertThat(before).isFalse();
@@ -95,13 +95,13 @@ public class VisitedCountryServiceTest {
         User user = createTestUser("testKakao8");
         Country country = createTestCountry("KR8", "대한민국8", "🇰🇷");
         Emotion emotion = createTestEmotion("행복8", "#FFD700");
-        
+
         // 방문 국가 등록
         visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
-        
+
         // when: 방문 국가 목록 조회
         List<VisitedCountryResponseDto> visitedList = visitedCountryService.getVisitedCountries(user.getId());
-        
+
         // then: 조회된 목록 확인
         assertThat(visitedList).hasSize(1);
         assertThat(visitedList.get(0).getUserId()).isEqualTo(user.getId());
@@ -136,4 +136,4 @@ public class VisitedCountryServiceTest {
         emotionRepository.save(emotion);
         return emotion;
     }
-} 
+}

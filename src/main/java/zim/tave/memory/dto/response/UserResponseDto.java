@@ -1,9 +1,10 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zim.tave.memory.domain.User;
 
 import java.time.LocalDate;
 
@@ -44,4 +45,20 @@ public class UserResponseDto {
 
     @Schema(description = "방문한 국가의 국기 이모지(초기값 null)", example = "🇰🇷🇫🇷🇯🇵")
     private String flags;
+
+    public static UserResponseDto from(User user) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getKakaoId(),
+                user.getProfileImageUrl(),
+                user.getSurName(),
+                user.getFirstName(),
+                user.getKoreanName(),
+                user.getBirth(),
+                user.getNationality(),
+                user.getDiaryCount(),
+                user.getVisitedCountryCount(),
+                user.getFlags()
+        );
+    }
 }

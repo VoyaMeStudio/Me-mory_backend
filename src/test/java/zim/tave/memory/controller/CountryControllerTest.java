@@ -19,7 +19,8 @@ import zim.tave.memory.domain.Country;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.domain.VisitedCountry;
-import zim.tave.memory.dto.RegisterVisitedCountryRequestDto;
+import zim.tave.memory.dto.request.RegisterVisitedCountryRequestDto;
+import zim.tave.memory.dto.response.VisitedCountryResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.global.common.exception.GlobalExceptionHandler;
@@ -108,7 +109,7 @@ class CountryControllerTest {
         visited.setColor("#FF6B6B");
 
         given(visitedCountryService.getVisitedCountries(1L)).willReturn(List.of(
-                zim.tave.memory.dto.VisitedCountryResponseDto.from(visited)
+                VisitedCountryResponseDto.from(visited)
         ));
 
         mockMvc.perform(get("/api/users/me/visited-countries"))
@@ -144,7 +145,7 @@ class CountryControllerTest {
         visited.setColor("#FF6B6B");
 
         given(visitedCountryService.registerVisitedCountry(eq(5L), eq("KR"), eq(2L)))
-                .willReturn(zim.tave.memory.dto.VisitedCountryResponseDto.from(visited));
+                .willReturn(VisitedCountryResponseDto.from(visited));
 
         mockMvc.perform(post("/api/users/me/visited-countries")
                         .contentType(MediaType.APPLICATION_JSON)

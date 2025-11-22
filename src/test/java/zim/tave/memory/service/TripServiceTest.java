@@ -9,9 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import zim.tave.memory.domain.Trip;
 import zim.tave.memory.domain.TripTheme;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.CreateTripRequest;
-import zim.tave.memory.dto.TripResponseDto;
-import zim.tave.memory.dto.UpdateTripRequest;
+import zim.tave.memory.dto.request.CreatePastTripRequest;
+import zim.tave.memory.dto.request.CreateTripRequest;
+import zim.tave.memory.dto.response.TripResponseDto;
+import zim.tave.memory.dto.request.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
@@ -47,6 +48,9 @@ class TripServiceTest {
     @Mock
     private DiaryImageRepository diaryImageRepository;
 
+    @Mock
+    private VisitedCountryService visitedCountryService;
+
     @InjectMocks
     private TripService tripService;
 
@@ -69,6 +73,8 @@ class TripServiceTest {
         trip.setDescription("제주도 3박 4일 여행");
         trip.setUser(user);
         trip.setTripTheme(tripTheme);
+        trip.setStartDate(LocalDate.of(2024, 1, 1));
+        trip.setEndDate(LocalDate.of(2024, 1, 5));
     }
 
     @Test
@@ -78,14 +84,14 @@ class TripServiceTest {
         request.setTripName("제주도 여행");
         request.setDescription("제주도 3박 4일 여행");
         request.setThemeId(1L);
+        request.setStartDate(LocalDate.of(2024, 1, 1));
+        request.setEndDate(LocalDate.of(2024, 1, 5));
 
         when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> {
             Trip t = invocation.getArgument(0);
             t.setId(1L);
-            t.setStartDate(LocalDate.now());
-            t.setEndDate(LocalDate.now());
             return t;
         });
 
@@ -105,6 +111,8 @@ class TripServiceTest {
         request.setTripName("제주도 여행");
         request.setDescription("설명");
         request.setThemeId(999L);
+        request.setStartDate(LocalDate.of(2024, 2, 1));
+        request.setEndDate(LocalDate.of(2024, 2, 10));
 
         when(tripThemeRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -118,6 +126,8 @@ class TripServiceTest {
         // given
         CreateTripRequest request = new CreateTripRequest();
         request.setTripName("   ");
+        request.setStartDate(LocalDate.of(2024, 3, 1));
+        request.setEndDate(LocalDate.of(2024, 3, 5));
         // when & then
         assertThatThrownBy(() -> tripService.createTrip(request, 1L))
                 .isInstanceOf(CustomException.class)
@@ -244,5 +254,61 @@ class TripServiceTest {
 
         // then
         assertThat(result).isEqualTo(expectedDate);
+    }
+
+    @Test
+    void 과거_여행_생성_테스트() {
+        // given
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName("유럽 배낭여행");
+        request.setDescription("2주간 여행");
+        request.setStartDate(LocalDate.of(2023, 5, 1));
+        request.setEndDate(LocalDate.of(2023, 5, 14));
+        request.setCountryCodes(Arrays.asList("FRA", "ITA"));
+        request.setEmotionId(2L);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(tripThemeRepository.findById(1L)).thenReturn(Optional.of(tripTheme));
+        when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> {
+            Trip saved = invocation.getArgument(0);
+            saved.setId(2L);
+            return saved;
+        });
+
+        // when
+        TripResponseDto result = tripService.createPastTrip(request, 1L);
+
+        // then
+        assertThat(result.getTripName()).isEqualTo("유럽 배낭여행");
+        assertThat(result.getStartDate()).isEqualTo(request.getStartDate());
+        assertThat(result.getEndDate()).isEqualTo(request.getEndDate());
+        verify(visitedCountryService).registerVisitedCountry(1L, "FRA", 2L);
+        verify(visitedCountryService).registerVisitedCountry(1L, "ITA", 2L);
+    }
+
+    @Test
+    void 여행_보관상태_변경_테스트() {
+        // given
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.storeTrip(1L, 1L, true);
+
+        // then
+        assertThat(trip.getIsStored()).isTrue();
+    }
+
+    @Test
+    void 여행_보관상태_변경_소유권_검증() {
+        // given
+        User other = new User();
+        other.setId(2L);
+        trip.setUser(other);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.storeTrip(1L, 1L, true))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TRIP_UPDATE_FORBIDDEN);
     }
 }

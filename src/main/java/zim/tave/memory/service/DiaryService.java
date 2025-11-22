@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
-import zim.tave.memory.dto.CreateDiaryRequest;
-import zim.tave.memory.dto.DiaryResponseDto;
+import zim.tave.memory.dto.request.CreateDiaryRequest;
+import zim.tave.memory.dto.response.DiaryResponseDto;
 import zim.tave.memory.dto.TripRepresentativeImageDto;
-import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
+import zim.tave.memory.dto.request.UpdateDiaryOptionalFieldsRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
@@ -71,6 +71,10 @@ public class DiaryService {
         //여행 검증
         Trip trip = tripRepository.findById(request.getTripId())
                 .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+        // 과거 여행인 경우 다이어리 추가 불가
+        if (Boolean.TRUE.equals(trip.getIsPast())) {
+            throw new CustomException(ErrorCode.CANNOT_ADD_DIARY_TO_PAST_TRIP);
+        }
 
         //국가 검증
         Country country = countryService.findByCode(request.getCountryCode());
@@ -216,7 +220,7 @@ public class DiaryService {
 		List<Diary> remaining = diaryRepository.findByTrip_Id(tripId);
 
         if (remaining.isEmpty()) {
-            trip.setEndDate(null);
+            trip.setEndDate(trip.getStartDate());
         } else {
             LocalDate latest = remaining.stream()
                     .map(d -> d.getCreatedAt().toLocalDate())

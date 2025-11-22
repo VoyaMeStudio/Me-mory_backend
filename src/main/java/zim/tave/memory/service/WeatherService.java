@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Weather;
-import zim.tave.memory.dto.WeatherResponseDto;
+import zim.tave.memory.dto.response.WeatherResponseDto;
 import zim.tave.memory.repository.WeatherRepository;
 
 import java.util.List;
@@ -29,4 +29,4 @@ public class WeatherService {
                 .orElseThrow(() -> new IllegalArgumentException("날씨를 찾을 수 없습니다: " + weatherId));
         return WeatherResponseDto.from(weather);
     }
-} 
+}
