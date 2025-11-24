@@ -68,4 +68,35 @@ public class StorageService {
             trip.setIsStored(false);
         }
     }
+
+    @Transactional
+    public void deleteStoredTrips(Long userId, List<Long> tripIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Trip> tripsToDelete = new ArrayList<>();
+
+        for (Long tripId : tripIds) {
+
+            Trip trip = tripRepository.findById(tripId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+            // 본인 여행인지 확인
+            if (!trip.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+            }
+
+            // 보관 상태인지 확인
+            if (!Boolean.TRUE.equals(trip.getIsStored())) {
+                throw new CustomException(ErrorCode.TRIP_NOT_STORED);
+            }
+
+            tripsToDelete.add(trip);
+        }
+
+        for (Trip trip : tripsToDelete) {
+            tripRepository.delete(trip);
+        }
+    }
 }

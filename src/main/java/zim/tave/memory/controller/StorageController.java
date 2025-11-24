@@ -106,4 +106,46 @@ public class StorageController {
         storageService.unstoreTrips(userId, tripIds);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
+
+    @Operation(summary = "보관된 여행 삭제", description = "선택한 보관된(숨긴) 여행들을 삭제합니다. ")
+    @ApiErrorCodeExamples({
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER,
+            ErrorCode.TRIP_NOT_FOUND,
+            ErrorCode.TRIP_NOT_STORED,
+            ErrorCode.TRIP_UPDATE_FORBIDDEN,
+            ErrorCode.INTERNAL_SERVER_ERROR
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "보관된 여행 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = """
+            인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+            - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+            - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+            - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "403", description = """
+            권한이 없습니다.
+            - TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 삭제 권한이 없습니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "404", description = """
+            여행을 찾을 수 없습니다.
+            - TRIP_NOT_FOUND: 유효하지 않은 여행 ID입니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "409", description = """
+            보관된 여행이 아닙니다.
+            - TRIP_NOT_STORED: 삭제하려는 여행은 보관 상태가 아닙니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
+                    content = @Content)
+    })
+    @DeleteMapping("/trips")
+    public ResponseEntity<ApiResponseDto<Void>> deleteStoredTrips(
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId,
+            @RequestBody List<Long> tripIds
+    ) {
+        storageService.deleteStoredTrips(userId, tripIds);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
 }
