@@ -2,6 +2,7 @@ package zim.tave.memory.global.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
@@ -53,6 +54,9 @@ public enum ResponseCode {
     //설정, 마이페이지
     MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요."),
     STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다."),
+    //보관
+    TRIP_NOT_STORED(409, "보관된 여행이 아닙니다."),
+
     //국가
     COUNTRY_NOT_FOUND(404, "국가를 찾을 수 없습니다."),
     VISITED_COUNTRY_NOT_FOUND(404, "방문 국가 기록을 찾을 수 없습니다."),

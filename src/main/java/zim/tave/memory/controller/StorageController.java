@@ -20,6 +20,8 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.StorageService;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -59,7 +61,6 @@ public class StorageController {
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.STORED_TRIP_FOUND_SUCCESS, storedTrips));
     }
 
-
     @Operation(summary = "보관된 여행 게시", description = "보관된(숨긴) 여행을 다시 게시하여 공개 상태로 되돌립니다.")
     @ApiErrorCodeExamples({
             ErrorCode.AUTHENTICATION_FAILED,
@@ -67,6 +68,7 @@ public class StorageController {
             ErrorCode.UNAUTHORIZED_USER,
             ErrorCode.TRIP_NOT_FOUND,
             ErrorCode.TRIP_UPDATE_FORBIDDEN,
+            ErrorCode.TRIP_NOT_STORED,
             ErrorCode.INTERNAL_SERVER_ERROR
     })
     @ApiResponses(value = {
@@ -88,15 +90,20 @@ public class StorageController {
                 - TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.
                 """,
                     content = @Content),
+            @ApiResponse(responseCode = "409", description = """
+                보관된 여행이 아닙니다.
+                - TRIP_NOT_STORED: 해당 여행은 보관 상태가 아닙니다.
+                """,
+                    content = @Content),
             @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
                     content = @Content)
     })
-    @PatchMapping("/trips/{tripId}")
+    @PatchMapping("/trips")
     public ResponseEntity<ApiResponseDto<Void>> unstoreTrip(
-            @AuthenticationPrincipal(expression = "userId") Long userId,
-            @PathVariable Long tripId
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId,
+            @RequestBody List<Long> tripIds
     ) {
-        storageService.unstoreTrip(userId, tripId);
+        storageService.unstoreTrips(userId, tripIds);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }

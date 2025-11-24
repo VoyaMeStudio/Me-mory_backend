@@ -35,6 +35,8 @@ public enum ErrorCode {
     ALREADY_JOINED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
     MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
     //설정
+    //보관
+    TRIP_NOT_STORED(HttpStatus.CONFLICT, "보관된 여행이 아닙니다."),
     //여행
     DEFAULT_EMOTION_NOT_CONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "기본 감정 정보가 설정되어 있지 않습니다."),
     VISITED_COUNTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "방문 국가 기록을 찾을 수 없습니다."),

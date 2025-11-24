@@ -10,6 +10,7 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,18 +41,31 @@ public class StorageService {
     }
 
     @Transactional
-    public void unstoreTrip(Long userId, Long tripId) {
+    public void unstoreTrips(Long userId, List<Long> tripIds) {
 
         userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+        List<Trip> tripsToUnstore = new ArrayList<>();
 
-        if (!trip.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        for (Long tripId : tripIds) {
+
+            Trip trip = tripRepository.findById(tripId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+            if (!trip.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+            }
+
+            if (!Boolean.TRUE.equals(trip.getIsStored())) {
+                throw new CustomException(ErrorCode.TRIP_NOT_STORED);
+            }
+
+            tripsToUnstore.add(trip);
         }
 
-        trip.setIsStored(false);
+        for (Trip trip : tripsToUnstore) {
+            trip.setIsStored(false);
+        }
     }
 }
