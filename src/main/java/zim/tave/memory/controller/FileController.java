@@ -1,5 +1,11 @@
 package zim.tave.memory.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -14,6 +20,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "File", description = "파일 다운로드 API")
 public class FileController {
 
     private final S3Client s3Client;
@@ -22,7 +29,15 @@ public class FileController {
     private String bucket;
 
     @GetMapping("/api/files")
-    public ResponseEntity<InputStreamResource> getFile(@RequestParam String key) {
+    @Operation(summary = "파일 다운로드", description = "S3에 저장된 파일을 다운로드합니다. 이미지 파일의 경우 브라우저에서 직접 표시됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파일 다운로드 성공",
+                    content = @Content(mediaType = "application/octet-stream")),
+            @ApiResponse(responseCode = "404", description = "파일을 찾을 수 없음")
+    })
+    public ResponseEntity<InputStreamResource> getFile(
+            @Parameter(description = "S3 파일 키 (경로 포함)", required = true, example = "images/2024/01/01/abc123.jpg")
+            @RequestParam String key) {
         try {
             System.out.println("FileController - Requested key: " + key);
             System.out.println("FileController - Bucket: " + bucket);

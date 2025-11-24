@@ -1,4 +1,4 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.response;
 
 import lombok.Getter;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class DiaryResponseDto {
-	
+
 	private final Long id;
 	private final String countryName;
 	private final String countryEmoji;
@@ -24,14 +24,14 @@ public class DiaryResponseDto {
 	private final String emotionName;
 	private final String weather;
 	private final String weatherIconUrl;
-	
+
 	// 간단한 여행 정보
 	private final Long tripId;
 	private final String tripName;
-	
+
 	// 이미지 정보
 	private final List<DiaryImageDto> images;
-	
+
 	@Getter
 	@Builder
 	@AllArgsConstructor
@@ -42,4 +42,4 @@ public class DiaryResponseDto {
 		private final Boolean isRepresentative;
 		private final Integer imageOrder;
 	}
-} 
+}

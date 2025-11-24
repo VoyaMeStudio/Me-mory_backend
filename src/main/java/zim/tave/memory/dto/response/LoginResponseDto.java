@@ -1,8 +1,9 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import zim.tave.memory.domain.User;
 
 //로그인 후 응답
 @Getter
@@ -25,4 +26,14 @@ public class LoginResponseDto {
 
     @Schema(description = "로그인 시 AT 발급", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6...")
     private String jwtAccessToken;
+
+    public static LoginResponseDto from(User user, String jwt, boolean registered) {
+        return new LoginResponseDto(
+                user.getId(),
+                registered,
+                user.getKakaoId(),
+                user.getProfileImageUrl(),
+                jwt
+        );
+    }
 }
