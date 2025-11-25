@@ -3,10 +3,13 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.Trip;
+import zim.tave.memory.dto.response.StoredDiaryListResponseDto;
 import zim.tave.memory.dto.response.StoredTripListResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
+import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.UserRepository;
 
@@ -20,6 +23,7 @@ public class StorageService {
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final DiaryRepository diaryRepository;
 
     public StoredTripListResponseDto getStoredTrips(Long userId) {
 
@@ -97,6 +101,24 @@ public class StorageService {
 
         for (Trip trip : tripsToDelete) {
             tripRepository.delete(trip);
+        }
+    }
+
+    public StoredDiaryListResponseDto getStoredDiaries(Long userId) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        try {
+            // isStored = true 인 일기 조회
+            List<Diary> diaries = diaryRepository.findStoredDiariesByUserId(userId);
+
+            return StoredDiaryListResponseDto.from(diaries);
+
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -54,6 +54,9 @@ public class Diary {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private Boolean isStored;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -74,10 +77,11 @@ public class Diary {
         diary.setDateTime(dateTime);
         diary.setContent(content);
         diary.setCreatedAt(dateTime != null ? dateTime : LocalDateTime.now());
+        diary.setIsStored(true);
         return diary;
     }
 
-    public void setOptionalFields(String detailedLocation, 
+    public void setOptionalFields(String detailedLocation,
                                  Emotion emotion, Weather weather) {
         this.detailedLocation = detailedLocation;
         this.emotion = emotion;
