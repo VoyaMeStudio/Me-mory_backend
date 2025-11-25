@@ -77,7 +77,7 @@ public class Diary {
         diary.setDateTime(dateTime);
         diary.setContent(content);
         diary.setCreatedAt(dateTime != null ? dateTime : LocalDateTime.now());
-        diary.setIsStored(true);
+        diary.setIsStored(false);
         return diary;
     }
 

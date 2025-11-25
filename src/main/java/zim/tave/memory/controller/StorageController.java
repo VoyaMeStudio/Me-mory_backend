@@ -33,7 +33,8 @@ public class StorageController {
 
     private final StorageService storageService;
 
-    @Operation(summary = "보관된 여행 목록 조회", description = "로그인한 사용자의 보관된(숨긴) 여행 목록을 조회합니다.")
+    @Operation(summary = "보관된 여행 목록 조회",
+            description = "로그인한 사용자의 보관된(숨긴) 여행 목록을 조회합니다. 여행 보관시 해당 여행의 일기도 모두 보관됨")
     @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.INTERNAL_SERVER_ERROR})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "보관된 여행 목록 조회 성공"),
@@ -62,7 +63,8 @@ public class StorageController {
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.STORED_TRIP_FOUND_SUCCESS, storedTrips));
     }
 
-    @Operation(summary = "보관된 여행 게시", description = "보관된(숨긴) 여행을 다시 게시하여 공개 상태로 되돌립니다.")
+    @Operation(summary = "보관된 여행 게시",
+            description = "보관된(숨긴) 여행을 다시 게시하여 공개 상태로 되돌립니다. 해당 여행에 포함된 일기도 다시 게시")
     @ApiErrorCodeExamples({
             ErrorCode.AUTHENTICATION_FAILED,
             ErrorCode.INVALID_TOKEN,
@@ -108,7 +110,8 @@ public class StorageController {
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 
-    @Operation(summary = "보관된 여행 삭제", description = "선택한 보관된(숨긴) 여행들을 삭제합니다. ")
+    @Operation(summary = "보관된 여행 삭제",
+            description = "선택한 보관된(숨긴) 여행들을 삭제합니다. 여행 삭제시 해당 여행의 일기 모두 삭제")
     @ApiErrorCodeExamples({
             ErrorCode.AUTHENTICATION_FAILED,
             ErrorCode.INVALID_TOKEN,
@@ -185,5 +188,91 @@ public class StorageController {
                 ApiResponseDto.success(ResponseCode.STORED_DIARY_FOUND_SUCCESS, result)
         );
 
+    }
+
+    @Operation(summary = "보관된 일기 복구",
+            description = "보관된(숨긴) 일기를 다시 게시하여 공개 상태로 되돌립니다. ")
+    @ApiErrorCodeExamples({
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER,
+            ErrorCode.DIARY_NOT_FOUND,
+            ErrorCode.DIARY_NOT_STORED,
+            ErrorCode.DIARY_UPDATE_FORBIDDEN,
+            ErrorCode.INTERNAL_SERVER_ERROR
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일기 복구(게시) 성공"),
+            @ApiResponse(responseCode = "401", description = """
+            인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+            - AUTHENTICATION_FAILED
+            - INVALID_TOKEN
+            - UNAUTHORIZED_USER
+            """, content = @Content),
+            @ApiResponse(responseCode = "403", description = """
+            권한이 없습니다.
+            - DIARY_UPDATE_FORBIDDEN: 해당 일기에 대한 수정 권한이 없습니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "404", description = """
+            일기를 찾을 수 없습니다.
+            - DIARY_NOT_FOUND: 유효하지 않은 일기 ID입니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "409", description = """
+            보관된 일기가 아닙니다.
+            - DIARY_NOT_STORED: 해당 일기는 보관 상태가 아닙니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류입니다.", content = @Content)
+    })
+    @PatchMapping("/diaries")
+    public ResponseEntity<ApiResponseDto<Void>> restoreStoredDiaries(
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId,
+            @RequestBody List<Long> diaryIds
+    ) {
+
+        storageService.restoreStoredDiaries(userId, diaryIds);
+
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
+
+    @Operation(summary = "보관된 일기 삭제",
+            description = "보관된(숨긴) 일기를 영구 삭제합니다. ")
+    @ApiErrorCodeExamples({
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER,
+            ErrorCode.DIARY_NOT_FOUND,
+            ErrorCode.DIARY_NOT_STORED,
+            ErrorCode.DIARY_UPDATE_FORBIDDEN,
+            ErrorCode.INTERNAL_SERVER_ERROR
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "보관된 일기 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = """
+            인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+            - AUTHENTICATION_FAILED
+            - INVALID_TOKEN
+            - UNAUTHORIZED_USER
+            """, content = @Content),
+            @ApiResponse(responseCode = "403", description = """
+            권한이 없습니다.
+            - DIARY_UPDATE_FORBIDDEN: 해당 일기에 대한 삭제 권한이 없습니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "404", description = """
+            일기를 찾을 수 없습니다.
+            - DIARY_NOT_FOUND: 유효하지 않은 일기 ID입니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "409", description = """
+            보관 상태가 아닙니다.
+            - DIARY_NOT_STORED: 삭제하려는 일기가 보관 상태가 아닙니다.
+            """, content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류입니다.", content = @Content)
+    })
+    @DeleteMapping("/diaries")
+    public ResponseEntity<ApiResponseDto<Void>> deleteStoredDiaries(
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId,
+            @RequestBody List<Long> diaryIds
+    ) {
+        storageService.deleteStoredDiaries(userId, diaryIds);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }

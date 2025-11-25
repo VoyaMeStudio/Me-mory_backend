@@ -66,6 +66,7 @@ public class GlobalExceptionHandler {
 
             //보관
             case TRIP_NOT_STORED -> ResponseCode.TRIP_NOT_STORED;
+            case DIARY_NOT_STORED -> ResponseCode.DIARY_NOT_STORED;
             //카카오 로그인
             case KAKAO_TOKEN_MISSING -> ResponseCode.KAKAO_TOKEN_MISSING;
             case KAKAO_INVALID_TOKEN -> ResponseCode.KAKAO_INVALID_TOKEN;

@@ -37,6 +37,7 @@ public enum ErrorCode {
     //설정
     //보관
     TRIP_NOT_STORED(HttpStatus.CONFLICT, "보관된 여행이 아닙니다."),
+    DIARY_NOT_STORED(HttpStatus.CONFLICT, "보관된 일기가 아닙니다."),
     //여행
     DEFAULT_EMOTION_NOT_CONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "기본 감정 정보가 설정되어 있지 않습니다."),
     VISITED_COUNTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "방문 국가 기록을 찾을 수 없습니다."),
@@ -50,6 +51,7 @@ public enum ErrorCode {
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "일기를 찾을 수 없습니다."),
     IMAGE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "이미지는 반드시 2장이어야 합니다. (FRONT/BACK)"),
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."),
+    DIARY_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 일기에 대한 수정 권한이 없습니다."),
     CAMERA_TYPES_REQUIRED(HttpStatus.BAD_REQUEST, "FRONT/BACK 카메라 사진이 모두 필요합니다."),
     REPRESENTATIVE_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "대표 이미지는 정확히 1장이어야 합니다."),
     IMAGE_ID_REQUIRED(HttpStatus.BAD_REQUEST, "이미지 ID가 필요합니다."),

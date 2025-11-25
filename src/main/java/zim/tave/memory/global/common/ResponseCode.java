@@ -58,6 +58,7 @@ public enum ResponseCode {
     STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다."),
     //보관
     TRIP_NOT_STORED(409, "보관된 여행이 아닙니다."),
+    DIARY_NOT_STORED(409, "보관된 일기가 아닙니다."),
 
     //국가
     COUNTRY_NOT_FOUND(404, "국가를 찾을 수 없습니다."),

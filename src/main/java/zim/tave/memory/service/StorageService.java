@@ -70,6 +70,11 @@ public class StorageService {
 
         for (Trip trip : tripsToUnstore) {
             trip.setIsStored(false);
+
+            List<Diary> diaryList = diaryRepository.findByTripId(trip.getId());
+            for (Diary diary : diaryList) {
+                diary.setIsStored(false);
+            }
         }
     }
 
@@ -119,6 +124,64 @@ public class StorageService {
             throw e;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Transactional
+    public void restoreStoredDiaries(Long userId, List<Long> diaryIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Diary> diariesToRestore = new ArrayList<>();
+
+        for (Long diaryId : diaryIds) {
+
+            Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+            if (!diary.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.DIARY_UPDATE_FORBIDDEN);
+            }
+
+            if (!Boolean.TRUE.equals(diary.getIsStored())) {
+                throw new CustomException(ErrorCode.DIARY_NOT_STORED);
+            }
+
+            diariesToRestore.add(diary);
+        }
+
+        for (Diary diary : diariesToRestore) {
+            diary.setIsStored(false);
+        }
+    }
+
+    @Transactional
+    public void deleteStoredDiaries(Long userId, List<Long> diaryIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Diary> diariesToDelete = new ArrayList<>();
+
+        for (Long diaryId : diaryIds) {
+
+            Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+            if (!diary.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.DIARY_UPDATE_FORBIDDEN);
+            }
+
+            if (!Boolean.TRUE.equals(diary.getIsStored())) {
+                throw new CustomException(ErrorCode.DIARY_NOT_STORED);
+            }
+
+            diariesToDelete.add(diary);
+        }
+
+        for (Diary diary : diariesToDelete) {
+            diaryRepository.delete(diary);
         }
     }
 }
