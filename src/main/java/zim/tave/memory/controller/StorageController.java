@@ -35,32 +35,36 @@ public class StorageController {
 
     @Operation(summary = "보관된 여행 목록 조회",
             description = "로그인한 사용자의 보관된(숨긴) 여행 목록을 조회합니다. 여행 보관시 해당 여행의 일기도 모두 보관됨")
-    @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.INTERNAL_SERVER_ERROR})
+    @ApiErrorCodeExamples({
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER,
+            ErrorCode.USER_NOT_FOUND,
+            ErrorCode.INTERNAL_SERVER_ERROR
+    })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "보관된 여행 목록 조회 성공"),
             @ApiResponse(responseCode = "401", description = """
-                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
-                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
-                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
-                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
-                    """,
-                    content = @Content),
+                인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED
+                - INVALID_TOKEN
+                - UNAUTHORIZED_USER
+                """, content = @Content),
             @ApiResponse(responseCode = "404", description = """
-                    보관된 여행 정보를 찾을 수 없습니다.
-                    - STORED_TRIP_NOT_FOUND: 보관된 여행 정보를 찾을 수 없습니다.
-                    """,
-                    content = @Content),
-            @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
-                    content = @Content)
+                사용자 정보를 찾을 수 없습니다:
+                - USER_NOT_FOUND
+                """, content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류가 발생했습니다.", content = @Content)
     })
     @GetMapping("/trips")
     public ResponseEntity<ApiResponseDto<StoredTripListResponseDto>> getStoredTrips(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId) {
 
-        Long userId = userDetails.getUserId();
         StoredTripListResponseDto storedTrips = storageService.getStoredTrips(userId);
 
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.STORED_TRIP_FOUND_SUCCESS, storedTrips));
+        return ResponseEntity.ok(
+                ApiResponseDto.success(ResponseCode.STORED_TRIP_FOUND_SUCCESS, storedTrips)
+        );
     }
 
     @Operation(summary = "보관된 여행 게시",
@@ -165,29 +169,26 @@ public class StorageController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "보관된 일기 목록 조회 성공"),
             @ApiResponse(responseCode = "401", description = """
-            인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
-            - AUTHENTICATION_FAILED: 인증에 실패했습니다.
-            - INVALID_TOKEN: 유효하지 않은 토큰입니다.
-            - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
-            """, content = @Content),
+                인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED
+                - INVALID_TOKEN
+                - UNAUTHORIZED_USER
+                """, content = @Content),
             @ApiResponse(responseCode = "404", description = """
-            보관된 일기 정보를 찾을 수 없습니다.
-            - STORED_DIARY_NOT_FOUND: 보관된 일기 정보가 없습니다.
-            """, content = @Content),
-            @ApiResponse(responseCode = "500", description = "서버 오류입니다.", content = @Content)
+                사용자 정보를 찾을 수 없습니다:
+                - USER_NOT_FOUND
+                """, content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류가 발생했습니다.", content = @Content)
     })
     @GetMapping("/diaries")
     public ResponseEntity<ApiResponseDto<StoredDiaryListResponseDto>> getStoredDiaries(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Long userId = userDetails.getUserId();
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId) {
 
         StoredDiaryListResponseDto result = storageService.getStoredDiaries(userId);
 
         return ResponseEntity.ok(
                 ApiResponseDto.success(ResponseCode.STORED_DIARY_FOUND_SUCCESS, result)
         );
-
     }
 
     @Operation(summary = "보관된 일기 복구",
