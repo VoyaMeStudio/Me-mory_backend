@@ -1,5 +1,6 @@
 package zim.tave.memory.global.common;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,9 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(name = "ApiResponseDto", description = "공통 응답 형식")
 public class ApiResponseDto<T> {
 
+    @Schema(description = "응답 코드")
     private int code;
+
+    @Schema(description = "응답 메시지")
     private String message;
     private T data;
 

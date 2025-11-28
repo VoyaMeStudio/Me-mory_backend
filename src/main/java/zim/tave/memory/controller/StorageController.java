@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
-import zim.tave.memory.dto.StoredTripListResponseDto;
+import zim.tave.memory.dto.response.StoredTripListResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
@@ -33,7 +33,7 @@ public class StorageController {
     private final StorageService storageService;
 
     @Operation(summary = "보관된 여행 목록 조회", description = "로그인한 사용자의 보관된(숨긴) 여행 목록을 조회합니다.")
-    @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.STORED_TRIP_NOT_FOUND, ErrorCode.INTERNAL_SERVER_ERROR})
+    @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.INTERNAL_SERVER_ERROR})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "보관된 여행 목록 조회 성공"),
             @ApiResponse(responseCode = "401", description = """

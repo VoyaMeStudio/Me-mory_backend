@@ -10,9 +10,9 @@ import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 
 import zim.tave.memory.domain.*;
-import zim.tave.memory.dto.CreateDiaryRequest;
-import zim.tave.memory.dto.DiaryResponseDto;
-import zim.tave.memory.dto.UpdateDiaryOptionalFieldsRequest;
+import zim.tave.memory.dto.request.CreateDiaryRequest;
+import zim.tave.memory.dto.response.DiaryResponseDto;
+import zim.tave.memory.dto.request.UpdateDiaryOptionalFieldsRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
@@ -67,10 +67,10 @@ class DiaryServiceTest {
     void setUp() {
         user = new User();
         user.setId(1L);
-        
+
         trip = new Trip();
         trip.setId(1L);
-        
+
         diary = new Diary();
         diary.setId(1L);
         diary.setUser(user);
@@ -78,10 +78,10 @@ class DiaryServiceTest {
         diary.setCity("서울");
         diary.setContent("테스트 내용");
         diary.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
-        
+
         emotion = new Emotion("행복", "#FFD700");
         emotion.setId(1L);
-        
+
         weather = new Weather();
         weather.setId(1L);
         weather.setName("맑음");
@@ -97,17 +97,17 @@ class DiaryServiceTest {
         request.setCity("서울");
         request.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
         request.setContent("테스트 내용");
-        
+
         CreateDiaryRequest.DiaryImageInfo imageInfo1 = new CreateDiaryRequest.DiaryImageInfo();
         imageInfo1.setImageUrl("front.jpg");
         imageInfo1.setCameraType(DiaryImage.CameraType.FRONT);
         imageInfo1.setRepresentative(true);
-        
+
         CreateDiaryRequest.DiaryImageInfo imageInfo2 = new CreateDiaryRequest.DiaryImageInfo();
         imageInfo2.setImageUrl("back.jpg");
         imageInfo2.setCameraType(DiaryImage.CameraType.BACK);
         imageInfo2.setRepresentative(false);
-        
+
         request.setImages(Arrays.asList(imageInfo1, imageInfo2));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -175,11 +175,11 @@ class DiaryServiceTest {
         DiaryImage image1 = new DiaryImage();
         image1.setId(1L);
         image1.setRepresentative(true);
-        
+
         DiaryImage image2 = new DiaryImage();
         image2.setId(2L);
         image2.setRepresentative(false);
-        
+
         diary.addDiaryImage(image1);
         diary.addDiaryImage(image2);
 
@@ -226,7 +226,7 @@ class DiaryServiceTest {
         // given
         Diary remainingDiary = new Diary();
         remainingDiary.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
-        
+
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(remainingDiary));
@@ -266,4 +266,4 @@ class DiaryServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCity()).isEqualTo("서울");
     }
-} 
+}

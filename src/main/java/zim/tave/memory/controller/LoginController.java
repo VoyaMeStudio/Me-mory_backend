@@ -12,10 +12,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import zim.tave.memory.dto.LoginRequestDto;
-import zim.tave.memory.dto.LoginResponseDto;
+import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
+import zim.tave.memory.dto.request.LoginRequestDto;
+import zim.tave.memory.dto.response.LoginResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.LoginService;
 
@@ -33,11 +35,29 @@ public class LoginController {
     @Operation(summary = "카카오 로그인 요청",
             description = "카카오 사용자 인증 후 토큰 발급, 토큰 이용하여 백엔드 서버가 로그인 처리")
     @SecurityRequirements
+    @ApiErrorCodeExamples({
+            ErrorCode.KAKAO_TOKEN_MISSING,
+            ErrorCode.KAKAO_INVALID_TOKEN,
+            ErrorCode.KAKAO_UNAUTHORIZED,
+            ErrorCode.KAKAO_SERVER_ERROR,
+            ErrorCode.INTERNAL_SERVER_ERROR
+    })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공",
-                    content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (client id 오류, 만료된 authorization code 등)", content = @Content()),
-            @ApiResponse(responseCode = "500", description = "서버 오류, 유효하지 않은 토큰", content = @Content())
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                잘못된 요청입니다. 다음 오류가 발생할 수 있습니다:
+                - KAKAO_TOKEN_MISSING: 카카오 Access Token이 누락되었습니다.
+                """, content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                카카오 인증 실패입니다. 다음 오류가 발생할 수 있습니다:
+                - KAKAO_INVALID_TOKEN: 유효하지 않거나 만료된 카카오 Access Token입니다.
+                - KAKAO_UNAUTHORIZED: 카카오 API 접근 권한이 없습니다.
+                """, content = @Content),
+            @ApiResponse(responseCode = "500", description = """
+                서버 오류입니다. 다음 오류가 발생할 수 있습니다:
+                - KAKAO_SERVER_ERROR: 카카오 서버 문제로 사용자 정보를 가져올 수 없습니다.
+                - INTERNAL_SERVER_ERROR: 로그인 처리 중 알 수 없는 오류가 발생했습니다.
+                """, content = @Content)
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLogin(
@@ -48,12 +68,32 @@ public class LoginController {
 
     @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
     @SecurityRequirement(name = "bearerAuth")
+    @ApiErrorCodeExamples({
+            ErrorCode.USER_NOT_FOUND,
+            ErrorCode.ALREADY_LOGGED_OUT,
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER
+    })
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그아웃 성공",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자"),
-            @ApiResponse(responseCode = "400", description = "이미 로그아웃된 사용자"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - ALREADY_LOGGED_OUT: 이미 로그아웃된 사용자입니다.
+                """,
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                """,
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = """
+                리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                - USER_NOT_FOUND: 사용자를 찾을 수 없습니다.
+                """,
+                    content = @Content)
     })
     @PatchMapping("/logout")
     public ResponseEntity<ApiResponseDto<Void>> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {

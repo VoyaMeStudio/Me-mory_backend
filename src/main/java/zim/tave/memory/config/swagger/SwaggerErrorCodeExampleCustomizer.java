@@ -23,7 +23,7 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
     @Override
     public Operation customize(Operation operation, HandlerMethod handlerMethod) {
         ApiErrorCodeExamples annotation = handlerMethod.getMethodAnnotation(ApiErrorCodeExamples.class);
-        
+
         if (annotation == null) {
             return operation;
         }
@@ -44,10 +44,10 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
         for (Map.Entry<org.springframework.http.HttpStatus, List<ErrorCode>> entry : groupedByStatus.entrySet()) {
             org.springframework.http.HttpStatus httpStatus = entry.getKey();
             List<ErrorCode> errorCodesForStatus = entry.getValue();
-            
+
             String statusCode = String.valueOf(httpStatus.value());
             ApiResponse apiResponse = operation.getResponses().get(statusCode);
-            
+
             if (apiResponse == null) {
                 apiResponse = new ApiResponse();
                 operation.getResponses().addApiResponse(statusCode, apiResponse);
@@ -81,17 +81,17 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
             for (ErrorCode errorCode : errorCodesForStatus) {
                 String exampleName = errorCode.name();
                 Example example = new Example();
-                
+
                 // ResponseCode 매핑 (GlobalExceptionHandler와 동일한 로직)
                 ResponseCode responseCode = mapErrorCodeToResponseCode(errorCode);
                 String message = responseCode.getMessage() + " (errorId: " + EXAMPLE_ERROR_ID + ")";
-                
+
                 // JSON 생성
                 Map<String, Object> errorResponse = new LinkedHashMap<>();
                 errorResponse.put("code", responseCode.getCode());
                 errorResponse.put("message", message);
                 errorResponse.put("data", null);
-                
+
                 try {
                     String jsonValue = objectMapper.writeValueAsString(errorResponse);
                     example.setValue(jsonValue);
@@ -103,7 +103,7 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
                         message.replace("\"", "\\\"")
                     ));
                 }
-                
+
                 mediaType.getExamples().put(exampleName, example);
             }
         }
@@ -147,7 +147,6 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
             case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
             case UNAUTHORIZED_USER -> ResponseCode.UNAUTHORIZED_USER;
             case MISSING_REQUIRED_FIELDS -> ResponseCode.MISSING_REQUIRED_FIELDS;
-            case STORED_TRIP_NOT_FOUND -> ResponseCode.STORED_TRIP_NOT_FOUND;
             case FILE_EMPTY -> ResponseCode.FILE_EMPTY;
             case FILE_TOO_LARGE -> ResponseCode.FILE_TOO_LARGE;
             case FILE_TYPE_NOT_ALLOWED -> ResponseCode.FILE_TYPE_NOT_ALLOWED;

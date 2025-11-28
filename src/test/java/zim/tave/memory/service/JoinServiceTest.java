@@ -1,11 +1,10 @@
 package zim.tave.memory.service;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import zim.tave.memory.domain.User;
-import zim.tave.memory.dto.JoinRequestDto;
+import zim.tave.memory.dto.request.JoinRequestDto;
 import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;

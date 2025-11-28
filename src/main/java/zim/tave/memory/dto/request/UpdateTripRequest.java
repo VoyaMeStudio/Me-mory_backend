@@ -1,4 +1,4 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class UpdateTripRequest {
-    
+
     private String tripName;
     private String description;
     private Long themeId;
@@ -20,4 +20,4 @@ public class UpdateTripRequest {
 
     @NotNull
     private LocalDate endDate;
-} 
+}

@@ -33,7 +33,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/upload",
                                 "/api/auth/login/**",
-                                "/api/join/**",
+                                //"/api/join/**",
                                 "/api/countries/**",
                                 "/api/auth/refresh",
                                 "/swagger-ui/**",
