@@ -3,13 +3,17 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.Trip;
+import zim.tave.memory.dto.response.StoredDiaryListResponseDto;
 import zim.tave.memory.dto.response.StoredTripListResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
+import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,24 +23,165 @@ public class StorageService {
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final DiaryRepository diaryRepository;
 
     public StoredTripListResponseDto getStoredTrips(Long userId) {
 
-        // 1️⃣ 사용자 존재 확인
+        // 사용자 확인
         userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         try {
-            // 2️⃣ isStored = true 인 여행만 조회
+            // isStored = true 인 여행만 조회
             List<Trip> storedTrips = tripRepository.findStoredTripsByUserId(userId);
 
-            // 3️⃣ DTO 변환 후 반환
             return StoredTripListResponseDto.from(storedTrips);
 
         } catch (CustomException e) {
-            throw e; // 그대로 전달
+            throw e;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Transactional
+    public void unstoreTrips(Long userId, List<Long> tripIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Trip> tripsToUnstore = new ArrayList<>();
+
+        for (Long tripId : tripIds) {
+
+            Trip trip = tripRepository.findById(tripId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+            if (!trip.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+            }
+
+            if (!Boolean.TRUE.equals(trip.getIsStored())) {
+                throw new CustomException(ErrorCode.TRIP_NOT_STORED);
+            }
+
+            tripsToUnstore.add(trip);
+        }
+
+        for (Trip trip : tripsToUnstore) {
+            trip.setIsStored(false);
+
+            List<Diary> diaryList = diaryRepository.findByTripId(trip.getId());
+            for (Diary diary : diaryList) {
+                diary.setIsStored(false);
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteStoredTrips(Long userId, List<Long> tripIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Trip> tripsToDelete = new ArrayList<>();
+
+        for (Long tripId : tripIds) {
+
+            Trip trip = tripRepository.findById(tripId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+            // 본인 여행인지 확인
+            if (!trip.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+            }
+
+            // 보관 상태인지 확인
+            if (!Boolean.TRUE.equals(trip.getIsStored())) {
+                throw new CustomException(ErrorCode.TRIP_NOT_STORED);
+            }
+
+            tripsToDelete.add(trip);
+        }
+
+        for (Trip trip : tripsToDelete) {
+            tripRepository.delete(trip);
+        }
+    }
+
+    public StoredDiaryListResponseDto getStoredDiaries(Long userId) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        try {
+            // isStored = true 인 일기 조회
+            List<Diary> diaries = diaryRepository.findStoredDiariesByUserId(userId);
+
+            return StoredDiaryListResponseDto.from(diaries);
+
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Transactional
+    public void restoreStoredDiaries(Long userId, List<Long> diaryIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Diary> diariesToRestore = new ArrayList<>();
+
+        for (Long diaryId : diaryIds) {
+
+            Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+            if (!diary.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.DIARY_UPDATE_FORBIDDEN);
+            }
+
+            if (!Boolean.TRUE.equals(diary.getIsStored())) {
+                throw new CustomException(ErrorCode.DIARY_NOT_STORED);
+            }
+
+            diariesToRestore.add(diary);
+        }
+
+        for (Diary diary : diariesToRestore) {
+            diary.setIsStored(false);
+        }
+    }
+
+    @Transactional
+    public void deleteStoredDiaries(Long userId, List<Long> diaryIds) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Diary> diariesToDelete = new ArrayList<>();
+
+        for (Long diaryId : diaryIds) {
+
+            Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+            if (!diary.getUser().getId().equals(userId)) {
+                throw new CustomException(ErrorCode.DIARY_UPDATE_FORBIDDEN);
+            }
+
+            if (!Boolean.TRUE.equals(diary.getIsStored())) {
+                throw new CustomException(ErrorCode.DIARY_NOT_STORED);
+            }
+
+            diariesToDelete.add(diary);
+        }
+
+        for (Diary diary : diariesToDelete) {
+            diaryRepository.delete(diary);
         }
     }
 }
