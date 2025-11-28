@@ -2,6 +2,7 @@ package zim.tave.memory.global.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
@@ -20,7 +21,9 @@ public enum ResponseCode {
     //마이페이지
     VISITED_COUNTRIES_FETCH_SUCCESS(200, "방문한 국가 목록을 성공적으로 조회하였습니다."),
     USER_UPDATE_SUCCESS(200, "회원 정보가 성공적으로 수정되었습니다."),
+    //보관
     STORED_TRIP_FOUND_SUCCESS(200, "보관된 여행 목록을 성공적으로 조회하였습니다."),
+    STORED_DIARY_FOUND_SUCCESS(200, "보관된 일기 목록을 성공적으로 조회하였습니다."),
     //설정
     USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
     //카카오 로그인 성공 메세지
@@ -53,6 +56,10 @@ public enum ResponseCode {
     //설정, 마이페이지
     MISSING_REQUIRED_FIELDS(400, "값을 입력해주세요."),
     STORED_TRIP_NOT_FOUND(404, "보관된 여행 정보를 찾을 수 없습니다."),
+    //보관
+    TRIP_NOT_STORED(409, "보관된 여행이 아닙니다."),
+    DIARY_NOT_STORED(409, "보관된 일기가 아닙니다."),
+
     //국가
     COUNTRY_NOT_FOUND(404, "국가를 찾을 수 없습니다."),
     VISITED_COUNTRY_NOT_FOUND(404, "방문 국가 기록을 찾을 수 없습니다."),

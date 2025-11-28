@@ -25,4 +25,10 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("DELETE FROM Diary d WHERE d.user.id = :userId")
 	void deleteAllByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT d FROM Diary d WHERE d.user.id = :userId AND d.isStored = true")
+    List<Diary> findStoredDiariesByUserId(Long userId);
+
+    @Query("SELECT d FROM Diary d WHERE d.trip.id = :tripId")
+    List<Diary> findByTripId(Long tripId);
 }
