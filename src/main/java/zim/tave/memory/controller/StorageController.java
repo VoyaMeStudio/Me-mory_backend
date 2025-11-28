@@ -50,11 +50,12 @@ public class StorageController {
     })
     @GetMapping("/trips")
     public ResponseEntity<ApiResponseDto<StoredTripListResponseDto>> getStoredTrips(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
 
-        Long userId = userDetails.getUserId();
         StoredTripListResponseDto storedTrips = storageService.getStoredTrips(userId);
 
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.STORED_TRIP_FOUND_SUCCESS, storedTrips));
+        return ResponseEntity.ok(
+                ApiResponseDto.success(ResponseCode.STORED_TRIP_FOUND_SUCCESS, storedTrips)
+        );
     }
 }
