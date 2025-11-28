@@ -3,20 +3,14 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zim.tave.memory.domain.DiaryImage;
-import zim.tave.memory.domain.Trip;
-import zim.tave.memory.domain.TripTheme;
-import zim.tave.memory.domain.User;
+import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.request.CreatePastTripRequest;
 import zim.tave.memory.dto.request.CreateTripRequest;
 import zim.tave.memory.dto.response.TripResponseDto;
 import zim.tave.memory.dto.request.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.DiaryImageRepository;
-import zim.tave.memory.repository.TripRepository;
-import zim.tave.memory.repository.TripThemeRepository;
-import zim.tave.memory.repository.UserRepository;
+import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +25,7 @@ public class TripService {
 	private final DiaryImageRepository diaryImageRepository;
     private final UserRepository userRepository;
     private final VisitedCountryService visitedCountryService;
+    private final DiaryRepository diaryRepository;
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
@@ -256,6 +251,8 @@ public class TripService {
         }
 
         trip.setIsStored(isStored);
+        List<Diary> diaries = diaryRepository.findByTripId(tripId);
+        diaries.forEach(diary -> diary.setIsStored(isStored));
     }
 
     @Transactional
