@@ -8,9 +8,9 @@ import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.DiaryImage;
 import zim.tave.memory.domain.Trip;
 import zim.tave.memory.domain.VisitedCountry;
-import zim.tave.memory.dto.TimelineResponseDto;
 import zim.tave.memory.dto.TimelineTripDto;
 import zim.tave.memory.dto.VisitedCountryInfoDto;
+import zim.tave.memory.dto.response.TimelineResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.TripRepository;
@@ -39,6 +39,7 @@ public class TimelineService {
         Map<String, VisitedCountry> visitedCountryMap = visitedCountryService.getVisitedCountryMap(userId);
 
         List<TimelineTripDto> timelineTrips = trips.stream()
+                .filter(this::isActiveTrip)
                 .sorted(Comparator.comparing(
                                 Trip::getStartDate,
                                 Comparator.nullsLast(LocalDate::compareTo))
@@ -65,7 +66,7 @@ public class TimelineService {
     }
 
     private List<VisitedCountryInfoDto> collectVisitedCountries(Trip trip, Map<String, VisitedCountry> visitedCountryMap) {
-        List<Diary> diaries = trip.getDiaries();
+        List<Diary> diaries = filterActiveDiaries(trip.getDiaries());
         if (diaries == null || diaries.isEmpty()) {
             return List.of();
         }
@@ -106,7 +107,7 @@ public class TimelineService {
             return representativeImageUrl;
         }
 
-        List<Diary> diaries = trip.getDiaries();
+        List<Diary> diaries = filterActiveDiaries(trip.getDiaries());
         if (diaries == null || diaries.isEmpty()) {
             return null;
         }
@@ -126,6 +127,23 @@ public class TimelineService {
                 .filter(DiaryImage::isRepresentative)
                 .map(DiaryImage::getImageUrl)
                 .findFirst();
+    }
+
+    private List<Diary> filterActiveDiaries(List<Diary> diaries) {
+        if (diaries == null || diaries.isEmpty()) {
+            return List.of();
+        }
+        return diaries.stream()
+                .filter(this::isActiveDiary)
+                .toList();
+    }
+
+    private boolean isActiveTrip(Trip trip) {
+        return !Boolean.TRUE.equals(trip.getIsStored());
+    }
+
+    private boolean isActiveDiary(Diary diary) {
+        return !Boolean.TRUE.equals(diary.getIsStored());
     }
 
     private void ensureAuthenticated(Long userId) {

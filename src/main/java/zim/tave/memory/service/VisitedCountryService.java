@@ -103,7 +103,6 @@ public class VisitedCountryService {
         visitedCountryRepository.delete(visitedCountry);
     }
 
-<<<<<<< HEAD
     @Transactional(readOnly = true)
     public Map<String, VisitedCountry> getVisitedCountryMap(Long userId) {
         List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(userId);
@@ -117,9 +116,7 @@ public class VisitedCountryService {
     }
 
     // ✅ 방문 국가 목록 조회
-=======
     // 마이페이지 - 방문 국가 목록 조회 (중복X)
->>>>>>> a9d1a0391ad725f59380da905504a545c713cbd0
     public VisitedCountryListResponseDto getVisitedCountryList(Long userId) {
         // 유저 검증
         User user = userRepository.findById(userId)

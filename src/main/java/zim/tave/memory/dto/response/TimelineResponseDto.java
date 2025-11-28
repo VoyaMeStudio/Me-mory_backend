@@ -1,8 +1,9 @@
-package zim.tave.memory.dto;
+package zim.tave.memory.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import zim.tave.memory.dto.TimelineTripDto;
 
 import java.util.List;
 
