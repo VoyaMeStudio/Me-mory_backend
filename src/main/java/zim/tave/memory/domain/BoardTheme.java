@@ -19,9 +19,6 @@ public class BoardTheme {
     private String themeName;
 
     @Column(nullable = false, length = 255)
-    private String description;
-
-    @Column(nullable = false, length = 255)
     private String thumbnailUrl;
 
     @Column(nullable = false, length = 255)

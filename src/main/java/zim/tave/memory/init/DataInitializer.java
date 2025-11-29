@@ -143,34 +143,26 @@ public class DataInitializer implements CommandLineRunner {
         if (boardThemeRepository.count() == 0) {
             log.info("보드 테마 데이터 생성 중...");
 
-            // 1. 칠판 테마 (chalkboard)
             BoardTheme chalkboard = new BoardTheme();
             chalkboard.setThemeName("칠판");
-            chalkboard.setDescription("칠판 느낌의 따뜻한 보드 테마");
             chalkboard.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/chalkboard_thumb.png");
             chalkboard.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/73212582-a940-4929-9c9b-f99ce68f3238_board_card_chalkboard.png");
             boardThemeRepository.save(chalkboard);
 
-            // 2. 식탁보 테마 (tablecloth)
             BoardTheme tablecloth = new BoardTheme();
             tablecloth.setThemeName("식탁보");
-            tablecloth.setDescription("식탁보 패턴을 사용한 홈 스타일 보드 테마");
             tablecloth.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/tablecloth_thumb.png");
             tablecloth.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/ea8230ad-a70a-4f87-acb4-648add56b1b8_board_card_tablecloth.png");
             boardThemeRepository.save(tablecloth);
 
-            // 3. 보드판 테마 (board)
             BoardTheme board = new BoardTheme();
-            board.setThemeName("보드판");
-            board.setDescription("깔끔한 화이트보드 스타일의 테마");
+            board.setThemeName("나무보드");
             board.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/board_thumb.png");
             board.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/ecee4553-72cc-4097-8d20-10a7ee889269_board_card_woodboard.png");
             boardThemeRepository.save(board);
 
-            // 4. 체스판 테마 (chess)
             BoardTheme chess = new BoardTheme();
             chess.setThemeName("체스판");
-            chess.setDescription("체스판 패턴의 독특한 보드 테마");
             chess.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/chess_thumb.png");
             chess.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/e026afe7-1619-4ee5-b3e7-c2564d88447c_board_card_chess.png");
             boardThemeRepository.save(chess);
