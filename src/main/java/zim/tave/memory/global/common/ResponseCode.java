@@ -28,8 +28,12 @@ public enum ResponseCode {
     USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
     //카카오 로그인 성공 메세지
     KAKAO_USERINFO_FETCH_SUCCESS(200, "카카오 사용자 정보 조회 성공"),
+    //보드
+    BOARD_CREATE_SUCCESS(200, "보드 생성에 성공하였습니다."),
 
     // 실패 응답
+
+
     INVALID_REQUEST(400, "잘못된 요청입니다."),
     VALIDATION_ERROR(400, "요청 값이 올바르지 않습니다."),
     AUTHENTICATION_FAILED(401, "인증에 실패했습니다."),
@@ -88,7 +92,14 @@ public enum ResponseCode {
     KAKAO_UNAUTHORIZED(401, "카카오 API 접근 권한이 없습니다."),
     KAKAO_SERVER_ERROR(500, "카카오 서버 오류입니다."),
     KAKAO_RESPONSE_PARSING_ERROR(500, "카카오 응답 데이터를 처리할 수 없습니다."),
-    KAKAO_API_UNKNOWN_ERROR(500, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),;
+    KAKAO_API_UNKNOWN_ERROR(500, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),
+
+    //보드
+    BOARD_REQUIRED_FIELDS_MISSING(400, "필수 입력값(boardThemeId, title)이 누락되었습니다."),
+    BOARD_THEME_NOT_FOUND(404, "존재하지 않는 보드 테마입니다."),
+    BOARD_CREATE_FAILED(500, "보드 생성 중 서버 오류가 발생했습니다."),
+
+    ;
 
     private final int code;
     private final String message;

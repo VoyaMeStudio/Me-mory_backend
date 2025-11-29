@@ -33,6 +33,9 @@ public class DataInitializer implements CommandLineRunner {
         // 날씨 데이터 초기화
         initWeathers();
 
+        // 보드 데이터 초기화
+        initBoardThemes();
+
         // 테스트 사용자 데이터 초기화
         initTestUser();
 

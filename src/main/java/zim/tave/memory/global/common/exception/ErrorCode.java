@@ -66,7 +66,14 @@ public enum ErrorCode {
     KAKAO_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "카카오 API 접근 권한이 없습니다."),
     KAKAO_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 서버 오류입니다."),
     KAKAO_RESPONSE_PARSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 응답 데이터를 처리할 수 없습니다."),
-    KAKAO_API_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),;
+    KAKAO_API_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),
+
+    //보드
+    BOARD_REQUIRED_FIELDS_MISSING(HttpStatus.BAD_REQUEST, "필수 입력값(boardThemeId, title)이 누락되었습니다."),
+    BOARD_THEME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 보드 테마입니다."),
+    BOARD_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "보드 생성 중 서버 오류가 발생했습니다."),
+
+    ;
 
 
 

@@ -74,6 +74,10 @@ public class GlobalExceptionHandler {
             case KAKAO_SERVER_ERROR -> ResponseCode.KAKAO_SERVER_ERROR;
             case KAKAO_RESPONSE_PARSING_ERROR -> ResponseCode.KAKAO_RESPONSE_PARSING_ERROR;
             case KAKAO_API_UNKNOWN_ERROR -> ResponseCode.KAKAO_API_UNKNOWN_ERROR;
+            // 보드
+            case BOARD_REQUIRED_FIELDS_MISSING -> ResponseCode.BOARD_REQUIRED_FIELDS_MISSING;
+            case BOARD_THEME_NOT_FOUND -> ResponseCode.BOARD_THEME_NOT_FOUND;
+            case BOARD_CREATE_FAILED -> ResponseCode.BOARD_CREATE_FAILED;
 
             default -> ResponseCode.SERVER_ERROR;
         };
