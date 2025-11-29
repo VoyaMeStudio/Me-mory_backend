@@ -47,6 +47,7 @@ server:
   #max-http-request-size: 500MB     # 기존 server.tomcat.max-http-post-size 대체
 
 memory:
+  base-url: https://me-mory01.mooo.com
   file-upload:
     max-file-size: 524288000
     allowed-image-types:
