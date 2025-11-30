@@ -2,18 +2,17 @@ package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.dto.request.BoardCreateRequestDto;
 import zim.tave.memory.dto.response.BoardCreateResponseDto;
+import zim.tave.memory.dto.response.BoardListResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
@@ -66,5 +65,36 @@ public class BoardController {
         return ResponseEntity.ok(
                 ApiResponseDto.success(ResponseCode.BOARD_CREATE_SUCCESS, response)
         );
+    }
+
+    @Operation(
+            summary = "보드 목록 조회",
+            description = "현재 로그인한 사용자가 생성한 모든 보드 목록을 조회합니다."
+    )
+    @ApiErrorCodeExamples({
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "보드 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = BoardListResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = """
+            인증 실패입니다.
+            - AUTHENTICATION_FAILED
+            - INVALID_TOKEN
+            - UNAUTHORIZED_USER
+            """, content = @Content),
+            @ApiResponse(responseCode = "500", description = """
+            서버 오류입니다.
+            보드 목록 조회 중 문제가 발생했습니다.
+            """, content = @Content)
+    })
+    @GetMapping
+    public ResponseEntity<ApiResponseDto<BoardListResponseDto>> getBoards(
+            @AuthenticationPrincipal(expression = "userId") Long userId
+    ) {
+        BoardListResponseDto response = boardService.getUserBoards(userId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, response));
     }
 }

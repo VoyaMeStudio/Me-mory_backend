@@ -18,6 +18,7 @@ public class DataInitializer implements CommandLineRunner {
     private final WeatherRepository weatherRepository;
     private final UserRepository userRepository;
     private final BoardThemeRepository boardThemeRepository;
+    private final StickerRepository stickerRepository;
 
     @Override
     @Transactional
@@ -171,6 +172,20 @@ public class DataInitializer implements CommandLineRunner {
             boardThemeRepository.save(chess);
 
             log.info("보드 테마 데이터 생성 완료: {}개", boardThemeRepository.count());
+        }
+    }
+
+    private void initStickers() {
+        if (stickerRepository.count() == 0) {
+            log.info("스티커 데이터 생성 중...");
+
+            Sticker starSticker = new Sticker();
+            starSticker.setName("Star");
+            starSticker.setImageUrl("https://me-mory01.mooo.com/api/files?key=stickers/star_01.png");
+
+            stickerRepository.save(starSticker);
+
+            log.info("스티커 데이터 생성 완료: {}개", stickerRepository.count());
         }
     }
 

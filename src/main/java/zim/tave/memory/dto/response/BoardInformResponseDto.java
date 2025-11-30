@@ -3,16 +3,15 @@ package zim.tave.memory.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import zim.tave.memory.domain.Board;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "보드 생성 응답 DTO")
-public class BoardCreateResponseDto {
+@Schema(description = "보드 정보 요약 DTO")
+public class BoardInformResponseDto {
 
     @Schema(description = "생성된 보드 ID", example = "21")
     private Long boardId;
@@ -29,13 +28,21 @@ public class BoardCreateResponseDto {
     @Schema(description = "보드 최종 수정 시각", example = "2025-12-01T14:20:00")
     private LocalDateTime updatedAt;
 
-    public static BoardCreateResponseDto from(Board board) {
-        return new BoardCreateResponseDto(
+    @Schema(description = "보드에 포함된 스티커 개수", example = "3")
+    private int stickerCount;
+
+    @Schema(description = "보드 내 스티커 이미지 URL 리스트")
+    private List<String> stickerUrls;
+
+    public static BoardInformResponseDto from(Board board, List<String> stickerUrls) {
+        return new BoardInformResponseDto(
                 board.getBoardId(),
                 board.getTitle(),
                 board.getBoardTheme().getBoardThemeId(),
                 board.getCreatedAt(),
-                board.getUpdatedAt()
+                board.getUpdatedAt(),
+                stickerUrls.size(),
+                stickerUrls
         );
     }
 }
