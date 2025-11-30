@@ -10,6 +10,8 @@ import zim.tave.memory.global.common.ResponseCode;
 
 import java.util.UUID;
 
+import static zim.tave.memory.global.common.ResponseCode.BOARD_STICKER_NOT_FOUND;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -78,6 +80,10 @@ public class GlobalExceptionHandler {
             case BOARD_REQUIRED_FIELDS_MISSING -> ResponseCode.BOARD_REQUIRED_FIELDS_MISSING;
             case BOARD_THEME_NOT_FOUND -> ResponseCode.BOARD_THEME_NOT_FOUND;
             case BOARD_CREATE_FAILED -> ResponseCode.BOARD_CREATE_FAILED;
+            case BOARD_NOT_FOUND -> ResponseCode.BOARD_NOT_FOUND;
+            case BOARD_UPDATE_FORBIDDEN -> ResponseCode.BOARD_UPDATE_FORBIDDEN;
+            case BOARD_STICKER_NOT_FOUND  -> BOARD_STICKER_NOT_FOUND;
+            case BOARD_UPDATE_INTERNAL_ERROR  -> ResponseCode.BOARD_UPDATE_INTERNAL_ERROR;
 
             default -> ResponseCode.SERVER_ERROR;
         };

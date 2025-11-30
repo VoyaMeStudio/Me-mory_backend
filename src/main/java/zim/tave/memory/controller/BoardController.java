@@ -11,8 +11,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.dto.request.BoardCreateRequestDto;
+import zim.tave.memory.dto.request.BoardUpdateRequestDto;
 import zim.tave.memory.dto.response.BoardCreateResponseDto;
 import zim.tave.memory.dto.response.BoardListResponseDto;
+import zim.tave.memory.dto.response.BoardUpdateResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
@@ -96,5 +98,41 @@ public class BoardController {
     ) {
         BoardListResponseDto response = boardService.getUserBoards(userId);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, response));
+    }
+
+    @PatchMapping("/{boardId}")
+    @Operation(summary = "보드 수정 (스티커 전체 업데이트)",
+            description = "해당 보드의 기존 스티커를 모두 삭제하고, 새로운 스티커 전체 리스트로 교체합니다.")
+    @ApiErrorCodeExamples({
+            ErrorCode.BOARD_NOT_FOUND,
+            ErrorCode.BOARD_STICKER_NOT_FOUND,
+            ErrorCode.BOARD_UPDATE_FORBIDDEN,
+            ErrorCode.AUTHENTICATION_FAILED,
+            ErrorCode.INVALID_TOKEN,
+            ErrorCode.UNAUTHORIZED_USER
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "보드 수정 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                잘못된 요청입니다:
+                - INVALID_STICKER_ID: 잘못된 스티커 ID 포함
+                """, content = @Content),
+            @ApiResponse(responseCode = "403", description = """
+                권한 없음:
+                - BOARD_UPDATE_FORBIDDEN
+                """, content = @Content),
+            @ApiResponse(responseCode = "404", description = """
+                리소스 없음:
+                - BOARD_NOT_FOUND: 존재하지 않는 보드
+                """, content = @Content)
+    })
+    public ResponseEntity<ApiResponseDto<BoardUpdateResponseDto>> updateBoard(
+            @AuthenticationPrincipal(expression = "userId") Long userId,
+            @PathVariable Long boardId,
+            @RequestBody BoardUpdateRequestDto requestDto) {
+
+        BoardUpdateResponseDto response = boardService.updateBoardStickers(userId, boardId, requestDto);
+
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.BOARD_UPDATE_SUCCESS, response));
     }
 }

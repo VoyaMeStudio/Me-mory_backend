@@ -37,6 +37,9 @@ public class DataInitializer implements CommandLineRunner {
         // 보드 데이터 초기화
         initBoardThemes();
 
+        // 보드 스티커 초기화
+        initStickers();
+
         // 테스트 사용자 데이터 초기화
         initTestUser();
 
@@ -181,7 +184,7 @@ public class DataInitializer implements CommandLineRunner {
 
             Sticker starSticker = new Sticker();
             starSticker.setName("Star");
-            starSticker.setImageUrl("https://me-mory01.mooo.com/api/files?key=stickers/star_01.png");
+            starSticker.setImageUrl("https://me-mory01.mooo.com/api/files?key=images/6d4c8b2f-00ec-41ae-bd57-9ce914e1c78d_sticker_star.png");
 
             stickerRepository.save(starSticker);
 

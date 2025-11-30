@@ -3,22 +3,20 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zim.tave.memory.domain.Board;
-import zim.tave.memory.domain.BoardStickerMap;
-import zim.tave.memory.domain.BoardTheme;
-import zim.tave.memory.domain.User;
+import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.request.BoardCreateRequestDto;
+import zim.tave.memory.dto.request.BoardUpdateRequestDto;
 import zim.tave.memory.dto.response.BoardCreateResponseDto;
 import zim.tave.memory.dto.response.BoardInformResponseDto;
 import zim.tave.memory.dto.response.BoardListResponseDto;
+import zim.tave.memory.dto.response.BoardUpdateResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.repository.BoardRepository;
-import zim.tave.memory.repository.BoardStickerMapRepository;
-import zim.tave.memory.repository.BoardThemeRepository;
-import zim.tave.memory.repository.UserRepository;
+import zim.tave.memory.repository.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +27,7 @@ public class BoardService {
     private final BoardThemeRepository boardThemeRepository;
     private final UserRepository userRepository;
     private final BoardStickerMapRepository boardStickerMapRepository;
+    private final StickerRepository stickerRepository;
 
     @Transactional
     public BoardCreateResponseDto createBoard(Long userId, BoardCreateRequestDto requestDto) {
@@ -74,5 +73,43 @@ public class BoardService {
                 .toList();
 
         return BoardListResponseDto.from(result);
+    }
+
+    @Transactional
+    public BoardUpdateResponseDto updateBoardStickers(
+            Long userId, Long boardId, BoardUpdateRequestDto requestDto) {
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        if (!board.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.BOARD_UPDATE_FORBIDDEN);
+        }
+
+        // 수정시 기존 스티커 모두 삭제하고 다시 저장
+        boardStickerMapRepository.deleteByBoard(board);
+
+        List<BoardStickerMap> savedStickers = new ArrayList<>();
+
+        for (BoardUpdateRequestDto.StickerUpdateItem item : requestDto.getStickers()) {
+
+            Sticker sticker = stickerRepository.findById(item.getStickerId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.BOARD_STICKER_NOT_FOUND));
+
+            BoardStickerMap map = new BoardStickerMap();
+            map.setBoard(board);
+            map.setSticker(sticker);
+
+            map.setPosX(BigDecimal.valueOf(item.getPosX()));
+            map.setPosY(BigDecimal.valueOf(item.getPosY()));
+            map.setRotation(BigDecimal.valueOf(item.getRotation()));
+
+            savedStickers.add(boardStickerMapRepository.save(map));
+        }
+
+        board.setUpdatedAt(LocalDateTime.now());
+        boardRepository.save(board);
+
+        return BoardUpdateResponseDto.from(board, savedStickers);
     }
 }

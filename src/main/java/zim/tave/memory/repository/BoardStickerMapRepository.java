@@ -9,5 +9,5 @@ import java.util.List;
 public interface BoardStickerMapRepository extends JpaRepository<BoardStickerMap, Long> {
 
     List<BoardStickerMap> findByBoard(Board board);
-    int countByBoard(Board board);
+    void deleteByBoard(Board board);
 }

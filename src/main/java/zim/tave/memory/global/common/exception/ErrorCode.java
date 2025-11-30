@@ -72,6 +72,10 @@ public enum ErrorCode {
     BOARD_REQUIRED_FIELDS_MISSING(HttpStatus.BAD_REQUEST, "필수 입력값(boardThemeId, title)이 누락되었습니다."),
     BOARD_THEME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 보드 테마입니다."),
     BOARD_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "보드 생성 중 서버 오류가 발생했습니다."),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "보드를 찾을 수 없습니다."),
+    BOARD_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 보드를 수정할 권한이 없습니다."),
+    BOARD_STICKER_NOT_FOUND(HttpStatus.NOT_FOUND, "스티커를 찾을 수 없습니다."),
+    BOARD_UPDATE_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "보드 수정 중 서버 오류가 발생했습니다."),
 
     ;
 
