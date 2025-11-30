@@ -13,6 +13,7 @@ import zim.tave.memory.dto.VisitedCountryInfoDto;
 import zim.tave.memory.dto.response.TimelineResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
+import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.TripRepository;
 
 import java.time.LocalDate;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class TimelineService {
 
     private final TripRepository tripRepository;
+    private final EmotionRepository emotionRepository;
 
     /**
      * 사용자의 타임라인 조회(보관함에 숨긴 여행 제외, 시작일 기준 내림차순 정렬 )
@@ -114,12 +116,12 @@ public class TimelineService {
     }
 
     /**
-     * 여행의 가장 최근 일기에서 감정 정보를 추출(일기 없거나 감정 정보가 없으면 null 반환)
+     * 여행의 가장 최근 일기에서 감정 정보를 추출(일기 없거나 감정 정보가 없으면 기본 감정 반환)
      */
     private TripEmotionInfo resolveTripEmotion(Trip trip) {
         List<Diary> diaries = filterActiveDiaries(trip.getDiaries());
         if (diaries == null || diaries.isEmpty()) {
-            return new TripEmotionInfo(null, null);
+            return getDefaultEmotionInfo();
         }
 
         // createdAt 기준으로 가장 최근 일기 찾기
@@ -127,11 +129,23 @@ public class TimelineService {
                 .max(Comparator.comparing(Diary::getCreatedAt));
 
         if (mostRecentDiary.isEmpty() || mostRecentDiary.get().getEmotion() == null) {
-            return new TripEmotionInfo(null, null);
+            return getDefaultEmotionInfo();
         }
 
         Emotion emotion = mostRecentDiary.get().getEmotion();
         return new TripEmotionInfo(emotion.getName(), emotion.getColorCode());
+    }
+
+    /**
+     * 기본 감정 정보를 반환(일기 없거나 감정 정보가 없을 때 사용)
+     */
+    private TripEmotionInfo getDefaultEmotionInfo() {
+        Emotion defaultEmotion = emotionRepository.findByName("기본");
+        if (defaultEmotion != null) {
+            return new TripEmotionInfo(defaultEmotion.getName(), defaultEmotion.getColorCode());
+        }
+        // 기본 감정이 없으면 하드코딩된 기본값 반환
+        return new TripEmotionInfo("기본", "#EEEEEE");
     }
 
     //여행의 대표 이미지 URL 결정
