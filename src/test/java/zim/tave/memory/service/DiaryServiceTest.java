@@ -78,6 +78,7 @@ class DiaryServiceTest {
         diary.setCity("서울");
         diary.setContent("테스트 내용");
         diary.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diary.setIsStored(false);
 
         emotion = new Emotion("행복", "#FFD700");
         emotion.setId(1L);
@@ -209,16 +210,17 @@ class DiaryServiceTest {
     @Test
     void 다이어리_삭제_테스트() {
         // given
+        trip.setStartDate(LocalDate.of(2024, 1, 1));
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
 
         // when
-        diaryService.deleteDiary(1L);
+        diaryService.deleteDiary(1L, 1L);
 
         // then
         verify(diaryRepository).delete(diary);
-        assertThat(trip.getEndDate()).isNull();
+        assertThat(trip.getEndDate()).isEqualTo(trip.getStartDate());
     }
 
     @Test
@@ -232,11 +234,34 @@ class DiaryServiceTest {
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(remainingDiary));
 
         // when
-        diaryService.deleteDiary(1L);
+        diaryService.deleteDiary(1L, 1L);
 
         // then
         verify(diaryRepository).delete(diary);
         assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 20));
+    }
+
+    @Test
+    void 다이어리_삭제_소유권_검증_실패_테스트() {
+        // given
+        User otherUser = new User();
+        otherUser.setId(2L);
+        diary.setUser(otherUser);
+
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+
+        // when & then
+        assertThatThrownBy(() -> diaryService.deleteDiary(1L, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ACCESS_DENIED);
+    }
+
+    @Test
+    void 다이어리_삭제_인증_실패_테스트() {
+        // when & then
+        assertThatThrownBy(() -> diaryService.deleteDiary(1L, null))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.AUTHENTICATION_FAILED);
     }
 
     @Test
@@ -265,5 +290,117 @@ class DiaryServiceTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCity()).isEqualTo("서울");
+    }
+
+    @Test
+    void 다이어리_보관_테스트() {
+        // given
+        diary.setIsStored(false);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+
+        // when
+        diaryService.storeDiary(1L, 1L, true);
+
+        // then
+        assertThat(diary.getIsStored()).isTrue();
+    }
+
+    @Test
+    void 다이어리_보관_해제_테스트() {
+        // given
+        diary.setIsStored(true);
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+
+        // when
+        diaryService.storeDiary(1L, 1L, false);
+
+        // then
+        assertThat(diary.getIsStored()).isFalse();
+    }
+
+    @Test
+    void 다이어리_보관_소유권_검증_실패_테스트() {
+        // given
+        User otherUser = new User();
+        otherUser.setId(2L);
+        diary.setUser(otherUser);
+
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+
+        // when & then
+        assertThatThrownBy(() -> diaryService.storeDiary(1L, 1L, true))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ACCESS_DENIED);
+    }
+
+    @Test
+    void 다이어리_보관_인증_실패_테스트() {
+        // when & then
+        assertThatThrownBy(() -> diaryService.storeDiary(1L, null, true))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.AUTHENTICATION_FAILED);
+    }
+
+    @Test
+    void 다이어리_보관_다이어리_없음_예외_테스트() {
+        // given
+        when(diaryRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> diaryService.storeDiary(999L, 1L, true))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DIARY_NOT_FOUND);
+    }
+
+    @Test
+    void 사용자별_다이어리_조회_시_숨긴_다이어리_제외_테스트() {
+        // given
+        Diary activeDiary = new Diary();
+        activeDiary.setId(1L);
+        activeDiary.setUser(user);
+        activeDiary.setIsStored(false);
+
+        Diary storedDiary = new Diary();
+        storedDiary.setId(2L);
+        storedDiary.setUser(user);
+        storedDiary.setIsStored(true);
+
+        // findByUser_Id는 isStored = false인 것만 반환하도록 필터링됨
+        when(diaryRepository.findByUser_Id(1L)).thenReturn(Arrays.asList(activeDiary));
+
+        // when
+        List<DiaryResponseDto> result = diaryService.findByUserId(1L);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        verify(diaryRepository).findByUser_Id(1L);
+    }
+
+    @Test
+    void 여행별_다이어리_조회_시_숨긴_다이어리_제외_테스트() {
+        // given
+        Diary activeDiary = new Diary();
+        activeDiary.setId(1L);
+        activeDiary.setUser(user);
+        activeDiary.setTrip(trip);
+        activeDiary.setIsStored(false);
+
+        Diary storedDiary = new Diary();
+        storedDiary.setId(2L);
+        storedDiary.setUser(user);
+        storedDiary.setTrip(trip);
+        storedDiary.setIsStored(true);
+
+        // findByTrip_Id는 isStored = false인 것만 반환하도록 필터링됨
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(activeDiary));
+
+        // when
+        List<DiaryResponseDto> result = diaryService.findByTripId(1L, 1L);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        verify(diaryRepository).findByTrip_Id(1L);
     }
 }

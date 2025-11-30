@@ -3,11 +3,13 @@ package zim.tave.memory.global.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 
+import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 @Slf4j
@@ -86,6 +88,37 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ApiResponseDto.error(responseCode, safeMessage));
+    }
+
+    // HttpMessageNotReadableException 처리 (Jackson 파싱 오류)
+    // LocalDateTimeDeserializer에서 CustomException을 던지면 Jackson이 이를 HttpMessageNotReadableException으로 감싸서 던짐
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponseDto<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String errorId = UUID.randomUUID().toString();
+        
+        // 에러 로그 기록
+        log.error("[{}] HttpMessageNotReadableException: {}", errorId, ex.getMessage(), ex);
+        
+        // cause가 CustomException인 경우 (LocalDateTimeDeserializer에서 던진 경우)
+        Throwable cause = ex.getCause();
+        if (cause instanceof CustomException) {
+            // CustomException 핸들러로 위임
+            return handleCustomException((CustomException) cause);
+        }
+        
+        // 다른 파싱 오류인 경우
+        String message = "요청 본문을 파싱할 수 없습니다. 요청 형식을 확인해주세요.";
+        if (cause instanceof DateTimeParseException) {
+            DateTimeParseException dtpe = (DateTimeParseException) cause;
+            message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식(yyyy-MM-ddTHH:mm:ss 또는 yyyy-MM-ddTHH:mm:ss.SSSZ)을 사용해주세요.", 
+                    dtpe.getParsedString());
+        }
+        
+        String safeMessage = message + " (errorId: " + errorId + ")";
+        
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
     }
 
     // 예상치 못한 예외 처리

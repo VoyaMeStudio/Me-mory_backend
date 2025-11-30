@@ -1,5 +1,6 @@
 package zim.tave.memory.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonDeserialize;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,8 +28,9 @@ public class CreateDiaryRequest {
     @Schema(description = "도시명", example = "제주시", required = true)
     private String city;
 
-    @Schema(description = "일기 작성 날짜 및 시간", example = "2023-12-25T14:30:00", required = true)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @Schema(description = "일기 작성 날짜 및 시간 (ISO 8601 형식: yyyy-MM-ddTHH:mm:ss 또는 yyyy-MM-ddTHH:mm:ss.SSSZ)", 
+            example = "2023-12-25T14:30:00")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime dateTime;
 
     @Schema(description = "일기 내용", example = "오늘은 제주도에서 멋진 하루를 보냈다.", required = true)

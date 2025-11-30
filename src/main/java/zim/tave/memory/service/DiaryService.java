@@ -208,9 +208,27 @@ public class DiaryService {
     }
 
     @Transactional
-    public void deleteDiary(Long diaryId) {
+    public void storeDiary(Long diaryId, Long userId, boolean isStored) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!diary.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
+
+        diary.setIsStored(isStored);
+    }
+
+    @Transactional
+    public void deleteDiary(Long diaryId, Long userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
 		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
-		checkDiaryOwnership(diary.getUser().getId(), diary);
+		checkDiaryOwnership(userId, diary);
         Long tripId = diary.getTrip().getId();
 		diaryRepository.delete(diary);
 

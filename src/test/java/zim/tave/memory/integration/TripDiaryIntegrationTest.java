@@ -195,7 +195,7 @@ class TripDiaryIntegrationTest {
         persisted1.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(persisted1));
 
-        diaryService.deleteDiary(2L);
+        diaryService.deleteDiary(2L, 1L);
 
         // then - 종료날짜가 첫 번째 다이어리 날짜로 변경됨
         assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 15));
@@ -230,10 +230,194 @@ class TripDiaryIntegrationTest {
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(persisted));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
 
-        diaryService.deleteDiary(1L);
+        diaryService.deleteDiary(1L, 1L);
 
         // then
-        assertThat(trip.getEndDate()).isNull();
+        assertThat(trip.getEndDate()).isEqualTo(trip.getStartDate());
+    }
+
+    @Test
+    void 다이어리_삭제_시_여행_종료날짜_재계산_테스트_수정() {
+        // given - 여행과 다이어리들 생성
+        trip.setStartDate(LocalDate.of(2024, 1, 1));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // 첫 번째 다이어리 생성
+        CreateDiaryRequest diaryRequest1 = new CreateDiaryRequest();
+        diaryRequest1.setUserId(1L);
+        diaryRequest1.setTripId(1L);
+        diaryRequest1.setCountryCode("KR");
+        diaryRequest1.setCity("제주시");
+        diaryRequest1.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest1.setContent("제주도 첫째 날");
+        diaryRequest1.setImages(createImageInfo("front1.jpg", "back1.jpg"));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(countryService.findByCode("KR")).thenReturn(new Country());
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(new Emotion("행복", "#FFD700")));
+        mockDiarySaveWithAutoId(1L);
+        diaryService.createDiary(diaryRequest1);
+
+        // 두 번째 다이어리 생성
+        CreateDiaryRequest diaryRequest2 = new CreateDiaryRequest();
+        diaryRequest2.setUserId(1L);
+        diaryRequest2.setTripId(1L);
+        diaryRequest2.setCountryCode("KR");
+        diaryRequest2.setCity("서귀포시");
+        diaryRequest2.setDateTime(LocalDateTime.of(2024, 1, 20, 10, 0));
+        diaryRequest2.setContent("제주도 마지막 날");
+        diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
+
+        diaryService.createDiary(diaryRequest2);
+
+        // when - 마지막 다이어리 삭제 (userId 파라미터 추가)
+        Diary persisted2 = new Diary();
+        persisted2.setId(2L);
+        persisted2.setTrip(trip);
+        persisted2.setUser(user);
+        persisted2.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
+        when(diaryRepository.findById(2L)).thenReturn(Optional.of(persisted2));
+        Diary persisted1 = new Diary();
+        persisted1.setId(1L);
+        persisted1.setTrip(trip);
+        persisted1.setUser(user);
+        persisted1.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(persisted1));
+
+        diaryService.deleteDiary(2L, 1L);
+
+        // then - 종료날짜가 첫 번째 다이어리 날짜로 변경됨
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 15));
+    }
+
+    @Test
+    void 모든_다이어리_삭제_시_종료날짜_startDate로_설정_테스트() {
+        // given
+        trip.setStartDate(LocalDate.of(2024, 1, 1));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        CreateDiaryRequest diaryRequest = new CreateDiaryRequest();
+        diaryRequest.setUserId(1L);
+        diaryRequest.setTripId(1L);
+        diaryRequest.setCountryCode("KR");
+        diaryRequest.setCity("제주시");
+        diaryRequest.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest.setContent("제주도 여행");
+        diaryRequest.setImages(createImageInfo("front.jpg", "back.jpg"));
+
+        when(countryService.findByCode("KR")).thenReturn(new Country());
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(new Emotion("행복", "#FFD700")));
+        mockDiarySaveWithAutoId(1L);
+        diaryService.createDiary(diaryRequest);
+
+        // when - 마지막 다이어리 삭제 (userId 파라미터 추가)
+        Diary persisted = new Diary();
+        persisted.setId(1L);
+        persisted.setTrip(trip);
+        persisted.setUser(user);
+        persisted.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(persisted));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
+
+        diaryService.deleteDiary(1L, 1L);
+
+        // then - 종료날짜가 startDate로 설정됨
+        assertThat(trip.getEndDate()).isEqualTo(trip.getStartDate());
+    }
+
+    @Test
+    void 여행_보관_시_하위_다이어리_모두_보관_테스트() {
+        // given
+        trip.setIsStored(false);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        Diary diary1 = new Diary();
+        diary1.setId(1L);
+        diary1.setTrip(trip);
+        diary1.setUser(user);
+        diary1.setIsStored(false);
+
+        Diary diary2 = new Diary();
+        diary2.setId(2L);
+        diary2.setTrip(trip);
+        diary2.setUser(user);
+        diary2.setIsStored(false);
+
+        when(diaryRepository.findByTripId(1L)).thenReturn(Arrays.asList(diary1, diary2));
+
+        // when - 여행 보관
+        tripService.storeTrip(1L, 1L, true);
+
+        // then - 여행과 모든 다이어리가 보관됨
+        assertThat(trip.getIsStored()).isTrue();
+        assertThat(diary1.getIsStored()).isTrue();
+        assertThat(diary2.getIsStored()).isTrue();
+    }
+
+    @Test
+    void 다이어리_보관_테스트() {
+        // given
+        Diary diary = new Diary();
+        diary.setId(1L);
+        diary.setUser(user);
+        diary.setIsStored(false);
+
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+
+        // when
+        diaryService.storeDiary(1L, 1L, true);
+
+        // then
+        assertThat(diary.getIsStored()).isTrue();
+    }
+
+    @Test
+    void 다이어리_보관_해제_테스트() {
+        // given
+        Diary diary = new Diary();
+        diary.setId(1L);
+        diary.setUser(user);
+        diary.setIsStored(true);
+
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+
+        // when
+        diaryService.storeDiary(1L, 1L, false);
+
+        // then
+        assertThat(diary.getIsStored()).isFalse();
+    }
+
+    @Test
+    void 조회_시_숨긴_다이어리_제외_테스트() {
+        // given
+        Diary activeDiary = new Diary();
+        activeDiary.setId(1L);
+        activeDiary.setUser(user);
+        activeDiary.setTrip(trip);
+        activeDiary.setIsStored(false);
+
+        Diary storedDiary = new Diary();
+        storedDiary.setId(2L);
+        storedDiary.setUser(user);
+        storedDiary.setTrip(trip);
+        storedDiary.setIsStored(true);
+
+        // findByUser_Id는 isStored = false인 것만 반환
+        when(diaryRepository.findByUser_Id(1L)).thenReturn(Arrays.asList(activeDiary));
+        // findByTrip_Id는 isStored = false인 것만 반환
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(activeDiary));
+
+        // when
+        List<DiaryResponseDto> userDiaries = diaryService.findByUserId(1L);
+        List<DiaryResponseDto> tripDiaries = diaryService.findByTripId(1L, 1L);
+
+        // then
+        assertThat(userDiaries).hasSize(1);
+        assertThat(userDiaries.get(0).getId()).isEqualTo(1L);
+        assertThat(tripDiaries).hasSize(1);
+        assertThat(tripDiaries.get(0).getId()).isEqualTo(1L);
     }
 
     private List<CreateDiaryRequest.DiaryImageInfo> createImageInfo(String frontUrl, String backUrl) {
