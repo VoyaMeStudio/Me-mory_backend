@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+/**
+ * 타임라인에서 표시되는 방문 국가 정보 DTO
+ */
 @Getter
 @Builder
 @Schema(description = "타임라인 방문 국가 정보 DTO")

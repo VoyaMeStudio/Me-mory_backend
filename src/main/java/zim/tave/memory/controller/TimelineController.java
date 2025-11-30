@@ -1,6 +1,7 @@
 package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -10,13 +11,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.dto.request.CreatePastTripRequest;
+import zim.tave.memory.dto.request.UpdateTripRequest;
 import zim.tave.memory.dto.response.TimelineResponseDto;
 import zim.tave.memory.dto.response.TripResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
@@ -28,7 +34,7 @@ import zim.tave.memory.service.TripService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users/me")
-@Tag(name = "Timeline", description = "타임라인 조회 API")
+@Tag(name = "Timeline/StackView", description = "타임라인/스택뷰 조회 API")
 @SecurityRequirement(name = "bearerAuth")
 public class TimelineController {
 
@@ -36,10 +42,10 @@ public class TimelineController {
     private final TripService tripService;
 
     @GetMapping("/timeline")
-    @Operation(summary = "타임라인 조회", description = "로그인한 사용자의 과거 및 현재 여행 타임라인을 조회합니다. 보관함에 숨긴 여행은 결과에서 제외됩니다.")
+    @Operation(summary = "타임라인/스택뷰 조회", description = "로그인한 사용자의 과거 및 현재 여행 타임라인을 조회합니다. 보관함에 숨긴 여행은 결과에서 제외됩니다.")
     @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "타임라인 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "타임라인/스택뷰 조회 성공"),
             @ApiResponse(responseCode = "401", description = """
                     인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
                     - AUTHENTICATION_FAILED: 인증에 실패했습니다.
@@ -55,7 +61,7 @@ public class TimelineController {
     }
 
     @PostMapping("/timeline/past")
-    @Operation(summary = "타임라인에서 과거 여행 추가", description = "타임라인 화면에서 과거에 다녀온 여행을 등록합니다.")
+    @Operation(summary = "타임라인/스택뷰에서 과거 여행 추가", description = "타임라인/스택뷰 화면에서 과거에 다녀온 여행을 등록합니다.")
     @ApiErrorCodeExamples({ErrorCode.TRIP_NAME_REQUIRED, ErrorCode.TRIP_NAME_TOO_LONG, ErrorCode.TRIP_DESCRIPTION_TOO_LONG, ErrorCode.MISSING_REQUIRED_FIELDS, ErrorCode.VALIDATION_ERROR, ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.TRIP_THEME_NOT_FOUND})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "과거 여행 생성 성공"),
@@ -84,6 +90,102 @@ public class TimelineController {
         TripResponseDto dto = tripService.createPastTrip(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseDto.success(ResponseCode.CREATED, dto));
+    }
+
+    @PatchMapping("/timeline/past/{tripId}")
+    @Operation(summary = "타임라인에서 과거 여행 수정", description = "타임라인/스택뷰 화면에서 과거 여행만 수정할 수 있습니다. 일반 여행은 전체 여행 보는 뷰에서 수정해야 합니다.")
+    @ApiErrorCodeExamples({ErrorCode.NOT_PAST_TRIP, ErrorCode.TRIP_NAME_REQUIRED, ErrorCode.TRIP_NAME_TOO_LONG, ErrorCode.TRIP_DESCRIPTION_TOO_LONG, ErrorCode.VALIDATION_ERROR, ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.ACCESS_DENIED, ErrorCode.TRIP_UPDATE_FORBIDDEN, ErrorCode.TRIP_NOT_FOUND, ErrorCode.TRIP_THEME_NOT_FOUND})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "과거 여행 수정 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - NOT_PAST_TRIP: 과거 여행만 수정할 수 있습니다.
+                    - TRIP_NAME_TOO_LONG: 여행명은 최대 14자입니다.
+                    - TRIP_DESCRIPTION_TOO_LONG: 여행 설명은 최대 56자입니다.
+                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.\n- TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 수정 권한이 없습니다.",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없습니다. 다음 에러 코드가 발생할 수 있습니다:\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.\n- TRIP_THEME_NOT_FOUND: 여행 테마를 찾을 수 없습니다.",
+                    content = @Content)
+    })
+    public ResponseEntity<ApiResponseDto<Void>> updatePastTripFromTimeline(
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
+            @RequestBody UpdateTripRequest request,
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
+        tripService.updatePastTrip(tripId, request, userId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
+
+    @PatchMapping("/timeline/past/{tripId}/store")
+    @Operation(summary = "타임라인에서 과거 여행 보관", description = "타임라인/스택뷰 화면에서 과거 여행만 보관/보관 해제할 수 있습니다.")
+    @ApiErrorCodeExamples({ErrorCode.NOT_PAST_TRIP, ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.ACCESS_DENIED, ErrorCode.TRIP_NOT_FOUND})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "과거 여행 보관 상태 변경 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - NOT_PAST_TRIP: 과거 여행만 보관할 수 있습니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content)
+    })
+    public ResponseEntity<ApiResponseDto<Void>> storePastTripFromTimeline(
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
+            @RequestParam boolean isStored,
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
+        tripService.storePastTrip(tripId, userId, isStored);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
+
+    @DeleteMapping("/timeline/past/{tripId}")
+    @Operation(summary = "타임라인에서 과거 여행 삭제", description = "타임라인/스택뷰 화면에서 과거 여행만 삭제할 수 있습니다.")
+    @ApiErrorCodeExamples({ErrorCode.NOT_PAST_TRIP, ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.ACCESS_DENIED, ErrorCode.TRIP_UPDATE_FORBIDDEN, ErrorCode.TRIP_NOT_FOUND})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "과거 여행 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - NOT_PAST_TRIP: 과거 여행만 삭제할 수 있습니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = """
+                    권한이 없습니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - ACCESS_DENIED: 접근 권한이 없습니다.
+                    - TRIP_UPDATE_FORBIDDEN: 해당 여행에 대한 수정 권한이 없습니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "여행을 찾을 수 없습니다.\n- TRIP_NOT_FOUND: 여행을 찾을 수 없습니다.",
+                    content = @Content)
+    })
+    public ResponseEntity<ApiResponseDto<Void>> deletePastTripFromTimeline(
+            @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
+            @AuthenticationPrincipal(expression = "userId") Long userId) {
+        tripService.deletePastTrip(tripId, userId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }
 

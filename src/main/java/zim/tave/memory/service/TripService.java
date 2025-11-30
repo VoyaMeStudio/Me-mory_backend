@@ -268,6 +268,120 @@ public class TripService {
         tripRepository.delete(trip);
     }
 
+    /**
+     * 과거 여행인지 확인하는 검증 로직
+     * 
+     * @param trip 여행 엔티티
+     * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
+     */
+    private void validateIsPastTrip(Trip trip) {
+        if (!Boolean.TRUE.equals(trip.getIsPast())) {
+            throw new CustomException(ErrorCode.NOT_PAST_TRIP);
+        }
+    }
+
+    /**
+     * 과거 여행만 수정하는 메서드 (타임라인 뷰용)
+     * 
+     * @param tripId 여행 ID
+     * @param request 수정 요청
+     * @param userId 사용자 ID
+     * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
+     */
+    @Transactional
+    public void updatePastTrip(Long tripId, UpdateTripRequest request, Long userId) {
+        ensureAuthenticated(userId);
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+
+        validateIsPastTrip(trip);
+
+        // 입력 검증
+        if (request.getTripName() != null && request.getTripName().trim().length() > 14) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (request.getStartDate() != null && request.getEndDate() != null
+                && request.getStartDate().isAfter(request.getEndDate())) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+
+        if (request.getTripName() != null) {
+            trip.setTripName(request.getTripName());
+        }
+
+        if (request.getDescription() != null) {
+            trip.setDescription(request.getDescription());
+        }
+
+        if (request.getThemeId() != null) {
+            TripTheme theme = tripThemeRepository.findById(request.getThemeId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.TRIP_THEME_NOT_FOUND));
+            trip.setTripTheme(theme);
+        }
+
+        if (request.getRepresentativeImageUrl() != null) {
+            trip.setRepresentativeImageUrl(request.getRepresentativeImageUrl());
+        }
+
+        if (request.getStartDate() != null) {
+            trip.setStartDate(request.getStartDate());
+        }
+
+        if (request.getEndDate() != null) {
+            trip.setEndDate(request.getEndDate());
+        }
+    }
+
+    /**
+     * 과거 여행만 보관하는 메서드 (타임라인 뷰용)
+     * 
+     * @param tripId 여행 ID
+     * @param userId 사용자 ID
+     * @param isStored 보관 여부
+     * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
+     */
+    @Transactional
+    public void storePastTrip(Long tripId, Long userId, boolean isStored) {
+        ensureAuthenticated(userId);
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+
+        validateIsPastTrip(trip);
+        storeTrip(tripId, userId, isStored);
+    }
+
+    /**
+     * 과거 여행만 삭제하는 메서드 (타임라인 뷰용)
+     * 
+     * @param tripId 여행 ID
+     * @param userId 사용자 ID
+     * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
+     */
+    @Transactional
+    public void deletePastTrip(Long tripId, Long userId) {
+        ensureAuthenticated(userId);
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRIP_NOT_FOUND));
+
+        if (!trip.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.TRIP_UPDATE_FORBIDDEN);
+        }
+
+        validateIsPastTrip(trip);
+        tripRepository.delete(trip);
+    }
+
     private void validateTripPeriod(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);

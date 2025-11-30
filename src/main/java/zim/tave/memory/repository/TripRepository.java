@@ -20,11 +20,15 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	@Query("select t from Trip t where size(t.diaries) > 0")
 	List<Trip> findAllWithDiaries();
 
+	/**
+	 * 타임라인 조회를 위한 활성 여행 목록 조회(N+1 문제 방지를 위해 모든 관련 엔티티를 한 번에 fetch)
+	 * - 여행의 일기 목록, 일기의 국가 정보, 일기의 감정 정보
+	 */
 	@Query("""
 			select distinct t from Trip t
 			left join fetch t.diaries d
-			left join fetch d.diaryImages di
 			left join fetch d.country c
+			left join fetch d.emotion e
 			where t.user.id = :userId and (t.isStored = false or t.isStored is null)
 			""")
 	List<Trip> findActiveTripsWithDetails(@Param("userId") Long userId);

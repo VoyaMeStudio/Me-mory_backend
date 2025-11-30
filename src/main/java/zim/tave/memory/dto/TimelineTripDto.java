@@ -7,6 +7,10 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 타임라인에서 표시되는 여행 단위 DTO
+ * 여행의 기본 정보(ID, 이름, 설명, 날짜 등)와 가장 최근 일기의 감정 정보(색상 및 이름), 대표 이미지 URL, 방문한 국가 목록(감정 정보 제외)을 포함합니다.
+ */
 @Getter
 @Builder
 @Schema(description = "타임라인 여행 단위 DTO")
@@ -32,6 +36,12 @@ public class TimelineTripDto {
 
     @Schema(description = "대표 이미지 URL", example = "https://cdn.example.com/trip-42.jpg")
     private final String representativeImageUrl;
+
+    @Schema(description = "감정명 (가장 최근 일기의 감정)", example = "설렘")
+    private final String emotionName;
+
+    @Schema(description = "감정 색상 코드 (가장 최근 일기의 감정)", example = "#FF6B6B")
+    private final String emotionColor;
 
     @Schema(description = "방문한 국가 정보 목록")
     private final List<VisitedCountryInfoDto> visitedCountries;

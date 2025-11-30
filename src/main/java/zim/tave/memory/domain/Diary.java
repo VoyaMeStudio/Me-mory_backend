@@ -3,6 +3,7 @@ package zim.tave.memory.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class Diary {
     private Weather weather;
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20) // lazy loading 시 20개씩 조회
     private List<DiaryImage> diaryImages = new ArrayList<>();
 
     @Column(updatable = false)
