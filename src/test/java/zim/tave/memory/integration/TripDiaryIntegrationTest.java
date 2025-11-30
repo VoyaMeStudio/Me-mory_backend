@@ -114,7 +114,7 @@ class TripDiaryIntegrationTest {
         diaryRequest.setTripId(1L);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest.setDateTime("2024-01-15T10:00:00");
         diaryRequest.setContent("제주도 첫째 날");
 
         CreateDiaryRequest.DiaryImageInfo imageInfo1 = new CreateDiaryRequest.DiaryImageInfo();
@@ -145,7 +145,7 @@ class TripDiaryIntegrationTest {
 
         // then
         assertThat(createdDiary.getTripId()).isEqualTo(trip.getId());
-        assertThat(trip.getEndDate()).isEqualTo(diaryRequest.getDateTime().toLocalDate());
+        assertThat(trip.getEndDate()).isEqualTo(LocalDateTime.parse(diaryRequest.getDateTime()).toLocalDate());
     }
 
     @Test
@@ -160,7 +160,7 @@ class TripDiaryIntegrationTest {
         diaryRequest1.setTripId(1L);
         diaryRequest1.setCountryCode("KR");
         diaryRequest1.setCity("제주시");
-        diaryRequest1.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest1.setDateTime("2024-01-15T10:00:00");
         diaryRequest1.setContent("제주도 첫째 날");
         diaryRequest1.setImages(createImageInfo("front1.jpg", "back1.jpg"));
 
@@ -175,7 +175,7 @@ class TripDiaryIntegrationTest {
         diaryRequest2.setTripId(1L);
         diaryRequest2.setCountryCode("KR");
         diaryRequest2.setCity("서귀포시");
-        diaryRequest2.setDateTime(LocalDateTime.of(2024, 1, 20, 10, 0));
+        diaryRequest2.setDateTime("2024-01-20T10:00:00");
         diaryRequest2.setContent("제주도 마지막 날");
         diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
 
@@ -212,7 +212,7 @@ class TripDiaryIntegrationTest {
         diaryRequest.setTripId(1L);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest.setDateTime("2024-01-15T10:00:00");
         diaryRequest.setContent("제주도 여행");
         diaryRequest.setImages(createImageInfo("front.jpg", "back.jpg"));
 
@@ -248,7 +248,7 @@ class TripDiaryIntegrationTest {
         diaryRequest1.setTripId(1L);
         diaryRequest1.setCountryCode("KR");
         diaryRequest1.setCity("제주시");
-        diaryRequest1.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest1.setDateTime("2024-01-15T10:00:00");
         diaryRequest1.setContent("제주도 첫째 날");
         diaryRequest1.setImages(createImageInfo("front1.jpg", "back1.jpg"));
 
@@ -264,7 +264,7 @@ class TripDiaryIntegrationTest {
         diaryRequest2.setTripId(1L);
         diaryRequest2.setCountryCode("KR");
         diaryRequest2.setCity("서귀포시");
-        diaryRequest2.setDateTime(LocalDateTime.of(2024, 1, 20, 10, 0));
+        diaryRequest2.setDateTime("2024-01-20T10:00:00");
         diaryRequest2.setContent("제주도 마지막 날");
         diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
 
@@ -302,7 +302,7 @@ class TripDiaryIntegrationTest {
         diaryRequest.setTripId(1L);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diaryRequest.setDateTime("2024-01-15T10:00:00");
         diaryRequest.setContent("제주도 여행");
         diaryRequest.setImages(createImageInfo("front.jpg", "back.jpg"));
 

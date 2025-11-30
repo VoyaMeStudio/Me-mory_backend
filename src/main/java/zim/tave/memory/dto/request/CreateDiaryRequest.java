@@ -1,19 +1,44 @@
 package zim.tave.memory.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonDeserialize;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import zim.tave.memory.domain.DiaryImage.CameraType;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
-@Schema(description = "일기 생성 요청")
+@Schema(
+        description = "일기 생성 요청",
+        example = """
+                {
+                  "userId": 1,
+                  "tripId": 1,
+                  "countryCode": "KR",
+                  "city": "제주시",
+                  "dateTime": "2025-11-30T11:20:01.570Z",
+                  "content": "오늘은 제주도에서 멋진 하루를 보냈다.",
+                  "images": [
+                    {
+                      "imageUrl": "https://image-bucket.s3.amazonaws.com/front.jpg",
+                      "cameraType": "FRONT",
+                      "isRepresentative": true
+                    },
+                    {
+                      "imageUrl": "https://image-bucket.s3.amazonaws.com/back.jpg",
+                      "cameraType": "BACK",
+                      "isRepresentative": false
+                    }
+                  ],
+                  "detailedLocation": "한라산 정상",
+                  "emotionId": 1,
+                  "weatherId": 1
+                }
+                """
+)
 public class CreateDiaryRequest {
 
     @Schema(description = "사용자 ID", example = "1", required = true)
@@ -29,14 +54,18 @@ public class CreateDiaryRequest {
     private String city;
 
     @Schema(description = "일기 작성 날짜 및 시간 (ISO 8601 형식: yyyy-MM-ddTHH:mm:ss 또는 yyyy-MM-ddTHH:mm:ss.SSSZ)", 
-            example = "2023-12-25T14:30:00")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime dateTime;
+            example = "2025-11-30T11:20:01.570Z")
+    private String dateTime;
 
     @Schema(description = "일기 내용", example = "오늘은 제주도에서 멋진 하루를 보냈다.", required = true)
     private String content;
 
-    @Schema(description = "이미지 정보 목록 (정면/후면 카메라 각 1장씩, 총 2장 필요)", required = true)
+    @ArraySchema(
+            arraySchema = @Schema(description = "이미지 정보 목록 (정면/후면 카메라 각 1장씩, 총 2장 필요)", required = true),
+            schema = @Schema(implementation = DiaryImageInfo.class),
+            minItems = 2,
+            maxItems = 2
+    )
     private List<DiaryImageInfo> images;
 
     // 선택적 필드들
@@ -54,7 +83,7 @@ public class CreateDiaryRequest {
     @Schema(description = "일기 이미지 정보")
     public static class DiaryImageInfo {
 
-        @Schema(description = "이미지 URL", example = "https://image-bucket.s3.amazonaws.com/image.jpg", required = true)
+        @Schema(description = "이미지 URL", example = "https://image-bucket.s3.amazonaws.com/front.jpg", required = true)
         private String imageUrl;
 
         @Schema(description = "카메라 타입", example = "FRONT", required = true, allowableValues = {"FRONT", "BACK"})

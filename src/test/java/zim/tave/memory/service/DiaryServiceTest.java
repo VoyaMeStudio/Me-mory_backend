@@ -96,7 +96,7 @@ class DiaryServiceTest {
         request.setTripId(1L);
         request.setCountryCode("KR");
         request.setCity("서울");
-        request.setDateTime(LocalDateTime.of(2024, 1, 15, 10, 0));
+        request.setDateTime("2024-01-15T10:00:00");
         request.setContent("테스트 내용");
 
         CreateDiaryRequest.DiaryImageInfo imageInfo1 = new CreateDiaryRequest.DiaryImageInfo();

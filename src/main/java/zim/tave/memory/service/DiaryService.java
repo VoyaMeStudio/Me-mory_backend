@@ -12,7 +12,12 @@ import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +35,47 @@ public class DiaryService {
 	private final DiaryImageRepository diaryImageRepository;
     private final CountryService countryService;
     private final VisitedCountryService visitedCountryService;
+
+    // 날짜 및 시간 파싱 (ISO 8601 형식 지원)
+    private LocalDateTime parseDateTime(String dateTimeString) {
+        if (dateTimeString == null || dateTimeString.trim().isEmpty()) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        
+        String trimmed = dateTimeString.trim();
+        
+        try {
+            // Z가 포함된 경우 (ISO 8601 with timezone, 예: 2025-11-30T11:20:01.570Z)
+            if (trimmed.endsWith("Z")) {
+                Instant instant = Instant.parse(trimmed);
+                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
+            
+            // 타임존 오프셋이 포함된 경우 (예: +09:00, -05:00)
+            if (trimmed.contains("+") || (trimmed.contains("-") && trimmed.length() > 19 && trimmed.lastIndexOf("-") > 10)) {
+                Instant instant = Instant.parse(trimmed);
+                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
+            
+            // 밀리초가 포함된 경우 (Z 없음)
+            if (trimmed.contains(".")) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+                if (trimmed.length() > 23) {
+                    trimmed = trimmed.substring(0, 23);
+                }
+                return LocalDateTime.parse(trimmed, formatter);
+            }
+            
+            // 기본 형식 (yyyy-MM-ddTHH:mm:ss)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            return LocalDateTime.parse(trimmed, formatter);
+            
+        } catch (DateTimeParseException e) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
 
     // 이미지 검증&저장
     private void validateAndAttachImages(Diary diary, List<CreateDiaryRequest.DiaryImageInfo> images) {
@@ -80,6 +126,9 @@ public class DiaryService {
         Country country = countryService.findByCode(request.getCountryCode());
         if (country == null) throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
 
+        // 날짜 및 시간 파싱 및 검증
+        LocalDateTime dateTime = parseDateTime(request.getDateTime());
+
         // 감정 검증 (기본 = 1)
         Emotion emotion = emotionRepository.findById(
                         Optional.ofNullable(request.getEmotionId()).orElse(1L))
@@ -94,7 +143,7 @@ public class DiaryService {
 
         // Diary 생성
         Diary diary = Diary.createDiary(user, trip, country,
-                request.getCity(), request.getDateTime(), request.getContent());
+                request.getCity(), dateTime, request.getContent());
 
         // 이미지 검증 및 저장
         validateAndAttachImages(diary, request.getImages());
