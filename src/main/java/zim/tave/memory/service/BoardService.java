@@ -6,10 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
 import zim.tave.memory.dto.request.BoardCreateRequestDto;
 import zim.tave.memory.dto.request.BoardUpdateRequestDto;
-import zim.tave.memory.dto.response.BoardCreateResponseDto;
-import zim.tave.memory.dto.response.BoardInformResponseDto;
-import zim.tave.memory.dto.response.BoardListResponseDto;
-import zim.tave.memory.dto.response.BoardUpdateResponseDto;
+import zim.tave.memory.dto.request.StickerPositionUpdateRequestDto;
+import zim.tave.memory.dto.response.*;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
@@ -76,6 +74,24 @@ public class BoardService {
     }
 
     @Transactional
+    public void deleteBoard(Long userId, Long boardId) {
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        // 권한 체크
+        if (!board.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.BOARD_DELETE_FORBIDDEN);
+        }
+
+        // 보드에 붙은 스티커 먼저 삭제
+        boardStickerMapRepository.deleteByBoard(board);
+
+        // 보드 삭제
+        boardRepository.delete(board);
+    }
+
+    @Transactional
     public BoardUpdateResponseDto updateBoardStickers(
             Long userId, Long boardId, BoardUpdateRequestDto requestDto) {
 
@@ -111,5 +127,34 @@ public class BoardService {
         boardRepository.save(board);
 
         return BoardUpdateResponseDto.from(board, savedStickers);
+    }
+
+    @Transactional
+    public BoardStickerUpdateResponseDto updateSticker(
+            Long userId, Long boardId, Long boardStickerId, StickerPositionUpdateRequestDto dto) {
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        if (!board.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.BOARD_UPDATE_FORBIDDEN);
+        }
+
+        BoardStickerMap map = boardStickerMapRepository.findById(boardStickerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_STICKER_NOT_FOUND));
+
+        // boardStickerId가 해당 보드의 것인지 확인
+        if (!map.getBoard().getBoardId().equals(boardId)) {
+            throw new CustomException(ErrorCode.BOARD_STICKER_NOT_FOUND);
+        }
+
+        // 위치 업데이트
+        map.setPosX(BigDecimal.valueOf(dto.getPosX()));
+        map.setPosY(BigDecimal.valueOf(dto.getPosY()));
+        map.setRotation(BigDecimal.valueOf(dto.getRotation()));
+
+        board.setUpdatedAt(LocalDateTime.now());
+
+        return BoardStickerUpdateResponseDto.from(map);
     }
 }
