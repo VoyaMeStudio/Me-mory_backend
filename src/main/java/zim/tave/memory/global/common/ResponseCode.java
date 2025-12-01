@@ -32,6 +32,7 @@ public enum ResponseCode {
     BOARD_CREATE_SUCCESS(200, "보드 생성에 성공하였습니다."),
     BOARD_UPDATE_SUCCESS(200, "보드 수정이 완료되었습니다."),
     BOARD_DELETE_SUCCESS(200, "보드가 성공적으로 삭제되었습니다."),
+    BOARD_FETCH_SUCCESS(200, "보드 정보가 성공적으로 조회되었습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),
@@ -105,6 +106,8 @@ public enum ResponseCode {
     BOARD_STICKER_NOT_FOUND(400, "스티커를 찾을 수 없습니다."),
     BOARD_UPDATE_INTERNAL_ERROR(500, "보드 수정 중 서버 오류가 발생했습니다."),
     BOARD_DELETE_FORBIDDEN(403, "해당 보드를 삭제할 권한이 없습니다."),
+    BOARD_STICKER_MAP_NOT_FOUND(404, "스티커가 보드에 존재하지 않습니다."),
+    BOARD_ACCESS_FORBIDDEN(403, "해당 보드에 접근할 수 없습니다."),
     ;
 
     private final int code;

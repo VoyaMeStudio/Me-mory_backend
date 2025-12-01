@@ -12,12 +12,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.dto.request.BoardCreateRequestDto;
+import zim.tave.memory.dto.request.BoardStickerAddRequestDto;
 import zim.tave.memory.dto.request.BoardUpdateRequestDto;
 import zim.tave.memory.dto.request.StickerPositionUpdateRequestDto;
-import zim.tave.memory.dto.response.BoardCreateResponseDto;
-import zim.tave.memory.dto.response.BoardListResponseDto;
-import zim.tave.memory.dto.response.BoardStickerUpdateResponseDto;
-import zim.tave.memory.dto.response.BoardUpdateResponseDto;
+import zim.tave.memory.dto.response.*;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
@@ -105,6 +103,22 @@ public class BoardController {
     }
 
     @Operation(
+            summary = "특정 보드 상세정보 조회",
+            description = "보드의 기본 정보와 스티커 정보를 모두 조회합니다."
+    )
+    @GetMapping("/{boardId}")
+    public ResponseEntity<ApiResponseDto<BoardDetailResponseDto>> getBoardDetail(
+            @AuthenticationPrincipal(expression = "userId") Long userId,
+            @PathVariable Long boardId) {
+
+        BoardDetailResponseDto response = boardService.getBoardDetail(userId, boardId);
+
+        return ResponseEntity.ok(
+                ApiResponseDto.success(ResponseCode.BOARD_FETCH_SUCCESS, response)
+        );
+    }
+
+    @Operation(
             summary = "보드 삭제",
             description = "지정된 보드를 삭제합니다."
     )
@@ -149,20 +163,19 @@ public class BoardController {
         );
     }
 
-    // ‼️ 수정 필요 (-> 한번에 하나의 스티커만 추가 가능하도록)
     @Operation(
             summary = "보드에 스티커 추가",
             description = "특정 보드에 스티커를 추가합니다."
     )
-    @PatchMapping("/{boardId}")
-    public ResponseEntity<ApiResponseDto<BoardUpdateResponseDto>> updateBoard(
+    @PatchMapping("/{boardId}/stickers")
+    public ResponseEntity<ApiResponseDto<BoardStickerAddResponseDto>> addSticker(
             @AuthenticationPrincipal(expression = "userId") Long userId,
             @PathVariable Long boardId,
-            @RequestBody BoardUpdateRequestDto requestDto) {
+            @RequestBody BoardStickerAddRequestDto requestDto) {
 
-        BoardUpdateResponseDto response = boardService.updateBoardStickers(userId, boardId, requestDto);
+        BoardStickerAddResponseDto response = boardService.addSticker(userId, boardId, requestDto);
 
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.BOARD_UPDATE_SUCCESS, response));
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, response));
     }
 
     @Operation(
@@ -180,6 +193,20 @@ public class BoardController {
                 userId, boardId, boardStickerId, requestDto);
 
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, response));
+    }
+
+    @Operation(
+            summary = "보드에서 스티커 삭제",
+            description = "특정 보드에 있는 특정 스티커를 삭제합니다."
+    )
+    @DeleteMapping("/{boardId}/stickers/{boardStickerId}")
+    public ResponseEntity<ApiResponseDto<Void>> deleteBoardSticker(
+            @AuthenticationPrincipal(expression = "userId") Long userId,
+            @PathVariable Long boardId,
+            @PathVariable Long boardStickerId
+    ) {
+        boardService.deleteStickerFromBoard(userId, boardId, boardStickerId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 
 }

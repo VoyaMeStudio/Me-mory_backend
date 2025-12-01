@@ -87,6 +87,8 @@ public class GlobalExceptionHandler {
             case BOARD_STICKER_NOT_FOUND  -> ResponseCode.BOARD_STICKER_NOT_FOUND;
             case BOARD_UPDATE_INTERNAL_ERROR  -> ResponseCode.BOARD_UPDATE_INTERNAL_ERROR;
             case BOARD_DELETE_FORBIDDEN -> ResponseCode.BOARD_DELETE_FORBIDDEN;
+            case BOARD_STICKER_MAP_NOT_FOUND -> ResponseCode.BOARD_STICKER_MAP_NOT_FOUND;
+            case BOARD_ACCESS_FORBIDDEN -> ResponseCode.BOARD_ACCESS_FORBIDDEN;
 
             default -> ResponseCode.SERVER_ERROR;
         };
