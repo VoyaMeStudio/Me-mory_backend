@@ -31,7 +31,7 @@ public class CreatePastTripRequest {
     private LocalDate endDate;
 
     @NotEmpty
-    @Schema(description = "방문한 국가 코드 목록", example = "[\"FRA\", \"ITA\"]", required = true)
+    @Schema(description = "방문한 국가 코드 목록", example = "[\"FR\", \"IT\"]", required = true)
     private List<String> countryCodes;
 
     @NotNull

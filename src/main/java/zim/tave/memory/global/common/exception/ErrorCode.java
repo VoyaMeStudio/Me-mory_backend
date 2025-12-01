@@ -59,6 +59,7 @@ public enum ErrorCode {
     IMAGE_NOT_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "대표 이미지가 아닙니다."),
     WEATHER_NOT_FOUND(HttpStatus.NOT_FOUND, "날씨를 찾을 수 없습니다."),
     CANNOT_ADD_DIARY_TO_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행에는 일기를 추가할 수 없습니다."),
+    NOT_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행만 수정/보관/삭제할 수 있습니다."),
 
     // 카카오로그인 관련 에러
     KAKAO_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "카카오 액세스 토큰이 누락되었습니다."),
