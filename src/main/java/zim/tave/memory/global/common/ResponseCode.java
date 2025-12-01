@@ -86,6 +86,8 @@ public enum ResponseCode {
     TRIP_NAME_REQUIRED(400, "여행명은 필수입니다."),
     TRIP_NAME_TOO_LONG(400, "여행명은 최대 14자입니다."),
     TRIP_DESCRIPTION_TOO_LONG(400, "여행 설명은 최대 56자입니다."),
+    NOT_PAST_TRIP(400, "과거 여행만 수정/보관/삭제할 수 있습니다."),
+    CANNOT_ADD_DIARY_TO_PAST_TRIP(400, "과거 여행에는 일기를 추가할 수 없습니다."),
     // 카카오로그인 관련 에러
     KAKAO_TOKEN_MISSING(400, "카카오 액세스 토큰이 누락되었습니다."),
     KAKAO_INVALID_TOKEN(401, "유효하지 않거나 만료된 카카오 액세스 토큰입니다."),
