@@ -9,6 +9,7 @@ import zim.tave.memory.domain.Board;
 import zim.tave.memory.domain.BoardStickerMap;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Getter
@@ -31,22 +32,24 @@ public class BoardDetailResponseDto {
     private String thumbnailUrl;
 
     @Schema(description = "생성 시각")
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Schema(description = "수정 시각")
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     @Schema(description = "스티커 목록")
     private List<BoardStickerDetailDto> stickers;
 
     public static BoardDetailResponseDto from(Board board, List<BoardStickerMap> stickerMaps) {
+        DateTimeFormatter fmt = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
         return BoardDetailResponseDto.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .boardThemeId(board.getBoardTheme().getBoardThemeId())
                 .thumbnailUrl(board.getBoardTheme().getThumbnailUrl())
-                .createdAt(board.getCreatedAt())
-                .updatedAt(board.getUpdatedAt())
+                .createdAt(board.getCreatedAt().format(fmt))
+                .updatedAt(board.getUpdatedAt().format(fmt))
                 .stickers(stickerMaps.stream()
                         .map(BoardStickerDetailDto::from)
                         .toList())

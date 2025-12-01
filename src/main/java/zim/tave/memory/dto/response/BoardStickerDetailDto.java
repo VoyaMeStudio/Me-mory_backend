@@ -14,7 +14,7 @@ import zim.tave.memory.domain.BoardStickerMap;
 @Schema(description = "보드에 붙은 스티커 상세 정보")
 public class BoardStickerDetailDto {
 
-    @Schema(description = "보드-스티커 매핑 ID", example = "101")
+    @Schema(description = "보드-스티커 매핑 ID", example = "1")
     private Long boardStickerId;
 
     @Schema(description = "스티커 ID", example = "3")

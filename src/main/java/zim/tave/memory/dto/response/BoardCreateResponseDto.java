@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import zim.tave.memory.domain.Board;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @AllArgsConstructor
@@ -24,18 +25,20 @@ public class BoardCreateResponseDto {
     private Long boardThemeId;
 
     @Schema(description = "보드 생성 시각", example = "2025-12-01T14:20:00")
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Schema(description = "보드 최종 수정 시각", example = "2025-12-01T14:20:00")
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     public static BoardCreateResponseDto from(Board board) {
+        DateTimeFormatter fmt = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
         return new BoardCreateResponseDto(
                 board.getBoardId(),
                 board.getTitle(),
                 board.getBoardTheme().getBoardThemeId(),
-                board.getCreatedAt(),
-                board.getUpdatedAt()
+                board.getCreatedAt().format(fmt),
+                board.getUpdatedAt().format(fmt)
         );
     }
 }

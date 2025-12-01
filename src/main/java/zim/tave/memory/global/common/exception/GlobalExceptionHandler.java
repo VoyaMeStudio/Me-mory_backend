@@ -1,5 +1,6 @@
 package zim.tave.memory.global.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,11 +11,14 @@ import zim.tave.memory.global.common.ResponseCode;
 
 import java.util.UUID;
 
-import static zim.tave.memory.global.common.ResponseCode.BOARD_STICKER_NOT_FOUND;
-
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private boolean isSwaggerRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.contains("/v3/api-docs") || uri.contains("/swagger-ui");
+    }
 
     // CustomException 처리
     @ExceptionHandler(CustomException.class)
@@ -103,15 +107,17 @@ public class GlobalExceptionHandler {
 
     // 예상치 못한 예외 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDto<?>> handleException(Exception ex) {
+    public ResponseEntity<ApiResponseDto<?>> handleException(Exception ex,
+                                                             HttpServletRequest request) {
+
+        // Swagger 요청일 때는 핸들링하지 않고 그대로 throw → Swagger 정상 동작
+        if (isSwaggerRequest(request)) throw new RuntimeException(ex);
+
         String errorId = UUID.randomUUID().toString();
 
-        // 로그에 StackTrace 포함 기록
         log.error("[{}] Unexpected exception: {}", errorId, ex.getMessage(), ex);
 
-        // 사용자에게는 안전한 메시지만 전달
         String safeMessage = "서버 오류가 발생했습니다. (errorId: " + errorId + ")";
-
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponseDto.error(ResponseCode.SERVER_ERROR, safeMessage));

@@ -6,6 +6,7 @@ import lombok.Getter;
 import zim.tave.memory.domain.Board;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Getter
@@ -23,10 +24,10 @@ public class BoardInformResponseDto {
     private Long boardThemeId;
 
     @Schema(description = "보드 생성 시각", example = "2025-12-01T14:20:00")
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Schema(description = "보드 최종 수정 시각", example = "2025-12-01T14:20:00")
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     @Schema(description = "보드에 포함된 스티커 개수", example = "3")
     private int stickerCount;
@@ -35,12 +36,14 @@ public class BoardInformResponseDto {
     private List<String> stickerUrls;
 
     public static BoardInformResponseDto from(Board board, List<String> stickerUrls) {
+        DateTimeFormatter fmt = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
         return new BoardInformResponseDto(
                 board.getBoardId(),
                 board.getTitle(),
                 board.getBoardTheme().getBoardThemeId(),
-                board.getCreatedAt(),
-                board.getUpdatedAt(),
+                board.getCreatedAt().format(fmt),
+                board.getUpdatedAt().format(fmt),
                 stickerUrls.size(),
                 stickerUrls
         );
