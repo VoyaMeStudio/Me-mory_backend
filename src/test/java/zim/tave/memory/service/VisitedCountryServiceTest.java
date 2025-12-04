@@ -47,7 +47,8 @@ public class VisitedCountryServiceTest {
 
         // then: 하나의 기록만 존재하고, 두 번째 감정으로 업데이트됨
         assertThat(visitedList).hasSize(1);
-        assertThat(first.getEmotionName()).isEqualTo("슬픔1");
+        // first는 첫 번째 등록 결과이므로 "행복1"이 맞음
+        assertThat(first.getEmotionName()).isEqualTo("행복1");
         assertThat(updated.getEmotionName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getCountryCode()).isEqualTo("KR1");
         assertThat(visitedList.get(0).getEmotionName()).isEqualTo("슬픔1");
