@@ -53,8 +53,21 @@ public class CreateDiaryRequest {
     @Schema(description = "도시명", example = "제주시", required = true)
     private String city;
 
-    @Schema(description = "일기 작성 날짜 및 시간 (ISO 8601 형식: yyyy-MM-ddTHH:mm:ss 또는 yyyy-MM-ddTHH:mm:ss.SSSZ)", 
-            example = "2025-11-30T11:20:01.570Z")
+    @Schema(
+            description = """
+                    일기 작성 날짜 및 시간 (ISO 8601 형식) : 밀리초는 0~9 자리 까지 지원됩니다. 
+                
+                    지원 형식:
+                    - 기본 형식: yyyy-MM-ddTHH:mm:ss (예: 2025-11-30T11:20:01)
+                    - 밀리초 포함: yyyy-MM-ddTHH:mm:ss.SSS (예: 2025-11-30T11:20:01.123)
+                    - UTC 시간 (Z): yyyy-MM-ddTHH:mm:ss.SSSZ (예: 2025-11-30T11:20:01.570Z)
+                    - 타임존 오프셋: yyyy-MM-ddTHH:mm:ss+09:00 (예: 2025-11-30T11:20:01+09:00)
+                    - 밀리초 + 오프셋: yyyy-MM-ddTHH:mm:ss.SSS+09:00 (예: 2025-11-30T11:20:01.123+09:00)
+                    
+                    """,
+            example = "2025-11-30T11:20:01.570Z",
+            required = true
+    )
     private String dateTime;
 
     @Schema(description = "일기 내용", example = "오늘은 제주도에서 멋진 하루를 보냈다.", required = true)
