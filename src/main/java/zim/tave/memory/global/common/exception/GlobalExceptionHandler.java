@@ -91,7 +91,6 @@ public class GlobalExceptionHandler {
     }
 
     // HttpMessageNotReadableException 처리 (Jackson 파싱 오류)
-    // LocalDateTimeDeserializer에서 CustomException을 던지면 Jackson이 이를 HttpMessageNotReadableException으로 감싸서 던짐
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponseDto<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         String errorId = UUID.randomUUID().toString();
@@ -99,25 +98,33 @@ public class GlobalExceptionHandler {
         // 에러 로그 기록
         log.error("[{}] HttpMessageNotReadableException: {}", errorId, ex.getMessage(), ex);
         
-        // cause가 CustomException인 경우 (LocalDateTimeDeserializer에서 던진 경우)
-        Throwable cause = ex.getCause();
-        if (cause instanceof CustomException) {
-            // CustomException 핸들러로 위임
-            return handleCustomException((CustomException) cause);
+        // 원인 체인을 순회하여 CustomException, DateTimeParseException 등을 찾음
+        Throwable cause = ex;
+        while (cause != null) {
+            // CustomException인 경우 (LocalDateTimeDeserializer에서 던진 경우)
+            if (cause instanceof CustomException) {
+                return handleCustomException((CustomException) cause);
+            }
+            
+            // DateTimeParseException인 경우
+            if (cause instanceof DateTimeParseException) {
+                DateTimeParseException dtpe = (DateTimeParseException) cause;
+                String message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식을 사용해주세요.", 
+                        dtpe.getParsedString());
+                String safeMessage = message + " (errorId: " + errorId + ")";
+                return ResponseEntity.badRequest()
+                        .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
+            }
+            
+            // 다음 원인으로 이동
+            cause = cause.getCause();
         }
         
-        // 다른 파싱 오류인 경우
+        // 원인을 찾지 못한 경우 기본 메시지
         String message = "요청 본문을 파싱할 수 없습니다. 요청 형식을 확인해주세요.";
-        if (cause instanceof DateTimeParseException) {
-            DateTimeParseException dtpe = (DateTimeParseException) cause;
-            message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식(yyyy-MM-ddTHH:mm:ss 또는 yyyy-MM-ddTHH:mm:ss.SSSZ)을 사용해주세요.", 
-                    dtpe.getParsedString());
-        }
-        
         String safeMessage = message + " (errorId: " + errorId + ")";
         
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.badRequest()
                 .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
     }
 

@@ -26,6 +26,10 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.lang.reflect.Method;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @ExtendWith(MockitoExtension.class)
 class DiaryServiceTest {
@@ -402,5 +406,301 @@ class DiaryServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(1L);
         verify(diaryRepository).findByTrip_Id(1L);
+    }
+
+    @Test
+    void 날짜시간_파싱_Z로_끝나는_ISO8601_포맷_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - Z로 끝나는 포맷
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.570Z");
+        assertThat(result1).isNotNull();
+        
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2024-01-15T10:00:00.000Z");
+        assertThat(result2).isNotNull();
+        assertThat(result2.getYear()).isEqualTo(2024);
+        assertThat(result2.getMonthValue()).isEqualTo(1);
+        assertThat(result2.getDayOfMonth()).isEqualTo(15);
+    }
+
+    @Test
+    void 날짜시간_파싱_Offset_포함_포맷_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - +09:00 (한국 시간)
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01+09:00");
+        assertThat(result1).isNotNull();
+        
+        // when & then - -05:00 (미국 동부 시간)
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01-05:00");
+        assertThat(result2).isNotNull();
+        
+        // when & then - +00:00 (UTC)
+        LocalDateTime result3 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01+00:00");
+        assertThat(result3).isNotNull();
+        
+        // when & then - 밀리초와 offset 함께
+        LocalDateTime result4 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.123+09:00");
+        assertThat(result4).isNotNull();
+    }
+
+    @Test
+    void 날짜시간_파싱_밀리초_포함_포맷_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - 3자리 밀리초
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.123");
+        assertThat(result1).isNotNull();
+        assertThat(result1.getNano()).isEqualTo(123000000);
+        
+        // when & then - 1자리 밀리초
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.1");
+        assertThat(result2).isNotNull();
+        
+        // when & then - 2자리 밀리초
+        LocalDateTime result3 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.12");
+        assertThat(result3).isNotNull();
+        
+        // when & then - 6자리 밀리초 (나노초까지)
+        LocalDateTime result4 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.123456");
+        assertThat(result4).isNotNull();
+    }
+
+    @Test
+    void 날짜시간_파싱_기본_형식_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - 기본 형식 (밀리초 없음)
+        LocalDateTime result = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01");
+        assertThat(result).isNotNull();
+        assertThat(result.getYear()).isEqualTo(2025);
+        assertThat(result.getMonthValue()).isEqualTo(11);
+        assertThat(result.getDayOfMonth()).isEqualTo(30);
+        assertThat(result.getHour()).isEqualTo(11);
+        assertThat(result.getMinute()).isEqualTo(20);
+        assertThat(result.getSecond()).isEqualTo(1);
+    }
+
+    @Test
+    void 날짜시간_파싱_공백_제거_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - 앞뒤 공백 제거
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "  2025-11-30T11:20:01  ");
+        assertThat(result1).isNotNull();
+        
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01");
+        assertThat(result1).isEqualTo(result2);
+    }
+
+    @Test
+    void 날짜시간_파싱_null_또는_빈문자열_예외_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - null
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, (String) null))
+                .hasCauseInstanceOf(CustomException.class);
+        
+        // when & then - 빈 문자열
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, ""))
+                .hasCauseInstanceOf(CustomException.class);
+        
+        // when & then - 공백만 있는 문자열
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, "   "))
+                .hasCauseInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void 날짜시간_파싱_잘못된_형식_예외_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - 잘못된 형식들
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, "2025-11-30"))
+                .hasCauseInstanceOf(CustomException.class);
+        
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, "2025/11/30 11:20:01"))
+                .hasCauseInstanceOf(CustomException.class);
+        
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, "invalid-date"))
+                .hasCauseInstanceOf(CustomException.class);
+        
+        assertThatThrownBy(() -> parseDateTime.invoke(diaryService, "2025-13-45T25:70:99"))
+                .hasCauseInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void 날짜시간_파싱_다양한_실제_사용_시나리오_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - JavaScript Date.toISOString() 결과 (Z 포함)
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2024-12-25T15:30:45.789Z");
+        assertThat(result1).isNotNull();
+        
+        // when & then - 모바일 앱에서 보낼 수 있는 offset 형식
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2024-12-25T15:30:45+09:00");
+        assertThat(result2).isNotNull();
+        
+        // when & then - 서버에서 생성한 로컬 시간
+        LocalDateTime result3 = (LocalDateTime) parseDateTime.invoke(diaryService, "2024-12-25T15:30:45");
+        assertThat(result3).isNotNull();
+        
+        // when & then - 밀리초 포함 로컬 시간
+        LocalDateTime result4 = (LocalDateTime) parseDateTime.invoke(diaryService, "2024-12-25T15:30:45.123");
+        assertThat(result4).isNotNull();
+    }
+
+    @Test
+    void 날짜시간_파싱_Edge_Case_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - 자정
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-01-01T00:00:00");
+        assertThat(result1).isNotNull();
+        assertThat(result1.getHour()).isZero();
+        assertThat(result1.getMinute()).isZero();
+        assertThat(result1.getSecond()).isZero();
+        
+        // when & then - 23:59:59
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-12-31T23:59:59");
+        assertThat(result2).isNotNull();
+        assertThat(result2.getHour()).isEqualTo(23);
+        assertThat(result2.getMinute()).isEqualTo(59);
+        assertThat(result2.getSecond()).isEqualTo(59);
+        
+        // when & then - 윤년 2월 29일
+        LocalDateTime result3 = (LocalDateTime) parseDateTime.invoke(diaryService, "2024-02-29T12:00:00");
+        assertThat(result3).isNotNull();
+        assertThat(result3.getMonthValue()).isEqualTo(2);
+        assertThat(result3.getDayOfMonth()).isEqualTo(29);
+    }
+
+    @Test
+    void 날짜시간_파싱_다양한_밀리초_자릿수_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - 1자리 밀리초
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.1");
+        assertThat(result1).isNotNull();
+        
+        // when & then - 2자리 밀리초
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.12");
+        assertThat(result2).isNotNull();
+        
+        // when & then - 3자리 밀리초
+        LocalDateTime result3 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.123");
+        assertThat(result3).isNotNull();
+        
+        // when & then - 4자리 밀리초
+        LocalDateTime result4 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.1234");
+        assertThat(result4).isNotNull();
+        
+        // when & then - 5자리 밀리초
+        LocalDateTime result5 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.12345");
+        assertThat(result5).isNotNull();
+        
+        // when & then - 6자리 밀리초
+        LocalDateTime result6 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.123456");
+        assertThat(result6).isNotNull();
+    }
+
+    @Test
+    void 날짜시간_파싱_Offset과_밀리초_조합_테스트() throws Exception {
+        // given
+        Method parseDateTime = DiaryService.class.getDeclaredMethod("parseDateTime", String.class);
+        parseDateTime.setAccessible(true);
+        
+        // when & then - Z와 밀리초
+        LocalDateTime result1 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.123Z");
+        assertThat(result1).isNotNull();
+        
+        // when & then - +09:00와 밀리초
+        LocalDateTime result2 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.456+09:00");
+        assertThat(result2).isNotNull();
+        
+        // when & then - -05:00와 밀리초
+        LocalDateTime result3 = (LocalDateTime) parseDateTime.invoke(diaryService, "2025-11-30T11:20:01.789-05:00");
+        assertThat(result3).isNotNull();
+    }
+
+    @Test
+    void 날짜시간_파싱_실제_다이어리_생성_통합_테스트() {
+        // given
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        request.setUserId(1L);
+        request.setTripId(1L);
+        request.setCountryCode("KR");
+        request.setCity("서울");
+        request.setContent("테스트 내용");
+        
+        CreateDiaryRequest.DiaryImageInfo imageInfo1 = new CreateDiaryRequest.DiaryImageInfo();
+        imageInfo1.setImageUrl("front.jpg");
+        imageInfo1.setCameraType(DiaryImage.CameraType.FRONT);
+        imageInfo1.setRepresentative(true);
+        
+        CreateDiaryRequest.DiaryImageInfo imageInfo2 = new CreateDiaryRequest.DiaryImageInfo();
+        imageInfo2.setImageUrl("back.jpg");
+        imageInfo2.setCameraType(DiaryImage.CameraType.BACK);
+        imageInfo2.setRepresentative(false);
+        
+        request.setImages(Arrays.asList(imageInfo1, imageInfo2));
+        
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        trip.setIsPast(false);
+        
+        Country country = new Country();
+        country.setCountryCode("KR");
+        country.setCountryName("대한민국");
+        when(countryService.findByCode("KR")).thenReturn(country);
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion));
+        when(diaryRepository.save(any(Diary.class))).thenAnswer(invocation -> {
+            Diary saved = invocation.getArgument(0);
+            saved.setId(10L);
+            return saved;
+        });
+        
+        // when & then - Z 포맷으로 다이어리 생성
+        request.setDateTime("2025-11-30T11:20:01.570Z");
+        DiaryResponseDto result1 = diaryService.createDiary(request);
+        assertThat(result1).isNotNull();
+        assertThat(result1.getDateTime()).isNotNull();
+        
+        // when & then - Offset 포맷으로 다이어리 생성
+        request.setDateTime("2025-11-30T11:20:01+09:00");
+        DiaryResponseDto result2 = diaryService.createDiary(request);
+        assertThat(result2).isNotNull();
+        assertThat(result2.getDateTime()).isNotNull();
+        
+        // when & then - 밀리초 포함 포맷으로 다이어리 생성
+        request.setDateTime("2025-11-30T11:20:01.123");
+        DiaryResponseDto result3 = diaryService.createDiary(request);
+        assertThat(result3).isNotNull();
+        assertThat(result3.getDateTime()).isNotNull();
+        
+        // when & then - 기본 포맷으로 다이어리 생성
+        request.setDateTime("2025-11-30T11:20:01");
+        DiaryResponseDto result4 = diaryService.createDiary(request);
+        assertThat(result4).isNotNull();
+        assertThat(result4.getDateTime()).isNotNull();
     }
 }
