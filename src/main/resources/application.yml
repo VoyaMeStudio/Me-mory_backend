@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -25,10 +25,6 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         globally_quoted_identifiers: true
         globally_quoted_identifiers_skip_column_definitions: true
-        hbm2ddl:
-          auto: create
-          import_files:
-          import_files_sql_extractor: org.hibernate.tool.schema.internal.script.MultiLineSqlScriptExtractor
 
 logging:
   level:
