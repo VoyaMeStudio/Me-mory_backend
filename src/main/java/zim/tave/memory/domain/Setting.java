@@ -17,4 +17,7 @@ public class Setting {
     @MapsId
     @JoinColumn(name = "userId")
     private User user;
+
+    @Column(nullable = false)
+    private Boolean alarm = true; //알람 수신 동의 여부
 }
