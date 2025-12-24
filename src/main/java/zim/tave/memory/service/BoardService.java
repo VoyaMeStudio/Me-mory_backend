@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,11 +60,22 @@ public class BoardService {
 
         List<Board> boards = boardRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
+        List<BoardStickerMap> allStickerMaps = boardStickerMapRepository.findAllByBoard(boards);
+
+        Map<Long, List<BoardStickerMap>> stickerMapByBoardId =
+                allStickerMaps.stream()
+                        .collect(Collectors.groupingBy(
+                                map -> map.getBoard().getBoardId()
+                        ));
+
         List<BoardInformResponseDto> result = boards.stream()
                 .map(board -> {
 
                     List<BoardStickerMap> stickerMaps =
-                            boardStickerMapRepository.findByBoard(board);
+                            stickerMapByBoardId.getOrDefault(
+                                    board.getBoardId(),
+                                    List.of()
+                            );
 
                     List<String> stickerUrls = stickerMaps.stream()
                             .map(map -> map.getSticker().getImageUrl())
