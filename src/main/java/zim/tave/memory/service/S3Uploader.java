@@ -8,6 +8,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import zim.tave.memory.config.MemoryProperties;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class S3Uploader {
 
     private final S3Client s3Client;
+    private final MemoryProperties memoryProperties;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -30,13 +32,15 @@ public class S3Uploader {
                 .contentType(file.getContentType())
                 .build();
 
-        s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        s3Client.putObject(
+                request,
+                RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
         return getFileUrl(fileName);
     }
 
     private String getFileUrl(String fileName) {
-        return "https://me-mory.mooo.com/api/files?key=" + fileName;
+        return memoryProperties.getBaseUrl() + "/api/files?key=" + fileName;
     }
 }
 

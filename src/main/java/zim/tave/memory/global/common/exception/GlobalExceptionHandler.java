@@ -1,5 +1,6 @@
 package zim.tave.memory.global.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,6 +79,17 @@ public class GlobalExceptionHandler {
             case KAKAO_SERVER_ERROR -> ResponseCode.KAKAO_SERVER_ERROR;
             case KAKAO_RESPONSE_PARSING_ERROR -> ResponseCode.KAKAO_RESPONSE_PARSING_ERROR;
             case KAKAO_API_UNKNOWN_ERROR -> ResponseCode.KAKAO_API_UNKNOWN_ERROR;
+            // 보드
+            case BOARD_REQUIRED_FIELDS_MISSING -> ResponseCode.BOARD_REQUIRED_FIELDS_MISSING;
+            case BOARD_THEME_NOT_FOUND -> ResponseCode.BOARD_THEME_NOT_FOUND;
+            case BOARD_CREATE_FAILED -> ResponseCode.BOARD_CREATE_FAILED;
+            case BOARD_NOT_FOUND -> ResponseCode.BOARD_NOT_FOUND;
+            case BOARD_UPDATE_FORBIDDEN -> ResponseCode.BOARD_UPDATE_FORBIDDEN;
+            case BOARD_STICKER_NOT_FOUND  -> ResponseCode.BOARD_STICKER_NOT_FOUND;
+            case BOARD_UPDATE_INTERNAL_ERROR  -> ResponseCode.BOARD_UPDATE_INTERNAL_ERROR;
+            case BOARD_DELETE_FORBIDDEN -> ResponseCode.BOARD_DELETE_FORBIDDEN;
+            case BOARD_STICKER_MAP_NOT_FOUND -> ResponseCode.BOARD_STICKER_MAP_NOT_FOUND;
+            case BOARD_ACCESS_FORBIDDEN -> ResponseCode.BOARD_ACCESS_FORBIDDEN;
 
             default -> ResponseCode.SERVER_ERROR;
         };
@@ -130,15 +142,15 @@ public class GlobalExceptionHandler {
 
     // 예상치 못한 예외 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDto<?>> handleException(Exception ex) {
+    public ResponseEntity<ApiResponseDto<?>> handleException(
+            Exception ex,
+            HttpServletRequest request) {
+
         String errorId = UUID.randomUUID().toString();
 
-        // 로그에 StackTrace 포함 기록
         log.error("[{}] Unexpected exception: {}", errorId, ex.getMessage(), ex);
 
-        // 사용자에게는 안전한 메시지만 전달
         String safeMessage = "서버 오류가 발생했습니다. (errorId: " + errorId + ")";
-
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponseDto.error(ResponseCode.SERVER_ERROR, safeMessage));
