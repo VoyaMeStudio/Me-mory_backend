@@ -59,6 +59,7 @@ public enum ErrorCode {
     IMAGE_NOT_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "대표 이미지가 아닙니다."),
     WEATHER_NOT_FOUND(HttpStatus.NOT_FOUND, "날씨를 찾을 수 없습니다."),
     CANNOT_ADD_DIARY_TO_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행에는 일기를 추가할 수 없습니다."),
+    NOT_PAST_TRIP(HttpStatus.BAD_REQUEST, "과거 여행만 수정/보관/삭제할 수 있습니다."),
 
     // 카카오로그인 관련 에러
     KAKAO_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "카카오 액세스 토큰이 누락되었습니다."),
@@ -66,7 +67,21 @@ public enum ErrorCode {
     KAKAO_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "카카오 API 접근 권한이 없습니다."),
     KAKAO_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 서버 오류입니다."),
     KAKAO_RESPONSE_PARSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 응답 데이터를 처리할 수 없습니다."),
-    KAKAO_API_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),;
+    KAKAO_API_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),
+
+    //보드
+    BOARD_REQUIRED_FIELDS_MISSING(HttpStatus.BAD_REQUEST, "필수 입력값(boardThemeId, title)이 누락되었습니다."),
+    BOARD_THEME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 보드 테마입니다."),
+    BOARD_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "보드 생성 중 서버 오류가 발생했습니다."),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "보드를 찾을 수 없습니다."),
+    BOARD_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 보드를 수정할 권한이 없습니다."),
+    BOARD_STICKER_NOT_FOUND(HttpStatus.NOT_FOUND, "스티커를 찾을 수 없습니다."),
+    BOARD_UPDATE_INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "보드 수정 중 서버 오류가 발생했습니다."),
+    BOARD_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 보드를 삭제할 권한이 없습니다."),
+    BOARD_STICKER_MAP_NOT_FOUND(HttpStatus.NOT_FOUND, "스티커가 보드에 존재하지 않습니다."),
+    BOARD_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 보드에 접근할 수 없습니다."),
+
+    ;
 
 
 

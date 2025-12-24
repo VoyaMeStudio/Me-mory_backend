@@ -42,11 +42,11 @@ public class DiaryController {
 			@ApiResponse(responseCode = "201", description = "일기 생성 성공"),
             @ApiResponse(responseCode = "400", description = """
                     잘못된 요청 데이터입니다. 다음 에러 코드가 발생할 수 있습니다:
-                    - IMAGE_COUNT_INVALID: 이미지는 반드시 2장이어야 합니다. (FRONT/BACK)
+                    - IMAGE_COUNT_INVALID: 이미지는 반드시 2장이어야 합니다. (FRONT/BACK 각 1장씩)
                     - CAMERA_TYPES_REQUIRED: FRONT/BACK 카메라 사진이 모두 필요합니다.
                     - REPRESENTATIVE_IMAGE_REQUIRED: 대표 이미지는 정확히 1장이어야 합니다.
                     - INVALID_COUNTRY_CODE: 올바르지 않은 국가 코드입니다.
-                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다.
+                    - VALIDATION_ERROR: 요청 값이 올바르지 않습니다. (날짜 형식 오류 포함)
                     - CANNOT_ADD_DIARY_TO_PAST_TRIP: 과거 여행에는 일기를 추가할 수 없습니다.
                     """,
                     content = @Content),
@@ -231,6 +231,32 @@ public class DiaryController {
     }
 
 
+    // 일기 보관 상태 변경 - JWT 인증으로 본인 일기만 보관 가능
+	@PatchMapping("/users/me/diaries/{diaryId}/store")
+    @Operation(summary = "일기 보관 상태 변경", description = "JWT 토큰으로 인증된 사용자의 특정 일기를 보관하거나 보관 해제합니다.")
+    @ApiErrorCodeExamples({ErrorCode.AUTHENTICATION_FAILED, ErrorCode.INVALID_TOKEN, ErrorCode.UNAUTHORIZED_USER, ErrorCode.ACCESS_DENIED, ErrorCode.DIARY_NOT_FOUND})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "보관 상태 변경 성공"),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
+                    - AUTHENTICATION_FAILED: 인증에 실패했습니다.
+                    - INVALID_TOKEN: 유효하지 않은 토큰입니다.
+                    - UNAUTHORIZED_USER: 인증되지 않은 사용자입니다.
+                    """,
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.\n- ACCESS_DENIED: 접근 권한이 없습니다.",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "일기를 찾을 수 없습니다.\n- DIARY_NOT_FOUND: 일기를 찾을 수 없습니다.",
+                    content = @Content)
+    })
+	public ResponseEntity<ApiResponseDto<Void>> storeDiary(
+            @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId,
+            @RequestParam boolean isStored,
+            @Parameter(hidden = true) @AuthenticationPrincipal(expression = "userId") Long userId) {
+        diaryService.storeDiary(diaryId, userId, isStored);
+		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
+    }
+
     // 일기 삭제 - JWT 인증으로 본인 일기만 삭제 가능
 	@DeleteMapping("/users/me/diaries/{diaryId}")
     @Operation(summary = "일기 삭제", description = "JWT 토큰으로 인증된 사용자의 특정 일기를 삭제합니다.")
@@ -252,7 +278,8 @@ public class DiaryController {
 	public ResponseEntity<ApiResponseDto<Void>> deleteDiary(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "일기 ID", required = true) @PathVariable Long diaryId) {
-        diaryService.deleteDiary(diaryId);
+        Long userId = userDetails.getUserId();
+        diaryService.deleteDiary(diaryId, userId);
 		return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
     }
 }

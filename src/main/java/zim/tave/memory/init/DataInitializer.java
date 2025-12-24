@@ -17,67 +17,75 @@ public class DataInitializer implements CommandLineRunner {
     private final EmotionRepository emotionRepository;
     private final WeatherRepository weatherRepository;
     private final UserRepository userRepository;
+    private final BoardThemeRepository boardThemeRepository;
+    private final StickerRepository stickerRepository;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
         log.info("기본 데이터 초기화 시작...");
-        
+
         // 테마 데이터 초기화
         initTripThemes();
-        
+
         // 감정 데이터 초기화
         initEmotions();
-        
+
         // 날씨 데이터 초기화
         initWeathers();
-        
+
+        // 보드 데이터 초기화
+        initBoardThemes();
+
+        // 보드 스티커 초기화
+        initStickers();
+
         // 테스트 사용자 데이터 초기화
         initTestUser();
-        
+
         log.info("기본 데이터 초기화 완료!");
     }
 
     private void initTripThemes() {
         if (tripThemeRepository.count() == 0) {
             log.info("여행 테마 데이터 생성 중...");
-            
+
             // 기본 테마 (ID 1)
-            TripTheme basicTheme = new TripTheme("기본", 
-                    "https://me-mory.mooo.com/api/files?key=images/82847c58-80f0-4488-9bad-e448bd551ebb_default(no stroke).png", 
-                    "https://me-mory.mooo.com/api/files?key=images/95823625-3d74-4aa0-9661-9416c0e4a562_travel card_ripped_default.png");
+            TripTheme basicTheme = new TripTheme("기본",
+                    "https://me-mory01.mooo.com/api/files?key=images/d69be93f-fef6-4a73-815f-ea6b93fd2d59_trip_thumb_default.png",
+                    "https://me-mory01.mooo.com/api/files?key=images/6e56681d-9fc3-43d2-a803-0ef165c63c3c_trip_card_default.png");
             tripThemeRepository.save(basicTheme);
-            
+
             // Grey 테마 (ID 2)
-            TripTheme greyTheme = new TripTheme("Grey", 
-                    "https://me-mory.mooo.com/api/files?key=images/a391584b-a811-4b6f-aab5-94493ab7a5b7_grey(no stroke).png", 
-                    "https://me-mory.mooo.com/api/files?key=images/12775508-48e7-447f-a711-08286e03e733_travel card_ripped_grey.png");
+            TripTheme greyTheme = new TripTheme("Grey",
+                    "https://me-mory01.mooo.com/api/files?key=images/f0d5e1f7-2718-4dac-a780-d6f6e5f2d42a_trip_thumb_grey.png",
+                    "https://me-mory01.mooo.com/api/files?key=images/462d91ad-b618-4449-805f-35f07187247b_trip_card_grey.png");
             tripThemeRepository.save(greyTheme);
-            
+
             // 탑승권 테마 (ID 3)
-            TripTheme ticketTheme = new TripTheme("탑승권", 
-                    "https://me-mory.mooo.com/api/files?key=images/7c59762c-2c06-40de-bcfd-e3d0bde57677_boarding-pass(no stroke).png", 
-                    "https://me-mory.mooo.com/api/files?key=images/a83818f1-ecf4-4426-95f3-f512aca55195_travel card_boardingpass.png");
+            TripTheme ticketTheme = new TripTheme("탑승권",
+                    "https://me-mory01.mooo.com/api/files?key=images/cbcf48b8-8469-4e0f-b597-7ef27cc6190e_trip_thumb_boardingpass.png",
+                    "https://me-mory01.mooo.com/api/files?key=images/3e637461-f9a2-477d-ae06-4245033174a9_trip_card_boardingpass.png");
             tripThemeRepository.save(ticketTheme);
-            
+
             // 액자 테마 (ID 4)
-            TripTheme frameTheme = new TripTheme("액자", 
-                    "https://me-mory.mooo.com/api/files?key=images/bdd320a6-da17-4d16-b39d-e57bb6c4cf68_pic-frame(no stroke).png", 
-                    "https://me-mory.mooo.com/api/files?key=images/7ea4818c-8cf9-4220-8062-026b2b47929d_frame.png");
+            TripTheme frameTheme = new TripTheme("액자",
+                    "https://me-mory01.mooo.com/api/files?key=images/c3efb8f8-f4a8-41a1-9d29-e93bc9d2dd83_trip_thumb_frame.png",
+                    "https://me-mory01.mooo.com/api/files?key=images/eade6dc1-c412-4924-af7f-832292b258c0_trip_card_frame.png");
             tripThemeRepository.save(frameTheme);
-            
+
             // Beach 테마 (ID 5)
-            TripTheme beachTheme = new TripTheme("Beach", 
-                    "https://me-mory.mooo.com/api/files?key=images/6c5dacb9-cead-4054-b320-184b1261b120_beach(no stroke).png", 
-                    "https://me-mory.mooo.com/api/files?key=images/a96ece3e-bf03-4038-85ec-ddc58c643966_travel card_pic-frame.png");
+            TripTheme beachTheme = new TripTheme("Beach",
+                    "https://me-mory01.mooo.com/api/files?key=images/f692134b-0676-47e9-9782-778f7df9a23a_trip_thumb_beach.png",
+                    "https://me-mory01.mooo.com/api/files?key=images/94abb8d5-5f56-4061-8e90-1df9c9107caf_trip_card_beach.png");
             tripThemeRepository.save(beachTheme);
-            
+
             // Forest 테마 (ID 6)
-            TripTheme forestTheme = new TripTheme("Forest", 
-                    "https://me-mory.mooo.com/api/files?key=images/02711aa3-88d7-436a-b7a4-defc51ff270b_forest(no stroke).png", 
-                    "https://me-mory.mooo.com/api/files?key=images/6ee3070c-d1fb-4143-83d7-e2142bb9197b_travel card_forest.png");
+            TripTheme forestTheme = new TripTheme("Forest",
+                    "https://me-mory01.mooo.com/api/files?key=images/6f40c3c9-313f-44e5-9624-3264991b2f9b_trip_thumb_forest.png",
+                    "https://me-mory01.mooo.com/api/files?key=images/99589e53-9539-46eb-b702-644fab7a87e3_trip_card_forest.png");
             tripThemeRepository.save(forestTheme);
-            
+
             log.info("여행 테마 데이터 생성 완료: {}개", tripThemeRepository.count());
         }
     }
@@ -85,7 +93,7 @@ public class DataInitializer implements CommandLineRunner {
     private void initEmotions() {
         if (emotionRepository.count() == 0) {
             log.info("감정 데이터 생성 중...");
-            
+
             emotionRepository.save(new Emotion("기본", "#EEEEEE"));
             emotionRepository.save(new Emotion("설렘", "#FDD7DE"));
             emotionRepository.save(new Emotion("신기함", "#FFCB6B"));
@@ -100,7 +108,7 @@ public class DataInitializer implements CommandLineRunner {
             emotionRepository.save(new Emotion("아쉬움", "#866868"));
             emotionRepository.save(new Emotion("벅참", "#800020"));
 
-            
+
             log.info("감정 데이터 생성 완료: {}개", emotionRepository.count());
         }
     }
@@ -108,33 +116,79 @@ public class DataInitializer implements CommandLineRunner {
     private void initWeathers() {
         if (weatherRepository.count() == 0) {
             log.info("날씨 데이터 생성 중...");
-            
+
             Weather sunny = new Weather();
             sunny.setName("맑음");
-            sunny.setIconUrl("https://me-mory.mooo.com/api/files?key=images/3d2d621f-c1c6-483e-9297-a45750b05348_sunny.jpg");
+            sunny.setIconUrl("https://me-mory01.mooo.com/api/files?key=images/7de47dfb-6f09-47d2-9268-2b8c49c2f9bd_weather_sunny.png");
             weatherRepository.save(sunny);
-            
+
             Weather cloudy = new Weather();
             cloudy.setName("구름");
-            cloudy.setIconUrl("https://me-mory.mooo.com/api/files?key=images/55d632d7-2c89-430d-b5ed-076025b450c6_cloudy.jpg");
+            cloudy.setIconUrl("https://me-mory01.mooo.com/api/files?key=images/6a8c4a38-0ccd-479c-ba70-7202d7535bf7_weather_cloudy.png");
             weatherRepository.save(cloudy);
-            
+
             Weather rainy = new Weather();
             rainy.setName("비");
-            rainy.setIconUrl("https://me-mory.mooo.com/api/files?key=images/1e9f8407-54b3-4512-af82-47555b40dc72_rainy.jpg");
+            rainy.setIconUrl("https://me-mory01.mooo.com/api/files?key=images/72a8e191-9b31-4646-ae48-cb31fb543de7_weather_rainy.png");
             weatherRepository.save(rainy);
-            
+
             Weather windy = new Weather();
             windy.setName("바람");
-            windy.setIconUrl("https://me-mory.mooo.com/api/files?key=images/8021f201-a928-468b-be23-24fa7e07548e_windy.jpg");
+            windy.setIconUrl("https://me-mory01.mooo.com/api/files?key=images/dae2b4e2-7ac4-45fe-bccc-be835218d8d4_weather_windy.png");
             weatherRepository.save(windy);
-            
+
             Weather snowy = new Weather();
             snowy.setName("눈");
-            snowy.setIconUrl("https://me-mory.mooo.com/api/files?key=images/34e89299-35f0-4f2c-bbbf-6123e8af45f5_snowy.jpg");
+            snowy.setIconUrl("https://me-mory01.mooo.com/api/files?key=images/3b298957-360e-4ea4-86ea-bcd65fcd3e77_weather_snowy.png");
             weatherRepository.save(snowy);
-            
+
             log.info("날씨 데이터 생성 완료: {}개", weatherRepository.count());
+        }
+    }
+
+    private void initBoardThemes() {
+        if (boardThemeRepository.count() == 0) {
+            log.info("보드 테마 데이터 생성 중...");
+
+            BoardTheme chalkboard = new BoardTheme();
+            chalkboard.setThemeName("칠판");
+            chalkboard.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/chalkboard_thumb.png");
+            chalkboard.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/73212582-a940-4929-9c9b-f99ce68f3238_board_card_chalkboard.png");
+            boardThemeRepository.save(chalkboard);
+
+            BoardTheme tablecloth = new BoardTheme();
+            tablecloth.setThemeName("식탁보");
+            tablecloth.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/tablecloth_thumb.png");
+            tablecloth.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/ea8230ad-a70a-4f87-acb4-648add56b1b8_board_card_tablecloth.png");
+            boardThemeRepository.save(tablecloth);
+
+            BoardTheme board = new BoardTheme();
+            board.setThemeName("나무보드");
+            board.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/board_thumb.png");
+            board.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/ecee4553-72cc-4097-8d20-10a7ee889269_board_card_woodboard.png");
+            boardThemeRepository.save(board);
+
+            BoardTheme chess = new BoardTheme();
+            chess.setThemeName("체스판");
+            chess.setThumbnailUrl("https://me-mory01.mooo.com/api/files?key=images/board_theme/chess_thumb.png");
+            chess.setCardUrl("https://me-mory01.mooo.com/api/files?key=images/e026afe7-1619-4ee5-b3e7-c2564d88447c_board_card_chess.png");
+            boardThemeRepository.save(chess);
+
+            log.info("보드 테마 데이터 생성 완료: {}개", boardThemeRepository.count());
+        }
+    }
+
+    private void initStickers() {
+        if (stickerRepository.count() == 0) {
+            log.info("스티커 데이터 생성 중...");
+
+            Sticker starSticker = new Sticker();
+            starSticker.setName("Star");
+            starSticker.setImageUrl("https://me-mory01.mooo.com/api/files?key=images/6d4c8b2f-00ec-41ae-bd57-9ce914e1c78d_sticker_star.png");
+
+            stickerRepository.save(starSticker);
+
+            log.info("스티커 데이터 생성 완료: {}개", stickerRepository.count());
         }
     }
 
@@ -142,7 +196,7 @@ public class DataInitializer implements CommandLineRunner {
         // 테스트용 사용자가 없으면 생성
         if (!userRepository.findByKakaoId("test_강지혜").isPresent()) {
             log.info("테스트 사용자 데이터 생성 중...");
-            
+
             User testUser = new User();
             testUser.setKakaoId("test_강지혜");
             testUser.setSurName("KANG");
@@ -157,10 +211,10 @@ public class DataInitializer implements CommandLineRunner {
             testUser.setVisitedCountryCount(0L);
             testUser.setFlags("🇰🇷");
             userRepository.save(testUser);
-            
+
             log.info("테스트 사용자 데이터 생성 완료");
         } else {
             log.info("테스트 사용자가 이미 존재합니다.");
         }
     }
-} 
+}

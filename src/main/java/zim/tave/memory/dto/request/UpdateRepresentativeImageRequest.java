@@ -1,11 +1,14 @@
 package zim.tave.memory.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(description = "대표 이미지 변경 요청")
 public class UpdateRepresentativeImageRequest {
 
-    private Long imageId; // 대표사진으로 설정할 이미지 ID
+    @Schema(description = "대표사진으로 설정할 이미지 ID", example = "1", required = true)
+    private Long imageId;
 }
