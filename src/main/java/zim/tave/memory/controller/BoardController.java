@@ -21,7 +21,7 @@ import zim.tave.memory.service.BoardService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/boards")
+@RequestMapping("/api/users/me/boards")
 @SecurityRequirement(name = "bearerAuth")
 public class BoardController {
 
