@@ -15,11 +15,6 @@ import java.util.UUID;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private boolean isSwaggerRequest(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return uri.contains("/v3/api-docs") || uri.contains("/swagger-ui");
-    }
-
     // CustomException 처리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponseDto<?>> handleCustomException(CustomException ex) {
@@ -107,11 +102,9 @@ public class GlobalExceptionHandler {
 
     // 예상치 못한 예외 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDto<?>> handleException(Exception ex,
-                                                             HttpServletRequest request) {
-
-        // Swagger 요청일 때는 핸들링하지 않고 그대로 throw → Swagger 정상 동작
-        if (isSwaggerRequest(request)) throw new RuntimeException(ex);
+    public ResponseEntity<ApiResponseDto<?>> handleException(
+            Exception ex,
+            HttpServletRequest request) {
 
         String errorId = UUID.randomUUID().toString();
 
