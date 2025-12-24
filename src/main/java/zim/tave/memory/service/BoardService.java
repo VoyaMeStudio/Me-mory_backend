@@ -208,7 +208,6 @@ public class BoardService {
         boardStickerMapRepository.delete(map);
 
         board.setUpdatedAt(LocalDateTime.now());
-        boardRepository.save(board);
     }
 
 }
