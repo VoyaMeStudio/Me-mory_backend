@@ -8,6 +8,7 @@ import zim.tave.memory.domain.Board;
 import zim.tave.memory.domain.BoardStickerMap;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Getter
@@ -20,12 +21,14 @@ public class BoardUpdateResponseDto {
     private Long boardId;
 
     @Schema(description = "보드 최종 수정 시각", example = "2025-12-01T17:30:00")
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     @Schema(description = "적용된 스티커 리스트")
     private List<BoardStickerItem> stickers;
 
     public static BoardUpdateResponseDto from(Board board, List<BoardStickerMap> stickerMaps) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
         List<BoardStickerItem> stickerItems = stickerMaps.stream()
                 .map(BoardStickerItem::from)
@@ -33,7 +36,7 @@ public class BoardUpdateResponseDto {
 
         return new BoardUpdateResponseDto(
                 board.getBoardId(),
-                board.getUpdatedAt(),
+                board.getUpdatedAt().format(formatter),
                 stickerItems
         );
     }
