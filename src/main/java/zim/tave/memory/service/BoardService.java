@@ -60,7 +60,7 @@ public class BoardService {
 
         List<Board> boards = boardRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
-        List<BoardStickerMap> allStickerMaps = boardStickerMapRepository.findAllByBoard(boards);
+        List<BoardStickerMap> allStickerMaps = boardStickerMapRepository.findAllByBoardIn(boards);
 
         Map<Long, List<BoardStickerMap>> stickerMapByBoardId =
                 allStickerMaps.stream()
