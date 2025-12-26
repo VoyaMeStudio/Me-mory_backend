@@ -12,6 +12,8 @@ ssh -i "$EC2_KEY" "$EC2_USER@$EC2_HOST" << 'EOF'
 set -e
 
 NETWORK_NAME="memory-net"
+IMAGE_NAME="choehyungwon/memory-app"
+IMAGE_TAG="${IMAGE_TAG:-latest}"
 
 echo "1. 환경변수 로드"
 if [ -f ~/.env ]; then
@@ -43,7 +45,8 @@ echo "⏳ MySQL 대기 (20초)"
 sleep 20
 
 echo "4. 애플리케이션 이미지 pull"
-docker pull choehyungwon/memory-app:latest
+docker pull "$IMAGE_NAME:$IMAGE_TAG"
+
 docker stop memory-app 2>/dev/null || true
 docker rm memory-app 2>/dev/null || true
 
@@ -56,7 +59,7 @@ docker run -d \
   -e SPRING_DATASOURCE_URL="jdbc:mysql://memory-mysql:3306/$MYSQL_DATABASE?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true" \
   -e SPRING_DATASOURCE_USERNAME="$MYSQL_USER" \
   -e SPRING_DATASOURCE_PASSWORD="$MYSQL_PASSWORD" \
-  choehyungwon/memory-app:latest
+  "$IMAGE_NAME:$IMAGE_TAG"
 
 echo "⏳ 애플리케이션 대기 (30초)"
 sleep 30
