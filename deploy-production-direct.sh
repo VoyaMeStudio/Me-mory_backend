@@ -8,14 +8,14 @@ NETWORK_NAME="memory-net"
 echo "🚀 EC2 단일 서버 배포 시작..."
 
 ssh -i "$EC2_KEY" "$EC2_USER@$EC2_HOST" << 'EOF'
-echo "1️⃣ 기존 컨테이너 정리"
+echo "1. 기존 컨테이너 정리"
 docker stop memory-app memory-mysql 2>/dev/null || true
 docker rm memory-app memory-mysql 2>/dev/null || true
 
-echo "2️⃣ 네트워크 준비"
+echo "2. 네트워크 준비"
 docker network inspect memory-net >/dev/null 2>&1 || docker network create memory-net
 
-echo "3️⃣ MySQL 실행"
+echo "3. MySQL 실행"
 docker run -d \
   --name memory-mysql \
   --network memory-net \
@@ -30,10 +30,10 @@ docker run -d \
 echo "⏳ MySQL 대기 (20초)"
 sleep 20
 
-echo "4️⃣ 애플리케이션 이미지 pull"
+echo "4. 애플리케이션 이미지 pull"
 docker pull choehyungwon/memory-app:latest
 
-echo "5️⃣ 애플리케이션 실행 (8081)"
+echo "5. 애플리케이션 실행 (8081)"
 docker run -d \
   --name memory-app \
   --network memory-net \
@@ -47,7 +47,7 @@ docker run -d \
 echo "⏳ 애플리케이션 대기 (30초)"
 sleep 30
 
-echo "6️⃣ 상태 확인"
+echo "6. 상태 확인"
 docker ps
 echo ""
 docker logs memory-app --tail 30
