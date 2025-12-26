@@ -27,13 +27,19 @@ echo "2. 네트워크 준비"
 docker network inspect "$NETWORK_NAME" >/dev/null 2>&1 || docker network create memory-net
 
 echo "3. MySQL 컨테이너 실행"
+
+# 컨테이너 정리
 docker stop memory-mysql 2>/dev/null || true
 docker rm memory-mysql 2>/dev/null || true
+
+# MySQL 데이터 볼륨 준비 (없으면 자동 생성)
+docker volume inspect mysql-data >/dev/null 2>&1 || docker volume create mysql-data
 
 docker run -d \
   --name memory-mysql \
   --network $NETWORK_NAME \
   --restart unless-stopped \
+  -v mysql-data:/var/lib/mysql \
   -e MYSQL_ROOT_PASSWORD="\$MYSQL_ROOT_PASSWORD" \
   -e MYSQL_DATABASE="\$MYSQL_DATABASE" \
   -e MYSQL_USER="\$MYSQL_USER" \
