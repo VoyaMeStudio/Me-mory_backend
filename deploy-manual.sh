@@ -4,9 +4,9 @@
 # 로컬에서 실행하는 스크립트
 
 # 배포 설정
-EC2_HOST="54.174.34.81"
+EC2_HOST="15.165.245.144"
 EC2_USER="ec2-user"
-EC2_KEY="${EC2_KEY:-memory-ec2-key.pem}"  # 환경변수 또는 기본값 사용
+EC2_KEY="${EC2_KEY:-memory.pem}"  # 환경변수 또는 기본값 사용
 JAR_FILE="build/libs/memory-0.0.1-SNAPSHOT.jar"
 
 # 색상 정의
@@ -38,20 +38,20 @@ check_prerequisites() {
         echo "  chmod 400 $EC2_KEY"
         exit 1
     fi
-    
+
     # 키 파일 권한 확인
     if [ "$(stat -c %a "$EC2_KEY" 2>/dev/null || stat -f %A "$EC2_KEY" 2>/dev/null)" != "400" ]; then
         print_warning "키 파일 권한을 수정합니다..."
         chmod 400 "$EC2_KEY"
     fi
-    
+
     # SSH 연결 테스트
     print_info "EC2 연결 테스트 중..."
     if ! ssh -i "$EC2_KEY" -o ConnectTimeout=5 -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" "echo 'Connection OK'" >/dev/null 2>&1; then
         print_error "EC2 서버에 연결할 수 없습니다. 네트워크 및 키 파일을 확인하세요."
         exit 1
     fi
-    
+
     print_info "✅ 사전 검사 완료"
 }
 
@@ -130,4 +130,4 @@ echo "=========================================="
 print_info "🎉 수동 배포 완료!"
 echo "📍 애플리케이션 URL: http://$EC2_HOST:8080"
 echo "📊 Swagger UI: http://$EC2_HOST:8080/swagger-ui/index.html"
-echo "🔍 Health Check: http://$EC2_HOST:8080/actuator/health" 
+echo "🔍 Health Check: http://$EC2_HOST:8080/actuator/health"
