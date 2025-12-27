@@ -20,8 +20,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * 성능 최적화:
  * - Spring Context는 각 테스트 클래스마다 로드되지만, 컨테이너는 공유됩니다
  * - Testcontainers 설정 파일(testcontainers.properties)에서 reuse 활성화
+ * 
+ * 주의: webEnvironment는 MOCK으로 설정 (NONE으로 하면 SecurityConfig의 HttpSecurity 빈을 찾을 수 없음)
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Testcontainers
 public abstract class AbstractContainerBaseTest {
 
