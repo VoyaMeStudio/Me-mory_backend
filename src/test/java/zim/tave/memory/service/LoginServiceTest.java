@@ -1,12 +1,9 @@
 package zim.tave.memory.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.request.LoginRequestDto;
@@ -39,12 +36,6 @@ public class LoginServiceTest {
 
     @InjectMocks
     private LoginService loginService;
-
-
-    @BeforeEach
-    void init() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void 토큰_누락시_예외() {
