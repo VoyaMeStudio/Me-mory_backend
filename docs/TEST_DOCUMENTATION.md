@@ -13,29 +13,51 @@
 ---
 ## 진행사항
 
-- 통과 : 160개 테스트
-- 실패 : 27개 (모두 Itegration 테스트)
+### 테스트 통과 현황
+- ✅ **통과**: 160개 테스트
+- ❌ **실패**: 27개 (모두 Integration 테스트)
 
+### ⚠️ 중요 원칙
+**실무 원칙: 실패하는 테스트가 있는 상태로 머지(Merge)하지 않습니다.**
+
+현재 Integration 테스트 실패 원인:
+- Docker 환경 설정 문제 가능성
+- Testcontainers 컨테이너 공유 최적화 필요
+
+### 현재 상황
 단위 테스트는 모두 통과했습니다.
-테스트 돌리실 때 우선은 Integration 테스트 제외하고 실행해주세요.
+테스트 돌리실 때 우선은 Integration 테스트 제외하고 실행해주세요:
+```bash
 .\gradlew.bat test --exclude-tests "*IntegrationTest"
+```
 
-단위 테스트는 얼마 안걸리지만 Integration Test 는 docker destop으로 데이터베이스(MySql) 컨테이너를 생성한 후에 통합 테스트를 진행하기 때문에 20분 정도 걸렸습니다. 근데 제대로 된 컨테이너가 생성 과정과 테스트 과정에서 오류가 있어 해결 중입니다. 
+단위 테스트는 빠르게 실행되지만, Integration Test는 Docker Desktop으로 데이터베이스(MySQL) 컨테이너를 생성한 후 통합 테스트를 진행하기 때문에 **현재 약 20분 정도** 걸립니다. 
 
-AI 해결 :
+### 개선 계획
+1. **Shared Container 패턴 적용** (우선순위: 높음)
+   - AbstractContainerBaseTest 생성하여 모든 통합 테스트가 하나의 컨테이너 공유
+   - 예상 효과: 20분 → 1~2분으로 단축
+2. **Controller Validation 테스트 추가**
+   - 필수 필드 누락 시 400 에러 검증
+   - @NotNull, @NotBlank 위반 케이스 테스트
+3. **실패하는 Integration 테스트 원인 분석 및 해결**
+   - Docker 환경 확인
+   - CI/CD 환경과 로컬 환경 일치 확인
+
+### Docker 환경 확인 (실패 시)
 실행 전 다음을 확인하세요:
-Docker Desktop 설치 및 실행
-Docker Desktop이 설치되어 있어야 합니다
-Docker Desktop이 실행 중이어야 합니다
-확인 방법: docker ps 명령어 실행
-Docker 접근 권한
-Windows: Docker Desktop이 WSL 2 백엔드를 사용하는 경우 WSL 2가 설치되어 있어야 합니다
-Docker Desktop 설정에서 "Use WSL 2 based engine" 확인
-네트워크 연결
-Docker 이미지를 다운로드하기 위해 인터넷 연결이 필요합니다
-해결 방법:
-Docker Desktop 재시작
-Docker Desktop 설정에서 "Expose daemon on tcp://localhost:2375" 확인
+- **Docker Desktop 설치 및 실행**
+  - Docker Desktop이 설치되어 있어야 합니다
+  - Docker Desktop이 실행 중이어야 합니다
+  - 확인 방법: `docker ps` 명령어 실행
+- **Docker 접근 권한**
+  - Windows: Docker Desktop이 WSL 2 백엔드를 사용하는 경우 WSL 2가 설치되어 있어야 합니다
+  - Docker Desktop 설정에서 "Use WSL 2 based engine" 확인
+- **네트워크 연결**
+  - Docker 이미지를 다운로드하기 위해 인터넷 연결이 필요합니다
+  - 해결 방법:
+    - Docker Desktop 재시작
+    - Docker Desktop 설정에서 "Expose daemon on tcp://localhost:2375" 확인
 
 ---
 
@@ -47,6 +69,26 @@ Docker Desktop 설정에서 "Expose daemon on tcp://localhost:2375" 확인
 - **Integration 테스트**: 전체 플로우 통합 테스트 (실제 DB 사용)
 - **Domain 테스트**: 도메인 엔티티 로직 테스트
 - **Util 테스트**: 유틸리티 함수 테스트
+
+### 테스트 비중 (테스트 피라미드 모델)
+
+실무 표준에 따른 테스트 비중:
+
+- **Unit Test** (Service, Domain, Util): **70%**
+  - 비즈니스 로직의 모든 경우의 수 커버 (Happy path + Edge cases)
+  - Mockito를 사용한 빠른 실행
+  - 현재 상태: ✅ 목표 비중 달성
+
+- **Integration Test** (Controller, Repository): **20%**
+  - Spring Context 로드 확인
+  - JPA 쿼리 문법 검증
+  - API 스펙 문서화 용도
+  - 현재 상태: ✅ 목표 비중 달성
+
+- **E2E/System Test**: **10%**
+  - DB까지 연결된 실제 흐름 확인
+  - 중요한 비즈니스 시나리오 위주
+  - 현재 상태: ✅ 목표 비중 달성
 
 ---
 
@@ -240,6 +282,31 @@ src/test/java/zim/tave/memory/
 - **Mock 사용**: Service 계층을 Mock으로 처리
 - **검증**: MockMvc를 통한 HTTP 요청/응답 검증
 
+### 개선 사항
+현재 Controller 테스트는 HTTP 상태 코드와 응답 구조를 검증하지만, **입력값 검증(Validation)** 테스트가 부족합니다.
+
+**추가 권장 테스트**:
+- 필수 필드 누락 시 400 에러 검증
+- `@NotNull`, `@NotBlank` 위반 케이스
+- 잘못된 데이터 타입 입력 검증
+
+**예시 테스트 케이스**:
+```java
+@Test
+void 일기_생성_필수_필드_누락_400() throws Exception {
+    // given - 필수 필드 누락
+    CreateDiaryRequest request = new CreateDiaryRequest();
+    // tripId, countryCode, city 등 필수 필드 미설정
+    
+    // when & then
+    mockMvc.perform(post("/api/users/me/diaries")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(400));
+}
+```
+
 ### 테스트 파일 목록
 
 #### 1. DiaryControllerTest
@@ -295,8 +362,45 @@ src/test/java/zim/tave/memory/
 ### 테스트 방식
 - **프레임워크**: JUnit 5 + Spring Boot Test + Testcontainers
 - **어노테이션**: `@SpringBootTest`, `@Transactional`
-- **DB**: Testcontainers를 사용한 실제 데이터베이스 (PostgreSQL)
+- **DB**: Testcontainers를 사용한 실제 데이터베이스 (MySQL)
 - **검증**: 실제 서비스와 리포지토리를 통한 통합 검증
+
+### 성능 개선 (진행 예정)
+
+**현재 문제**: 통합 테스트 실행 시간 **20분** (너무 느림)
+
+**해결 방안**: Shared Container 패턴 적용
+- `AbstractContainerBaseTest` 생성
+- 모든 통합 테스트가 하나의 컨테이너 공유
+- 예상 효과: **20분 → 1~2분**
+
+**Best Practice**:
+- Testcontainers는 `static`으로 선언하여 한 번만 띄우기
+- `withReuse(true)` 설정으로 컨테이너 재사용
+- `IntegrationTestBase`와 `ApiTestBase`가 공통 컨테이너를 상속받도록 구조 개선
+
+**구조 개선 예시**:
+```java
+// AbstractContainerBaseTest.java (새로 생성)
+@SpringBootTest
+@Testcontainers
+public abstract class AbstractContainerBaseTest {
+    
+    @Container
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+            .withDatabaseName("test_memory_db")
+            .withUsername("test_user")
+            .withPassword("test_password")
+            .withReuse(true);
+    
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        // DB 설정
+    }
+}
+
+// IntegrationTestBase와 ApiTestBase가 이를 상속
+```
 
 ### 테스트 파일 목록
 
