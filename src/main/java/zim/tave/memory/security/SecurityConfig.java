@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 "/api/weathers/**",
                                 "/api/emotions/**",
                                 "/api/trip-themes/**",
-                                "/api/test/**"
+                                "/api/test/**",
+                                "/actuator/health"
                         ).permitAll() // 로그인, 회원가입은 예외
                         .anyRequest().authenticated()
                 )

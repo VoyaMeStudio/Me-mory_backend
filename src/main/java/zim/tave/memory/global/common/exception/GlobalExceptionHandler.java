@@ -1,5 +1,6 @@
 package zim.tave.memory.global.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,6 +79,17 @@ public class GlobalExceptionHandler {
             case KAKAO_SERVER_ERROR -> ResponseCode.KAKAO_SERVER_ERROR;
             case KAKAO_RESPONSE_PARSING_ERROR -> ResponseCode.KAKAO_RESPONSE_PARSING_ERROR;
             case KAKAO_API_UNKNOWN_ERROR -> ResponseCode.KAKAO_API_UNKNOWN_ERROR;
+            // 보드
+            case BOARD_REQUIRED_FIELDS_MISSING -> ResponseCode.BOARD_REQUIRED_FIELDS_MISSING;
+            case BOARD_THEME_NOT_FOUND -> ResponseCode.BOARD_THEME_NOT_FOUND;
+            case BOARD_CREATE_FAILED -> ResponseCode.BOARD_CREATE_FAILED;
+            case BOARD_NOT_FOUND -> ResponseCode.BOARD_NOT_FOUND;
+            case BOARD_UPDATE_FORBIDDEN -> ResponseCode.BOARD_UPDATE_FORBIDDEN;
+            case BOARD_STICKER_NOT_FOUND  -> ResponseCode.BOARD_STICKER_NOT_FOUND;
+            case BOARD_UPDATE_INTERNAL_ERROR  -> ResponseCode.BOARD_UPDATE_INTERNAL_ERROR;
+            case BOARD_DELETE_FORBIDDEN -> ResponseCode.BOARD_DELETE_FORBIDDEN;
+            case BOARD_STICKER_MAP_NOT_FOUND -> ResponseCode.BOARD_STICKER_MAP_NOT_FOUND;
+            case BOARD_ACCESS_FORBIDDEN -> ResponseCode.BOARD_ACCESS_FORBIDDEN;
 
             default -> ResponseCode.SERVER_ERROR;
         };
@@ -91,7 +103,6 @@ public class GlobalExceptionHandler {
     }
 
     // HttpMessageNotReadableException 처리 (Jackson 파싱 오류)
-    // LocalDateTimeDeserializer에서 CustomException을 던지면 Jackson이 이를 HttpMessageNotReadableException으로 감싸서 던짐
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponseDto<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         String errorId = UUID.randomUUID().toString();
@@ -99,39 +110,47 @@ public class GlobalExceptionHandler {
         // 에러 로그 기록
         log.error("[{}] HttpMessageNotReadableException: {}", errorId, ex.getMessage(), ex);
         
-        // cause가 CustomException인 경우 (LocalDateTimeDeserializer에서 던진 경우)
-        Throwable cause = ex.getCause();
-        if (cause instanceof CustomException) {
-            // CustomException 핸들러로 위임
-            return handleCustomException((CustomException) cause);
+        // 원인 체인을 순회하여 CustomException, DateTimeParseException 등을 찾음
+        Throwable cause = ex;
+        while (cause != null) {
+            // CustomException인 경우 (LocalDateTimeDeserializer에서 던진 경우)
+            if (cause instanceof CustomException) {
+                return handleCustomException((CustomException) cause);
+            }
+            
+            // DateTimeParseException인 경우
+            if (cause instanceof DateTimeParseException) {
+                DateTimeParseException dtpe = (DateTimeParseException) cause;
+                String message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식을 사용해주세요.", 
+                        dtpe.getParsedString());
+                String safeMessage = message + " (errorId: " + errorId + ")";
+                return ResponseEntity.badRequest()
+                        .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
+            }
+            
+            // 다음 원인으로 이동
+            cause = cause.getCause();
         }
         
-        // 다른 파싱 오류인 경우
+        // 원인을 찾지 못한 경우 기본 메시지
         String message = "요청 본문을 파싱할 수 없습니다. 요청 형식을 확인해주세요.";
-        if (cause instanceof DateTimeParseException) {
-            DateTimeParseException dtpe = (DateTimeParseException) cause;
-            message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식(yyyy-MM-ddTHH:mm:ss 또는 yyyy-MM-ddTHH:mm:ss.SSSZ)을 사용해주세요.", 
-                    dtpe.getParsedString());
-        }
-        
         String safeMessage = message + " (errorId: " + errorId + ")";
         
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.badRequest()
                 .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
     }
 
     // 예상치 못한 예외 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDto<?>> handleException(Exception ex) {
+    public ResponseEntity<ApiResponseDto<?>> handleException(
+            Exception ex,
+            HttpServletRequest request) {
+
         String errorId = UUID.randomUUID().toString();
 
-        // 로그에 StackTrace 포함 기록
         log.error("[{}] Unexpected exception: {}", errorId, ex.getMessage(), ex);
 
-        // 사용자에게는 안전한 메시지만 전달
         String safeMessage = "서버 오류가 발생했습니다. (errorId: " + errorId + ")";
-
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponseDto.error(ResponseCode.SERVER_ERROR, safeMessage));

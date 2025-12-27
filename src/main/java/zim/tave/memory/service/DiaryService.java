@@ -15,6 +15,7 @@ import zim.tave.memory.repository.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -45,35 +46,17 @@ public class DiaryService {
         String trimmed = dateTimeString.trim();
         
         try {
-            // Z가 포함된 경우 (ISO 8601 with timezone, 예: 2025-11-30T11:20:01.570Z)
-            if (trimmed.endsWith("Z")) {
-                Instant instant = Instant.parse(trimmed);
-                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            // offset 또는 Z 포함 ISO => OffsetDateTime.parse가 대부분 처리
+            OffsetDateTime odt = OffsetDateTime.parse(trimmed);
+            return odt.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        } catch (DateTimeParseException ignored) {
+            try {
+                // 타임존 없는 로컬 포맷: yyyy-MM-dd'T'HH:mm:ss[.SSS...]
+                // ISO_LOCAL_DATE_TIME은 0-9자리의 소수점 초를 모두 처리 가능
+                return LocalDateTime.parse(trimmed, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            } catch (DateTimeParseException e) {
+                throw new CustomException(ErrorCode.VALIDATION_ERROR);
             }
-            
-            // 타임존 오프셋이 포함된 경우 (예: +09:00, -05:00)
-            if (trimmed.contains("+") || (trimmed.contains("-") && trimmed.length() > 19 && trimmed.lastIndexOf("-") > 10)) {
-                Instant instant = Instant.parse(trimmed);
-                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-            }
-            
-            // 밀리초가 포함된 경우 (Z 없음)
-            if (trimmed.contains(".")) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-                if (trimmed.length() > 23) {
-                    trimmed = trimmed.substring(0, 23);
-                }
-                return LocalDateTime.parse(trimmed, formatter);
-            }
-            
-            // 기본 형식 (yyyy-MM-ddTHH:mm:ss)
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-            return LocalDateTime.parse(trimmed, formatter);
-            
-        } catch (DateTimeParseException e) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
     }
 
