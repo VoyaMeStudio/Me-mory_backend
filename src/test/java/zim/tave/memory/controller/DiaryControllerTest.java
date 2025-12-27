@@ -26,7 +26,6 @@ import zim.tave.memory.global.common.exception.GlobalExceptionHandler;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.DiaryService;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -414,6 +413,126 @@ class DiaryControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(403));
+    }
+
+    // ========== Validation 테스트 ==========
+
+    @Test
+    void 일기_생성_필수_필드_누락_400() throws Exception {
+        // given - 필수 필드 누락 (tripId, countryCode, city, dateTime, content, images)
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        // 필수 필드들을 모두 null로 설정
+
+        // when & then
+        // Service 레벨에서 검증하므로, 실제로는 Service에서 예외가 발생할 수 있음
+        // 하지만 Controller 레벨에서도 기본적인 validation을 확인
+        mockMvc.perform(post("/api/users/me/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 일기_생성_tripId_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        request.setTripId(null); // 필수 필드 null
+        request.setCountryCode("KR");
+        request.setCity("서울");
+        request.setDateTime("2024-01-15T10:00:00");
+        request.setContent("테스트 내용");
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 일기_생성_countryCode_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        request.setTripId(1L);
+        request.setCountryCode(null); // 필수 필드 null
+        request.setCity("서울");
+        request.setDateTime("2024-01-15T10:00:00");
+        request.setContent("테스트 내용");
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 일기_생성_city_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        request.setTripId(1L);
+        request.setCountryCode("KR");
+        request.setCity(null); // 필수 필드 null
+        request.setDateTime("2024-01-15T10:00:00");
+        request.setContent("테스트 내용");
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 일기_생성_dateTime_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        request.setTripId(1L);
+        request.setCountryCode("KR");
+        request.setCity("서울");
+        request.setDateTime(null); // 필수 필드 null
+        request.setContent("테스트 내용");
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 일기_생성_content_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreateDiaryRequest request = new CreateDiaryRequest();
+        request.setTripId(1L);
+        request.setCountryCode("KR");
+        request.setCity("서울");
+        request.setDateTime("2024-01-15T10:00:00");
+        request.setContent(null); // 필수 필드 null
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
     }
 }
 

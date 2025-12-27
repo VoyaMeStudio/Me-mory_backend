@@ -4,15 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import zim.tave.memory.domain.*;
+import zim.tave.memory.integration.AbstractContainerBaseTest;
 import zim.tave.memory.jwt.JwtUtil;
 import zim.tave.memory.repository.*;
 
@@ -21,32 +16,13 @@ import java.time.LocalDateTime;
 
 /**
  * API 통합 테스트 베이스 클래스
- * - Testcontainers를 사용하여 MySQL 컨테이너 실행
+ * - AbstractContainerBaseTest를 상속하여 공유 컨테이너 사용
  * - MockMvc를 사용한 HTTP 레벨 테스트
  * - JWT 토큰 생성 헬퍼 메서드 제공
  */
-@SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
 @Transactional
-public abstract class ApiTestBase {
-
-    @Container
-    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("test_memory_db")
-            .withUsername("test_user")
-            .withPassword("test_password")
-            .withReuse(true);
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysql::getJdbcUrl);
-        registry.add("spring.datasource.username", mysql::getUsername);
-        registry.add("spring.datasource.password", mysql::getPassword);
-        registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
-        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQL8Dialect");
-    }
+public abstract class ApiTestBase extends AbstractContainerBaseTest {
 
     @Autowired
     protected MockMvc mockMvc;

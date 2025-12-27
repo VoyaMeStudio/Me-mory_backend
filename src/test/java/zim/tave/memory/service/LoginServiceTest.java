@@ -40,8 +40,6 @@ public class LoginServiceTest {
     @InjectMocks
     private LoginService loginService;
 
-    @Mock
-    JwtUtil jwtUtil;
 
     @BeforeEach
     void init() {
