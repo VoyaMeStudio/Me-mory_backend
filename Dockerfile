@@ -1,30 +1,13 @@
-# ========== Stage 1: Build ==========
-FROM eclipse-temurin:21-jdk AS builder
+# Java 21 OpenJDK 기반 경량 이미지 사용
+FROM eclipse-temurin:21-jdk
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# Gradle Wrapper 실행에 필요한 파일 먼저 복사
-COPY gradlew .
-COPY gradle gradle
+# 이미 빌드된 JAR 파일을 직접 복사
+COPY build/libs/memory-0.0.1-SNAPSHOT.jar app.jar
 
-# 프로젝트 전체 소스 복사
-COPY . .
-
-# 실행 권한 부여
-RUN chmod +x gradlew
-
-# Docker 내부에서 빌드 실행
-RUN ./gradlew clean build -x test
-
-
-# ========== Stage 2: Run ==========
-FROM eclipse-temurin:21-jre
-
-WORKDIR /app
-
-# builder 단계에서 만들어진 JAR만 복사
-COPY --from=builder /app/build/libs/*.jar app.jar
-
+# 애플리케이션 포트 설정
 EXPOSE 8081
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
