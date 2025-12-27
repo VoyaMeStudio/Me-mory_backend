@@ -16,8 +16,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * - static으로 선언하여 한 번만 띄우기
  * - withReuse(true) 설정으로 컨테이너 재사용
  * - 모든 통합 테스트 베이스 클래스가 이를 상속받도록 구성
+ * 
+ * 성능 최적화:
+ * - Spring Context는 각 테스트 클래스마다 로드되지만, 컨테이너는 공유됩니다
+ * - Testcontainers 설정 파일(testcontainers.properties)에서 reuse 활성화
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers
 public abstract class AbstractContainerBaseTest {
 
