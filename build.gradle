@@ -54,6 +54,14 @@ tasks.named('test') {
 }
 
 //테스트 비활성화
-tasks.test {
-    enabled = false
+tasks.named('test') {
+    useJUnitPlatform()
+    enabled = true // 다시 활성화
+
+    // 테스트 실행 과정을 콘솔에 출력하기 위한 설정 (실무 권장)
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        exceptionFormat = "full"
+    }
 }
