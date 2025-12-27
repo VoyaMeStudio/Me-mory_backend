@@ -30,6 +30,10 @@ public abstract class AbstractContainerBaseTest {
     /**
      * 모든 통합 테스트가 공유하는 MySQL 컨테이너
      * static으로 선언하여 테스트 클래스 간에 한 번만 생성됩니다.
+     * 
+     * @Container 어노테이션이 자동으로 컨테이너를 시작합니다.
+     * 하지만 @DynamicPropertySource가 호출될 때 컨테이너가 준비되지 않을 수 있으므로,
+     * getJdbcUrl() 호출 시 자동으로 시작되도록 보장합니다.
      */
     @Container
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
@@ -41,12 +45,33 @@ public abstract class AbstractContainerBaseTest {
     /**
      * Spring Boot 테스트에서 동적으로 데이터소스 속성을 설정합니다.
      * Testcontainers가 생성한 컨테이너의 JDBC URL을 사용합니다.
+     * 
+     * 주의: getJdbcUrl()을 호출하면 컨테이너가 자동으로 시작됩니다.
+     * 하지만 Spring Context 로드 전에 컨테이너가 준비되도록 보장하기 위해
+     * Supplier를 사용하여 지연 평가합니다.
      */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysql::getJdbcUrl);
-        registry.add("spring.datasource.username", mysql::getUsername);
-        registry.add("spring.datasource.password", mysql::getPassword);
+        // 컨테이너가 시작되도록 보장 (getJdbcUrl() 호출 시 자동 시작)
+        // Supplier를 사용하여 실제 사용 시점에 평가되도록 함
+        registry.add("spring.datasource.url", () -> {
+            if (!mysql.isRunning()) {
+                mysql.start();
+            }
+            return mysql.getJdbcUrl();
+        });
+        registry.add("spring.datasource.username", () -> {
+            if (!mysql.isRunning()) {
+                mysql.start();
+            }
+            return mysql.getUsername();
+        });
+        registry.add("spring.datasource.password", () -> {
+            if (!mysql.isRunning()) {
+                mysql.start();
+            }
+            return mysql.getPassword();
+        });
         registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQL8Dialect");
