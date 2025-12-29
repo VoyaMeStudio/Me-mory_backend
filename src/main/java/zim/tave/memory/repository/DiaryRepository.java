@@ -15,10 +15,10 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 	// 파생 쿼리 메소드
 	@Query("SELECT d FROM Diary d WHERE d.trip.id = :tripId AND (d.isStored = false OR d.isStored IS NULL)")
 	List<Diary> findByTrip_Id(@Param("tripId") Long tripId);
-	
+
 	@Query("SELECT d FROM Diary d WHERE d.user.id = :userId AND (d.isStored = false OR d.isStored IS NULL)")
 	List<Diary> findByUser_Id(@Param("userId") Long userId);
-	
+
 	long countByUser_Id(Long userId);
 
 	// 회원 탈퇴 시 DiaryImage -> Diary 순서로 일괄 삭제 (FK 제약 회피)
@@ -35,4 +35,18 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("SELECT d FROM Diary d WHERE d.trip.id = :tripId AND (d.isStored = false OR d.isStored IS NULL)")
     List<Diary> findByTripId(@Param("tripId") Long tripId);
+
+    // 미완성 일기 존재여부 확인
+    @Query("""
+        SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END
+        FROM Diary d
+        WHERE d.trip.id = :tripId
+          AND (d.isStored = false OR d.isStored IS NULL)
+          AND (
+                d.detailedLocation IS NULL
+             OR d.emotion IS NULL
+             OR d.weather IS NULL
+          )
+    """)
+    boolean existsIncompleteDiaryByTripId(@Param("tripId") Long tripId);
 }

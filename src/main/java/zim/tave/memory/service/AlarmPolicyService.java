@@ -10,6 +10,7 @@ import zim.tave.memory.repository.DiaryRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -24,8 +25,8 @@ public class AlarmPolicyService {
         Long userId = user.getId();
         Long tripId = trip.getId();
 
-        LocalDate today = LocalDate.now();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        LocalDate today = now.toLocalDate();
 
         // 하루 캡 (하루 1번 한정)
         if (alarmHistoryRepository.existsByUserIdAndSentDate(userId, today)) {
@@ -49,7 +50,7 @@ public class AlarmPolicyService {
                         trip.getEndDate()
                 ) + 1;
 
-        long serviceSlotLimit = (long) Math.floor(totalTripDays * 0.25);
+        long serviceSlotLimit = Math.max(1, (long) Math.floor(totalTripDays * 0.25));
         long maxIncompleteSlot = (long) Math.floor(serviceSlotLimit * 0.4);
 
         long usedServiceCount =
