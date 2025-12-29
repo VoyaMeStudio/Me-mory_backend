@@ -264,7 +264,7 @@ class TripServiceTest {
         request.setDescription("2주간 여행");
         request.setStartDate(LocalDate.of(2023, 5, 1));
         request.setEndDate(LocalDate.of(2023, 5, 14));
-        request.setCountryCodes(Arrays.asList("FRA", "ITA"));
+        request.setCountryCodes(Arrays.asList("FR", "IT"));
         request.setEmotionId(2L);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -282,8 +282,8 @@ class TripServiceTest {
         assertThat(result.getTripName()).isEqualTo("유럽 배낭여행");
         assertThat(result.getStartDate()).isEqualTo(request.getStartDate());
         assertThat(result.getEndDate()).isEqualTo(request.getEndDate());
-        verify(visitedCountryService).registerVisitedCountry(1L, "FRA", 2L);
-        verify(visitedCountryService).registerVisitedCountry(1L, "ITA", 2L);
+        verify(visitedCountryService).registerVisitedCountry(1L, "FR", 2L);
+        verify(visitedCountryService).registerVisitedCountry(1L, "IT", 2L);
     }
 
     @Test
@@ -308,6 +308,107 @@ class TripServiceTest {
 
         // when & then
         assertThatThrownBy(() -> tripService.storeTrip(1L, 1L, true))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TRIP_UPDATE_FORBIDDEN);
+    }
+
+    @Test
+    void 과거_여행_수정_성공() {
+        // given
+        trip.setIsPast(true);
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setTripName("수정된 과거 여행명");
+        request.setDescription("수정된 설명");
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.updatePastTrip(1L, request, 1L);
+
+        // then
+        assertThat(trip.getTripName()).isEqualTo("수정된 과거 여행명");
+        assertThat(trip.getDescription()).isEqualTo("수정된 설명");
+    }
+
+    @Test
+    void 과거_여행_수정_실패_과거_여행_아님() {
+        // given
+        trip.setIsPast(false); // 일반 여행
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setTripName("수정된 여행명");
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.updatePastTrip(1L, request, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_PAST_TRIP);
+    }
+
+    @Test
+    void 과거_여행_보관_성공() {
+        // given
+        trip.setIsPast(true);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.storePastTrip(1L, 1L, true);
+
+        // then
+        assertThat(trip.getIsStored()).isTrue();
+    }
+
+    @Test
+    void 과거_여행_보관_실패_과거_여행_아님() {
+        // given
+        trip.setIsPast(false); // 일반 여행
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.storePastTrip(1L, 1L, true))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_PAST_TRIP);
+    }
+
+    @Test
+    void 과거_여행_삭제_성공() {
+        // given
+        trip.setIsPast(true);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.deletePastTrip(1L, 1L);
+
+        // then
+        verify(tripRepository).delete(trip);
+    }
+
+    @Test
+    void 과거_여행_삭제_실패_과거_여행_아님() {
+        // given
+        trip.setIsPast(false); // 일반 여행
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.deletePastTrip(1L, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_PAST_TRIP);
+    }
+
+    @Test
+    void 과거_여행_수정_소유권_검증() {
+        // given
+        trip.setIsPast(true);
+        User other = new User();
+        other.setId(2L);
+        trip.setUser(other);
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setTripName("수정된 여행명");
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.updatePastTrip(1L, request, 1L))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TRIP_UPDATE_FORBIDDEN);
     }
