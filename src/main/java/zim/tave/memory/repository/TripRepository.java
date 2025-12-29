@@ -8,6 +8,7 @@ import zim.tave.memory.domain.Trip;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TripRepository extends JpaRepository<Trip, Long> {
 
@@ -44,4 +45,18 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             "WHERE t.user.id = :userId " +
             "AND t.isStored = true ")
     List<Trip> findStoredTripsByUserId(@Param("userId") Long userId);
+
+    // 현재 진행중인 여행 조회 (알림 전송 계산용)
+    @Query("""
+        SELECT t
+        FROM Trip t
+        WHERE t.user.id = :userId
+          AND t.startDate <= :today
+          AND t.endDate >= :today
+          AND (t.isPast = false OR t.isPast IS NULL)
+    """)
+    Optional<Trip> findOngoingTripByUserId(
+            @Param("userId") Long userId,
+            @Param("today") LocalDate today
+    );
 }

@@ -13,6 +13,7 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -270,7 +271,7 @@ public class TripService {
 
     /**
      * 과거 여행인지 확인하는 검증 로직
-     * 
+     *
      * @param trip 여행 엔티티
      * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
      */
@@ -282,7 +283,7 @@ public class TripService {
 
     /**
      * 과거 여행만 수정하는 메서드 (타임라인 뷰용)
-     * 
+     *
      * @param tripId 여행 ID
      * @param request 수정 요청
      * @param userId 사용자 ID
@@ -341,7 +342,7 @@ public class TripService {
 
     /**
      * 과거 여행만 보관하는 메서드 (타임라인 뷰용)
-     * 
+     *
      * @param tripId 여행 ID
      * @param userId 사용자 ID
      * @param isStored 보관 여부
@@ -363,7 +364,7 @@ public class TripService {
 
     /**
      * 과거 여행만 삭제하는 메서드 (타임라인 뷰용)
-     * 
+     *
      * @param tripId 여행 ID
      * @param userId 사용자 ID
      * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
@@ -433,5 +434,15 @@ public class TripService {
                 .themeCardImageUrl(trip.getTripTheme() != null ? trip.getTripTheme().getCardImageUrl() : null)
                 .diaryCount(trip.getDiaries() != null ? trip.getDiaries().size() : 0)
                 .build();
+    }
+
+    // (알림 전송용) 현재 진행중인 여행 확인
+    public Trip findCurrentOngoingTrip(Long userId) {
+        ensureAuthenticated(userId);
+
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        return tripRepository.findOngoingTripByUserId(userId, today)
+                .orElse(null);
     }
 }
