@@ -35,6 +35,7 @@ public enum ErrorCode {
     ALREADY_JOINED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
     MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
     //설정
+    NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 필드가 없습니다."),
     //보관
     TRIP_NOT_STORED(HttpStatus.CONFLICT, "보관된 여행이 아닙니다."),
     DIARY_NOT_STORED(HttpStatus.CONFLICT, "보관된 일기가 아닙니다."),

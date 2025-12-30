@@ -86,7 +86,7 @@ public class SettingController {
                 """, content = @Content),
             @ApiResponse(responseCode = "500", description = "서버 오류로 인해 회원 정보 수정 실패")
     })
-    @PutMapping("/users/me")
+    @PatchMapping("/users/me")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> updateUserInfo(
             @AuthenticationPrincipal(expression = "userId") Long userId,
             @RequestBody UpdateUserRequestDto requestDto) {

@@ -26,6 +26,7 @@ public enum ResponseCode {
     STORED_DIARY_FOUND_SUCCESS(200, "보관된 일기 목록을 성공적으로 조회하였습니다."),
     //설정
     USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
+    NO_FIELDS_TO_UPDATE(400, "수정할 필드가 없습니다."),
     //카카오 로그인 성공 메세지
     KAKAO_USERINFO_FETCH_SUCCESS(200, "카카오 사용자 정보 조회 성공"),
     //보드
