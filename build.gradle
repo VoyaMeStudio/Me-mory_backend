@@ -43,13 +43,45 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+	testImplementation 'org.testcontainers:testcontainers'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:mysql'
 }
 
+//로컬에서 사용하는 전체 테스트 실행행
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    enabled = true
+
+    // 테스트 실행 과정을 콘솔에 출력하기 위한 설정 (실무 권장)
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        exceptionFormat = "full"
+    }
 }
 
-//테스트 비활성화
-tasks.test {
-    enabled = false
+// 통합 테스트 제외하고 실행하는 태스크 (CI에서 사용)
+tasks.register('unitTest', Test) {
+    useJUnitPlatform()
+    excludeTags 'integration'
+    
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        exceptionFormat = "full"
+    }
+}
+
+// integrationTest 테스트만 실행하는 태스크 (선택적 사용)
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform()
+    includeTags 'integration'
+    
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        exceptionFormat = "full"
+    }
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +61,7 @@ public class TripController {
                     content = @Content)
     })
     public ResponseEntity<ApiResponseDto<TripResponseDto>> createTrip(
-            @RequestBody CreateTripRequest request,
+            @Valid @RequestBody CreateTripRequest request,
             @AuthenticationPrincipal(expression = "userId") Long userId) {
         TripResponseDto dto = tripService.createTrip(request, userId);
 
@@ -95,7 +96,7 @@ public class TripController {
     })
     public ResponseEntity<ApiResponseDto<Void>> updateTrip(
             @Parameter(description = "여행 ID", required = true) @PathVariable Long tripId,
-            @RequestBody UpdateTripRequest request,
+            @Valid @RequestBody UpdateTripRequest request,
             @AuthenticationPrincipal(expression = "userId") Long userId) {
         tripService.updateTrip(tripId, request, userId);
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, null));
