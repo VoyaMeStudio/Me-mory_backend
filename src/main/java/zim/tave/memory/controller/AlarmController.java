@@ -22,7 +22,7 @@ public class AlarmController {
     private final AlarmService alarmService;
 
     @PostMapping("/send")
-    public ResponseEntity<ApiResponseDto<?>> sendAlarm(
+    public ResponseEntity<ApiResponseDto<Map<String, String>>> sendAlarm(
             @AuthenticationPrincipal(expression = "userId") Long userId
     ) {
         AlarmType type = alarmService.decideAlarmType(userId);
@@ -31,8 +31,8 @@ public class AlarmController {
             // 전송할 알림 없음 or 알림 수신 거부
             return ResponseEntity.ok(
                     ApiResponseDto.success(
-                            ResponseCode.SUCCESS,
-                            null
+                            ResponseCode.NO_ALARM_TO_SEND,
+                            Map.of("notificationType", "NONE")
                     )
             );
         }

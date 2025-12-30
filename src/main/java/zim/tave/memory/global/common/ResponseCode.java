@@ -34,6 +34,8 @@ public enum ResponseCode {
     BOARD_UPDATE_SUCCESS(200, "보드 수정이 완료되었습니다."),
     BOARD_DELETE_SUCCESS(200, "보드가 성공적으로 삭제되었습니다."),
     BOARD_FETCH_SUCCESS(200, "보드 정보가 성공적으로 조회되었습니다."),
+    //알림
+    NO_ALARM_TO_SEND(200, "전송할 알림이 없습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),
@@ -109,6 +111,9 @@ public enum ResponseCode {
     BOARD_DELETE_FORBIDDEN(403, "해당 보드를 삭제할 권한이 없습니다."),
     BOARD_STICKER_MAP_NOT_FOUND(404, "스티커가 보드에 존재하지 않습니다."),
     BOARD_ACCESS_FORBIDDEN(403, "해당 보드에 접근할 수 없습니다."),
+
+    //알림
+    ALARM_NOT_AGREED(403, "알림 수신 미동의 사용자입니다."),
     ;
 
     private final int code;
