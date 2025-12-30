@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.dto.request.CreateDiaryRequest;
 import zim.tave.memory.dto.response.DiaryResponseDto;
@@ -75,7 +76,7 @@ public class DiaryController {
                     required = true,
                     content = @Content(schema = @Schema(implementation = CreateDiaryRequest.class))
             )
-            @RequestBody CreateDiaryRequest request) {
+            @Valid @RequestBody CreateDiaryRequest request) {
         request.setUserId(userDetails.getUserId());
 		DiaryResponseDto dto = diaryService.createDiary(request);
 		return ResponseEntity.status(HttpStatus.CREATED)
