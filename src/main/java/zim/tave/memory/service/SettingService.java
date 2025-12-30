@@ -3,6 +3,7 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zim.tave.memory.domain.Setting;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.request.UpdateUserRequestDto;
 import zim.tave.memory.dto.response.UserResponseDto;
@@ -64,6 +65,8 @@ public class SettingService {
             user.setBirth(requestDto.getBirth());
         if (requestDto.getNationality() != null)
             user.setNationality(requestDto.getNationality());
+        if (requestDto.getAlarm() != null) {
+            Setting setting = user.getSetting();}
 
         userRepository.save(user);
 

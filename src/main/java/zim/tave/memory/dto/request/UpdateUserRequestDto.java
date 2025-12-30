@@ -32,6 +32,9 @@ public class UpdateUserRequestDto {
     @Schema(description = "국적", example = "REPUBLIC OF KOREA")
     private String nationality;
 
+    @Schema(description = "알림수신동의", example = "true")
+    private Boolean alarm;
+
     public static UserResponseDto from(User user) {
         return new UserResponseDto(
                 user.getId(),

@@ -42,8 +42,18 @@ public class JoinService {
         user.setBirth(requestDto.getBirth());
         user.setNationality(requestDto.getNationality());
         user.setCreatedAt(LocalDate.now());
-        user.setStatus(true);
         user.setRegistered(true);
+
+        if (user.getSetting() == null) {
+            Setting setting = new Setting();
+            setting.setUser(user);
+            setting.setAlarm(
+                    requestDto.getAlarm() != null ? requestDto.getAlarm() : true
+            );
+            user.setSetting(setting);
+        } else if (requestDto.getAlarm() != null) {
+            user.getSetting().setAlarm(requestDto.getAlarm());
+        }
 
         //마이페이지 Statistics 정보
         user.setDiaryCount(0L);
@@ -51,17 +61,6 @@ public class JoinService {
         user.setFlags("");
 
         userRepository.save(user);
-
-        Setting setting = new Setting();
-        setting.setId(user.getId());
-
-        if (requestDto.getAlarm() != null) {
-            setting.setAlarm(requestDto.getAlarm());
-        } else {
-            setting.setAlarm(true); // 안전하게 명시
-        }
-
-        settingRepository.save(setting);
 
         return user;
     }
