@@ -2,6 +2,7 @@ package zim.tave.memory.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
  * MockMvc를 사용하기 위해 @AutoConfigureMockMvc를 사용합니다.
  * 이는 Spring Context를 로드하지만, 컨테이너는 공유됩니다.
  */
+@Tag("integration")
 @AutoConfigureMockMvc
 @Transactional
 public abstract class ApiTestBase extends AbstractContainerBaseTest {

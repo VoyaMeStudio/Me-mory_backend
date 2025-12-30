@@ -1,5 +1,6 @@
 package zim.tave.memory.integration;
 
+import org.junit.jupiter.api.Tag;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -29,6 +30,7 @@ import java.time.Duration;
  * 
  * 주의: webEnvironment는 MOCK으로 설정 (NONE으로 하면 SecurityConfig의 HttpSecurity 빈을 찾을 수 없음)
  */
+@Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Testcontainers
 public abstract class AbstractContainerBaseTest {

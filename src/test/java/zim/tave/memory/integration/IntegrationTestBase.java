@@ -1,5 +1,6 @@
 package zim.tave.memory.integration;
 
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  * - 공통 테스트 데이터 초기화
  * - 트랜잭션 롤백을 통한 테스트 격리
  */
+@Tag("integration")
 @Transactional
 public abstract class IntegrationTestBase extends AbstractContainerBaseTest {
 
