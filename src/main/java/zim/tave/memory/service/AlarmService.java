@@ -62,4 +62,23 @@ public class AlarmService {
 
     }
 
+    // 알림호출 테스트 (히스토리 저장X)
+    @Transactional(readOnly = true)
+    public AlarmType testAlarmType(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.getSetting().getAlarm()) {
+            throw new CustomException(ErrorCode.ALARM_NOT_AGREED);
+        }
+
+        Trip trip = tripService.findCurrentOngoingTrip(userId);
+        if (trip == null) {
+            return null;
+        }
+
+        return alarmPolicyService.decide(user, trip);
+    }
+
 }

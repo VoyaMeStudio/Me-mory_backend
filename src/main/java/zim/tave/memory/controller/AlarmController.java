@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.domain.AlarmType;
 import zim.tave.memory.domain.User;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/user/me/alarm")
+@RequestMapping("api/users/me/alarm")
 public class AlarmController {
 
     private final AlarmService alarmService;
@@ -42,6 +43,36 @@ public class AlarmController {
                 ApiResponseDto.success(
                         ResponseCode.SUCCESS,
                         Map.of("notificationType", type.name())
+                )
+        );
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<ApiResponseDto<?>> testAlarm(
+            @AuthenticationPrincipal(expression = "userId") Long userId,
+            @RequestParam(required = false) AlarmType alarmType
+    ) {
+        AlarmType type = alarmType != null
+                ? alarmType
+                : alarmService.testAlarmType(userId);
+
+        if (type == null) {
+            return ResponseEntity.ok(
+                    ApiResponseDto.success(
+                            ResponseCode.SUCCESS,
+                            Map.of(
+                                    "hasAlarm", false)
+                    )
+            );
+        }
+
+        return ResponseEntity.ok(
+                ApiResponseDto.success(
+                        ResponseCode.SUCCESS,
+                        Map.of(
+                                "hasAlarm", true,
+                                "notificationType", type.name()
+                        )
                 )
         );
     }
