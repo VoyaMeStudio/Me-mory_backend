@@ -44,6 +44,8 @@ jobs:
         run: ./gradlew clean compileJava compileTestJava --info
 
       - name: Run unit tests with coverage
+        id: unit_test
+        continue-on-error: true
         run: ./gradlew unitTest jacocoUnitTestReport --info
 
       - name: SonarCloud Scan
@@ -51,3 +53,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew sonar --info
+
+      - name: Fail if tests failed
+        - name: Fail if tests failed
+        if: steps.unit_test.outcome == 'failure'
+        run: |
+          echo "❌ Unit tests failed. Please fix failing tests before merging."
+          exit 1
