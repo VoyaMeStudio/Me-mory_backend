@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.0'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "7.2.2.6593"
+	id 'jacoco'
 }
 
 group = 'zim.tave'
@@ -10,6 +12,42 @@ version = '0.0.1-SNAPSHOT'
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+sonar {
+	properties {
+		property "sonar.projectKey", "VoyaMeStudio_Me-mory_backend"
+		property "sonar.organization", "voyamestudio"
+		property "sonar.host.url", "https://sonarcloud.io"
+		
+		// 소스 및 테스트 경로
+		property "sonar.sources", "src/main/java"
+		property "sonar.tests", "src/test/java"
+		property "sonar.java.binaries", "build/classes"
+		property "sonar.java.test.binaries", "build/classes"
+		
+		// 제외할 경로
+		property "sonar.exclusions", """
+			**/build/**,
+			**/bin/**,
+			**/*Application.java,
+			**/config/**,
+			**/dto/**,
+			**/domain/**,
+			**/global/common/exception/**
+		"""
+		
+		// 테스트 제외 경로 (선택적)
+		property "sonar.test.exclusions", "**/*Test.java"
+		
+		// Java 버전
+		property "sonar.java.source", "21"
+		property "sonar.java.target", "21"
+		property "sonar.sourceEncoding", "UTF-8"
+		
+		// Unit 테스트 커버리지 리포트 경로 (unitTest용)
+		property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/unitTest/jacocoUnitTestReport.xml"
 	}
 }
 
@@ -61,23 +99,41 @@ tasks.named('test') {
         exceptionFormat = "full"
     }
 }
-
 // 통합 테스트 제외하고 실행하는 태스크 (CI에서 사용)
 tasks.register('unitTest', Test) {
-    useJUnitPlatform()
-    excludeTags 'integration'
+    useJUnitPlatform {
+        excludeTags = ['integration']
+    }
     
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
         exceptionFormat = "full"
     }
+
+    finalizedBy jacocoUnitTestReport
+}
+
+// Unit 테스트용 JaCoCo 리포트 생성
+tasks.register('jacocoUnitTestReport', JacocoReport) {
+    dependsOn unitTest
+    reports {
+        xml.required = true
+        xml.outputLocation = file("build/reports/jacoco/unitTest/jacocoUnitTestReport.xml")
+        html.required = true
+        html.outputLocation = file("build/reports/jacoco/unitTest/html")
+    }
+    
+    executionData unitTest
+    sourceDirectories.from(files("src/main/java"))
+    classDirectories.from(files("build/classes/java/main"))
 }
 
 // integrationTest 테스트만 실행하는 태스크 (선택적 사용)
 tasks.register('integrationTest', Test) {
-    useJUnitPlatform()
-    includeTags 'integration'
+    useJUnitPlatform {
+        includeTags = ['integration']
+    }
     
     testLogging {
         events "passed", "skipped", "failed"
