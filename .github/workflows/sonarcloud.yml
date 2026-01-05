@@ -55,7 +55,6 @@ jobs:
         run: ./gradlew sonar --info
 
       - name: Fail if tests failed
-        - name: Fail if tests failed
         if: steps.unit_test.outcome == 'failure'
         run: |
           echo "❌ Unit tests failed. Please fix failing tests before merging."
