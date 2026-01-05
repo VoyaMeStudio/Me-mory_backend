@@ -45,7 +45,8 @@ public class JoinServiceTest {
                 "first",
                 "최형원",
                 LocalDate.of(2222, 2, 2),
-                "REPUBLIC OF KOREA"
+                "REPUBLIC OF KOREA",
+                true
         );
     }
 

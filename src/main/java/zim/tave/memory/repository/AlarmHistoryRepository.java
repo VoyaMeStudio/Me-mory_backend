@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface AlarmHistoryRepository extends JpaRepository<AlarmHistory, Long> {
 
+    List<AlarmHistory> findAllByUserId(Long userId);
+
     // 하루 캡 (1일 1회): 오늘 보낼 수 있는 알림 횟수
     boolean existsByUserIdAndSentDate(Long userId, LocalDate sentDate);
 
