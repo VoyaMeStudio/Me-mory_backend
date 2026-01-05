@@ -99,11 +99,11 @@ tasks.named('test') {
         exceptionFormat = "full"
     }
 }
-
 // 통합 테스트 제외하고 실행하는 태스크 (CI에서 사용)
 tasks.register('unitTest', Test) {
-    useJUnitPlatform()
-    excludeTags 'integration'
+    useJUnitPlatform {
+        excludeTags = ['integration']
+    }
     
     testLogging {
         events "passed", "skipped", "failed"
@@ -111,7 +111,6 @@ tasks.register('unitTest', Test) {
         exceptionFormat = "full"
     }
 
-	// JaCoCo 실행 데이터 파일 위치 지정
     finalizedBy jacocoUnitTestReport
 }
 
@@ -125,17 +124,16 @@ tasks.register('jacocoUnitTestReport', JacocoReport) {
         html.outputLocation = file("build/reports/jacoco/unitTest/html")
     }
     
-    // unitTest에서 생성된 실행 데이터 사용
     executionData unitTest
     sourceDirectories.from(files("src/main/java"))
     classDirectories.from(files("build/classes/java/main"))
 }
 
-
 // integrationTest 테스트만 실행하는 태스크 (선택적 사용)
 tasks.register('integrationTest', Test) {
-    useJUnitPlatform()
-    includeTags 'integration'
+    useJUnitPlatform {
+        includeTags = ['integration']
+    }
     
     testLogging {
         events "passed", "skipped", "failed"
