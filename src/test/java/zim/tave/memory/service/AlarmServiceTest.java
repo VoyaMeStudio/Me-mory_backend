@@ -1,131 +1,281 @@
 package zim.tave.memory.service;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-import zim.tave.memory.domain.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import zim.tave.memory.domain.AlarmHistory;
+import zim.tave.memory.domain.AlarmType;
+import zim.tave.memory.domain.Setting;
+import zim.tave.memory.domain.Trip;
+import zim.tave.memory.domain.User;
 import zim.tave.memory.global.common.exception.CustomException;
-import zim.tave.memory.repository.*;
+import zim.tave.memory.repository.AlarmHistoryRepository;
+import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 public class AlarmServiceTest {
 
-    @Autowired
-    private AlarmService alarmService;
+    @Mock
+    private AlarmPolicyService alarmPolicyService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private SettingRepository settingRepository;
-
-    @Autowired
+    @Mock
     private AlarmHistoryRepository alarmHistoryRepository;
 
-    @Autowired
-    private TripRepository tripRepository;
+    @Mock
+    private TripService tripService;
 
-    @Autowired
-    private DiaryRepository diaryRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    private User createUser(boolean alarmAgree) {
+    @InjectMocks
+    private AlarmService alarmService;
+
+    private User userWithSetting(Long userId, boolean alarmOn) {
         User user = new User();
-        user.setKakaoId("test-kakao");
-        user.setRegistered(true);
-        userRepository.save(user);
+        user.setId(userId);
 
-        Setting setting = new Setting();
-        setting.setUser(user);
-        setting.setAlarm(alarmAgree);
-        settingRepository.save(setting);
+        Setting setting = mock(Setting.class);
+        when(setting.getAlarm()).thenReturn(alarmOn);
 
+        user.setSetting(setting);
         return user;
     }
 
-    @Test
-    void boardDecorateRemind_success() {
-        User user = createUser(true);
+    private User userWithoutSetting(Long userId) {
+        User user = new User();
+        user.setId(userId);
+        user.setSetting(null);
+        return user;
+    }
 
+    private Trip trip(Long tripId, LocalDate start, LocalDate end) {
         Trip trip = new Trip();
-        trip.setUser(user);
-        trip.setStartDate(LocalDate.now().minusDays(1));
-        trip.setEndDate(LocalDate.now().plusDays(3));
-        tripRepository.save(trip);
-
-        AlarmType type = alarmService.decideAlarmType(user.getId());
-
-        assertThat(type).isEqualTo(AlarmType.BOARD_DECORATE_REMIND);
+        trip.setId(tripId);
+        trip.setStartDate(start);
+        trip.setEndDate(end);
+        return trip;
     }
 
-    /*
-    @Test
-    void diaryCompleteRemind_whenIncompleteDiaryExists() {
-        User user = createUser(true);
+    @Nested
+    @DisplayName("decideAlarmType()")
+    class DecideAlarmType {
 
-        Trip trip = new Trip();
-        trip.setUser(user);
-        trip.setStartDate(LocalDate.now().minusDays(2));
-        trip.setEndDate(LocalDate.now().plusDays(2));
-        tripRepository.save(trip);
+        @Test
+        void 유저없으면_USER_NOT_FOUND() {
+            // given
+            Long userId = 1L;
+            when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        Diary diary = new Diary();
-        diary.setTrip(trip);
-        diary.setCompleted(false);
-        diaryRepository.save(diary);
+            // when & then
+            assertThrows(CustomException.class, () -> alarmService.decideAlarmType(userId));
 
-        AlarmType type = alarmService.decideAlarmType(user.getId());
+            verify(userRepository).findById(userId);
+            verifyNoInteractions(tripService);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
 
-        assertThat(type).isEqualTo(AlarmType.DIARY_COMPLETE_REMIND);
+        @Test
+        void setting_null_예외() {
+            // given
+            Long userId = 1L;
+            User user = userWithoutSetting(userId);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+            // when & then
+            assertThrows(CustomException.class, () -> alarmService.decideAlarmType(userId));
+
+            verify(userRepository).findById(userId);
+            verifyNoInteractions(tripService);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
+
+        @Test
+        void 알림수신미동의_ALARM_NOT_AGREED() {
+            // given
+            Long userId = 1L;
+            User user = userWithSetting(userId, false);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+            // when & then
+            assertThrows(CustomException.class, () -> alarmService.decideAlarmType(userId));
+
+            verify(userRepository).findById(userId);
+            verifyNoInteractions(tripService);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
+
+        @Test
+        void 진행중인_여행_없음() {
+            // given
+            Long userId = 1L;
+            User user = userWithSetting(userId, true);
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(tripService.findCurrentOngoingTrip(userId)).thenReturn(null);
+
+            // when
+            AlarmType result = assertDoesNotThrow(() -> alarmService.decideAlarmType(userId));
+
+            // then
+            assertThat(result).isNull();
+
+            verify(userRepository).findById(userId);
+            verify(tripService).findCurrentOngoingTrip(userId);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
+
+        @Test
+        void 알림정책_null() {
+            // given
+            Long userId = 1L;
+            Long tripId = 10L;
+
+            User user = userWithSetting(userId, true);
+            Trip trip = trip(tripId, LocalDate.now().minusDays(1), LocalDate.now().plusDays(1));
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(tripService.findCurrentOngoingTrip(userId)).thenReturn(trip);
+            when(alarmPolicyService.decide(user, trip)).thenReturn(null);
+
+            // when
+            AlarmType result = alarmService.decideAlarmType(userId);
+
+            // then
+            assertThat(result).isNull();
+
+            verify(userRepository).findById(userId);
+            verify(tripService).findCurrentOngoingTrip(userId);
+            verify(alarmPolicyService).decide(user, trip);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
+
+        @Test
+        void 알림정책_타입_히스토리_저장() {
+            // given
+            Long userId = 1L;
+            Long tripId = 10L;
+
+            User user = userWithSetting(userId, true);
+            Trip trip = trip(tripId, LocalDate.now().minusDays(1), LocalDate.now().plusDays(1));
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(tripService.findCurrentOngoingTrip(userId)).thenReturn(trip);
+            when(alarmPolicyService.decide(user, trip)).thenReturn(AlarmType.DIARY_REMIND);
+
+            ArgumentCaptor<AlarmHistory> captor = ArgumentCaptor.forClass(AlarmHistory.class);
+
+            // when
+            AlarmType result = alarmService.decideAlarmType(userId);
+
+            // then
+            assertThat(result).isEqualTo(AlarmType.DIARY_REMIND);
+
+            verify(alarmHistoryRepository).save(captor.capture());
+            AlarmHistory saved = captor.getValue();
+
+            assertThat(saved.getUserId()).isEqualTo(userId);
+            assertThat(saved.getTripId()).isEqualTo(tripId);
+            assertThat(saved.getAlarmType()).isEqualTo(AlarmType.DIARY_REMIND);
+            assertThat(saved.getSentAt()).isNotNull();
+            assertThat(saved.getSentDate()).isNotNull();
+        }
     }
 
-     */
+    @Nested
+    @DisplayName("testAlarmType()")
+    class TestAlarmType {
 
-    @Test
-    void diaryRemind_defaultFallback() {
-        User user = createUser(true);
+        @Test
+        void 유저없으면_USER_NOT_FOUND() {
+            // given
+            Long userId = 1L;
+            when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        Trip trip = new Trip();
-        trip.setUser(user);
-        trip.setStartDate(LocalDate.now().minusDays(1));
-        trip.setEndDate(LocalDate.now().plusDays(1));
-        tripRepository.save(trip);
+            // when & then
+            assertThrows(CustomException.class, () -> alarmService.testAlarmType(userId));
 
-        AlarmType type = alarmService.decideAlarmType(user.getId());
+            verify(userRepository).findById(userId);
+            verifyNoInteractions(tripService);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
 
-        assertThat(type).isEqualTo(AlarmType.DIARY_REMIND);
+        @Test
+        void 알림수신미동의_ALARM_NOT_AGREED() {
+            // given
+            Long userId = 1L;
+            User user = userWithSetting(userId, false);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+            // when & then
+            assertThrows(CustomException.class, () -> alarmService.testAlarmType(userId));
+
+            verify(userRepository).findById(userId);
+            verifyNoInteractions(tripService);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
+
+        @Test
+        void 진행중인_여행_없음() {
+            // given
+            Long userId = 1L;
+            User user = userWithSetting(userId, true);
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(tripService.findCurrentOngoingTrip(userId)).thenReturn(null);
+
+            // when
+            AlarmType result = alarmService.testAlarmType(userId);
+
+            // then
+            assertThat(result).isNull();
+
+            verify(userRepository).findById(userId);
+            verify(tripService).findCurrentOngoingTrip(userId);
+            verifyNoInteractions(alarmPolicyService);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
+
+        @Test
+        void 여행정책결과_반환() {
+            // given
+            Long userId = 1L;
+            Long tripId = 10L;
+
+            User user = userWithSetting(userId, true);
+            Trip trip = trip(tripId, LocalDate.now().minusDays(1), LocalDate.now().plusDays(1));
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(tripService.findCurrentOngoingTrip(userId)).thenReturn(trip);
+            when(alarmPolicyService.decide(user, trip)).thenReturn(AlarmType.BOARD_DECORATE_REMIND);
+
+            // when
+            AlarmType result = alarmService.testAlarmType(userId);
+
+            // then
+            assertThat(result).isEqualTo(AlarmType.BOARD_DECORATE_REMIND);
+
+            verify(alarmPolicyService).decide(user, trip);
+            verify(alarmHistoryRepository, never()).save(any());
+        }
     }
-
-    @Test
-    void alarmBlocked_whenUserDisagreed() {
-        User user = createUser(false);
-
-        assertThatThrownBy(() ->
-                alarmService.decideAlarmType(user.getId())
-        ).isInstanceOf(CustomException.class)
-                .hasMessageContaining("알림 수신 미동의");
-    }
-
-    /*
-    @Test
-    void alarmHistory_isSaved() {
-        User user = createUser(true);
-
-        AlarmType type = alarmService.decideAlarmType(user.getId());
-
-        List<AlarmHistory> histories =
-                alarmHistoryRepository.findAllByUserId(user.getId());
-
-        assertThat(histories).hasSize(1);
-        assertThat(histories.get(0).getAlarmType()).isEqualTo(type);
-    }
-
-     */
 }
