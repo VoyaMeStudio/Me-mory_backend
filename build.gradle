@@ -66,7 +66,7 @@ tasks.named('test') {
 tasks.register('unitTest', Test) {
     useJUnitPlatform()
     excludeTags 'integration'
-    
+
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
@@ -78,7 +78,7 @@ tasks.register('unitTest', Test) {
 tasks.register('integrationTest', Test) {
     useJUnitPlatform()
     includeTags 'integration'
-    
+
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true

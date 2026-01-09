@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.domain.AlarmType;
 import zim.tave.memory.domain.User;
+import zim.tave.memory.dto.response.AlarmSendResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.service.AlarmService;
@@ -48,7 +49,7 @@ public class AlarmController {
     }
 
     @PostMapping("/test")
-    public ResponseEntity<ApiResponseDto<?>> testAlarm(
+    public ResponseEntity<ApiResponseDto<AlarmSendResponseDto>> testAlarm(
             @AuthenticationPrincipal(expression = "userId") Long userId,
             @RequestParam(required = false) AlarmType alarmType
     ) {
@@ -60,20 +61,16 @@ public class AlarmController {
             return ResponseEntity.ok(
                     ApiResponseDto.success(
                             ResponseCode.SUCCESS,
-                            Map.of(
-                                    "hasAlarm", false)
+                            null
                     )
             );
         }
 
         return ResponseEntity.ok(
-                ApiResponseDto.success(
-                        ResponseCode.SUCCESS,
-                        Map.of(
-                                "hasAlarm", true,
-                                "notificationType", type.name()
-                        )
-                )
+            ApiResponseDto.success(
+                    ResponseCode.SUCCESS,
+                    new AlarmSendResponseDto(type)
+            )
         );
     }
 }
