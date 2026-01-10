@@ -20,6 +20,7 @@ import zim.tave.memory.dto.request.CreateDiaryRequest;
 import zim.tave.memory.dto.request.UpdateDiaryOptionalFieldsRequest;
 import zim.tave.memory.dto.request.UpdateRepresentativeImageRequest;
 import zim.tave.memory.dto.response.DiaryResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.global.common.exception.GlobalExceptionHandler;
@@ -29,6 +30,7 @@ import zim.tave.memory.service.DiaryService;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -285,10 +287,12 @@ class DiaryControllerTest {
                 .given(diaryService).storeDiary(eq(diaryId), eq(userId), eq(isStored));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}/store", diaryId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
     }
 
     @Test
@@ -304,10 +308,12 @@ class DiaryControllerTest {
                 .given(diaryService).storeDiary(eq(diaryId), eq(userId), eq(isStored));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}/store", diaryId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.DIARY_NOT_FOUND.getMessage())));
     }
 
     @Test
@@ -338,9 +344,11 @@ class DiaryControllerTest {
                 .given(diaryService).deleteDiary(eq(diaryId), eq(userId));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(delete("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
     }
 
     @Test
@@ -355,9 +363,11 @@ class DiaryControllerTest {
                 .given(diaryService).deleteDiary(eq(diaryId), eq(userId));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(delete("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.DIARY_NOT_FOUND.getMessage())));
     }
 
     @Test
@@ -372,9 +382,11 @@ class DiaryControllerTest {
                 .given(diaryService).findOne(eq(diaryId), eq(userId));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(get("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
     }
 
     @Test
@@ -389,9 +401,11 @@ class DiaryControllerTest {
                 .given(diaryService).findOne(eq(diaryId), eq(userId));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(get("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.DIARY_NOT_FOUND.getMessage())));
     }
 
     @Test
@@ -408,11 +422,13 @@ class DiaryControllerTest {
                 .given(diaryService).updateDiaryOptionalFields(eq(userId), eq(diaryId), any(UpdateDiaryOptionalFieldsRequest.class));
 
         // when & then
+        // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}", diaryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
     }
 
     // ========== Validation 테스트 ==========
