@@ -119,8 +119,12 @@ public class TripService {
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        if (request.getStartDate() != null && request.getEndDate() != null
-                && request.getStartDate().isAfter(request.getEndDate())) {
+        
+        // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
+        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : findTrip.getStartDate();
+        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : findTrip.getEndDate();
+        
+        if (newStartDate != null && newEndDate != null && newStartDate.isAfter(newEndDate)) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
 

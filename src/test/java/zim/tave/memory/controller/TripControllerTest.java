@@ -284,5 +284,97 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
                 .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
+
+    @Test
+    void 여행_수정_시작일만_변경_기존_종료일_검증_성공() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        Long tripId = 1L;
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStartDate(LocalDate.of(2024, 1, 2)); // 시작일만 변경 (기존 종료일보다 이전)
+        // endDate는 null (기존 값 유지)
+
+        // when & then
+        mockMvc.perform(patch("/api/users/me/trips/{tripId}", tripId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+
+        verify(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
+    }
+
+    @Test
+    void 여행_수정_시작일만_변경_기존_종료일_검증_실패_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        Long tripId = 1L;
+        UpdateTripRequest request = new UpdateTripRequest();
+        // 기존 여행의 종료일이 2024-01-05라고 가정할 때
+        request.setStartDate(LocalDate.of(2024, 1, 10)); // 시작일을 종료일보다 늦게 설정
+        // endDate는 null (기존 값 유지)
+
+        // Service 레이어 검증에서 VALIDATION_ERROR 발생 (새 시작일 > 기존 종료일)
+        willThrow(new CustomException(ErrorCode.VALIDATION_ERROR))
+                .given(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(patch("/api/users/me/trips/{tripId}", tripId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.VALIDATION_ERROR.getMessage())));
+    }
+
+    @Test
+    void 여행_수정_종료일만_변경_기존_시작일_검증_실패_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        Long tripId = 1L;
+        UpdateTripRequest request = new UpdateTripRequest();
+        // 기존 여행의 시작일이 2024-01-05라고 가정할 때
+        request.setEndDate(LocalDate.of(2024, 1, 1)); // 종료일을 시작일보다 이전으로 설정
+        // startDate는 null (기존 값 유지)
+
+        // Service 레이어 검증에서 VALIDATION_ERROR 발생 (기존 시작일 > 새 종료일)
+        willThrow(new CustomException(ErrorCode.VALIDATION_ERROR))
+                .given(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(patch("/api/users/me/trips/{tripId}", tripId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.VALIDATION_ERROR.getMessage())));
+    }
+
+    @Test
+    void 여행_수정_종료일만_변경_기존_시작일_검증_성공() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        Long tripId = 1L;
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setEndDate(LocalDate.of(2024, 1, 10)); // 종료일만 변경 (기존 시작일보다 이후)
+        // startDate는 null (기존 값 유지)
+
+        // when & then
+        mockMvc.perform(patch("/api/users/me/trips/{tripId}", tripId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+
+        verify(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
+    }
 }
 
