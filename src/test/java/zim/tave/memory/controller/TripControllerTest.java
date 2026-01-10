@@ -19,6 +19,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import zim.tave.memory.dto.request.CreateTripRequest;
 import zim.tave.memory.dto.request.UpdateTripRequest;
 import zim.tave.memory.dto.response.TripResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.global.common.exception.GlobalExceptionHandler;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.DiaryService;
@@ -28,8 +31,10 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -166,14 +171,20 @@ class TripControllerTest {
 
         CreateTripRequest request = new CreateTripRequest();
         request.setTripName("제주도 여행");
-        request.setStartDate(null); // @NotNull 위반
+        request.setStartDate(null); // 필수 필드 null
         request.setEndDate(LocalDate.of(2024, 1, 4));
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createTrip(any(CreateTripRequest.class), eq(userId));
 
         // when & then
         mockMvc.perform(post("/api/users/me/trips")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
 
     @Test
@@ -185,13 +196,19 @@ class TripControllerTest {
         CreateTripRequest request = new CreateTripRequest();
         request.setTripName("제주도 여행");
         request.setStartDate(LocalDate.of(2024, 1, 1));
-        request.setEndDate(null); // @NotNull 위반
+        request.setEndDate(null); // 필수 필드 null
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createTrip(any(CreateTripRequest.class), eq(userId));
 
         // when & then
         mockMvc.perform(post("/api/users/me/trips")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
 
     @Test
@@ -202,14 +219,20 @@ class TripControllerTest {
 
         CreateTripRequest request = new CreateTripRequest();
         request.setTripName("제주도 여행");
-        request.setStartDate(null); // @NotNull 위반
-        request.setEndDate(null); // @NotNull 위반
+        request.setStartDate(null); // 필수 필드 null
+        request.setEndDate(null); // 필수 필드 null
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createTrip(any(CreateTripRequest.class), eq(userId));
 
         // when & then
         mockMvc.perform(post("/api/users/me/trips")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
 
     @Test
@@ -221,14 +244,20 @@ class TripControllerTest {
         Long tripId = 1L;
         UpdateTripRequest request = new UpdateTripRequest();
         request.setTripName("수정된 여행명");
-        request.setStartDate(null); // @NotNull 위반
+        request.setStartDate(null); // 필수 필드 null
         request.setEndDate(LocalDate.of(2024, 1, 4));
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
 
         // when & then
         mockMvc.perform(patch("/api/users/me/trips/{tripId}", tripId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
 
     @Test
@@ -241,13 +270,19 @@ class TripControllerTest {
         UpdateTripRequest request = new UpdateTripRequest();
         request.setTripName("수정된 여행명");
         request.setStartDate(LocalDate.of(2024, 1, 1));
-        request.setEndDate(null); // @NotNull 위반
+        request.setEndDate(null); // 필수 필드 null
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
 
         // when & then
         mockMvc.perform(patch("/api/users/me/trips/{tripId}", tripId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
 }
 

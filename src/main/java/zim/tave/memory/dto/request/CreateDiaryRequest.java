@@ -3,9 +3,6 @@ package zim.tave.memory.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import zim.tave.memory.domain.DiaryImage.CameraType;
@@ -47,15 +44,12 @@ public class CreateDiaryRequest {
     @Schema(description = "사용자 ID", example = "1", required = true)
     private Long userId;
 
-    @NotNull
     @Schema(description = "여행 ID", example = "1", required = true)
     private Long tripId;
 
-    @NotBlank
     @Schema(description = "국가 코드", example = "KR", required = true)
     private String countryCode;
 
-    @NotBlank
     @Schema(description = "도시명", example = "제주시", required = true)
     private String city;
 
@@ -70,8 +64,6 @@ public class CreateDiaryRequest {
     @Schema(description = "일기 내용", example = "오늘은 제주도에서 멋진 하루를 보냈다.")
     private String content;
 
-    @NotNull
-    @NotEmpty
     @ArraySchema(
             arraySchema = @Schema(description = "이미지 정보 목록 (정면/후면 카메라 각 1장씩, 총 2장 필요)", required = true),
             schema = @Schema(implementation = DiaryImageInfo.class),
@@ -95,11 +87,9 @@ public class CreateDiaryRequest {
     @Schema(description = "일기 이미지 정보")
     public static class DiaryImageInfo {
 
-        @NotBlank
         @Schema(description = "이미지 URL", example = "https://image-bucket.s3.amazonaws.com/front.jpg", required = true)
         private String imageUrl;
 
-        @NotNull
         @Schema(description = "카메라 타입", example = "FRONT", required = true, allowableValues = {"FRONT", "BACK"})
         private CameraType cameraType;
 

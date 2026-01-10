@@ -1,7 +1,6 @@
 package zim.tave.memory.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,11 +20,9 @@ public class CreateTripRequest {
     @Schema(description = "여행 테마 ID (선택사항, 미입력 시 기본 테마 자동 설정)", example = "1")
     private Long themeId;
 
-    @NotNull
     @Schema(description = "여행 시작일", example = "2025-01-01", required = true)
     private LocalDate startDate;
 
-    @NotNull
     @Schema(description = "여행 종료일", example = "2025-01-07", required = true)
     private LocalDate endDate;
 
