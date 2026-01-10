@@ -21,6 +21,7 @@ import zim.tave.memory.dto.request.CreatePastTripRequest;
 import zim.tave.memory.dto.request.UpdateTripRequest;
 import zim.tave.memory.dto.response.TimelineResponseDto;
 import zim.tave.memory.dto.response.TripResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.global.common.exception.GlobalExceptionHandler;
@@ -107,8 +108,8 @@ class TimelineControllerTest {
         // when & then
         mockMvc.perform(get("/api/users/me/timeline"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("성공하였습니다."))
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
+                .andExpect(jsonPath("$.message").value(ResponseCode.SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.data.trips[0].tripId").value(1L))
                 .andExpect(jsonPath("$.data.trips[0].tripName").value("제주도 여행"))
                 .andExpect(jsonPath("$.data.trips[0].emotionName").value("설렘"))
@@ -147,7 +148,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.code").value(ResponseCode.CREATED.getCode()))
                 .andExpect(jsonPath("$.data.tripName").value("유럽 배낭여행"));
 
         verify(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
@@ -169,7 +170,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(tripService).updatePastTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
     }
@@ -192,8 +193,8 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-               .andExpect(jsonPath("$.message", containsString("과거 여행만 수정/보관/삭제할 수 있습니다")));
+                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.NOT_PAST_TRIP.getMessage())));
     }
 
     @Test
@@ -209,7 +210,7 @@ class TimelineControllerTest {
         mockMvc.perform(patch("/api/users/me/timeline/past/{tripId}/store", tripId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(tripService).storePastTrip(eq(tripId), eq(userId), eq(isStored));
     }
@@ -230,8 +231,8 @@ class TimelineControllerTest {
         mockMvc.perform(patch("/api/users/me/timeline/past/{tripId}/store", tripId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message", containsString("과거 여행만 수정/보관/삭제할 수 있습니다")));
+                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.NOT_PAST_TRIP.getMessage())));
     }
 
     @Test
@@ -245,7 +246,7 @@ class TimelineControllerTest {
         // when & then
         mockMvc.perform(delete("/api/users/me/timeline/past/{tripId}", tripId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(tripService).deletePastTrip(eq(tripId), eq(userId));
     }
@@ -264,8 +265,8 @@ class TimelineControllerTest {
         // when & then
         mockMvc.perform(delete("/api/users/me/timeline/past/{tripId}", tripId))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message", containsString("과거 여행만 수정/보관/삭제할 수 있습니다")));
+                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.NOT_PAST_TRIP.getMessage())));
     }
 
     @Test
@@ -286,7 +287,8 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
     }
 
     @Test
@@ -307,7 +309,166 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NOT_FOUND.getMessage())));
+    }
+
+    // ========== Validation 테스트 ==========
+
+    @Test
+    void 과거_여행_생성_tripName_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName(null); // 필수 필드 null
+        request.setStartDate(LocalDate.of(2023, 5, 1));
+        request.setEndDate(LocalDate.of(2023, 5, 14));
+        request.setCountryCodes(List.of("FR", "IT"));
+        request.setEmotionId(2L);
+
+        // Service 레이어 검증에서 TRIP_NAME_REQUIRED 발생
+        willThrow(new CustomException(ErrorCode.TRIP_NAME_REQUIRED))
+                .given(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/timeline/past")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NAME_REQUIRED.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NAME_REQUIRED.getMessage())));
+    }
+
+    @Test
+    void 과거_여행_생성_tripName_길이초과_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName("매우 긴 여행 이름입니다 이것은 14자를 초과합니다"); // 길이 초과
+        request.setStartDate(LocalDate.of(2023, 5, 1));
+        request.setEndDate(LocalDate.of(2023, 5, 14));
+        request.setCountryCodes(List.of("FR", "IT"));
+        request.setEmotionId(2L);
+
+        // Service 레이어 검증에서 TRIP_NAME_TOO_LONG 발생
+        willThrow(new CustomException(ErrorCode.TRIP_NAME_TOO_LONG))
+                .given(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/timeline/past")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NAME_TOO_LONG.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NAME_TOO_LONG.getMessage())));
+    }
+
+    @Test
+    void 과거_여행_생성_startDate_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName("유럽 배낭여행");
+        request.setStartDate(null); // 필수 필드 null
+        request.setEndDate(LocalDate.of(2023, 5, 14));
+        request.setCountryCodes(List.of("FR", "IT"));
+        request.setEmotionId(2L);
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/timeline/past")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+    }
+
+    @Test
+    void 과거_여행_생성_endDate_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName("유럽 배낭여행");
+        request.setStartDate(LocalDate.of(2023, 5, 1));
+        request.setEndDate(null); // 필수 필드 null
+        request.setCountryCodes(List.of("FR", "IT"));
+        request.setEmotionId(2L);
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/timeline/past")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+    }
+
+    @Test
+    void 과거_여행_생성_countryCodes_null_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName("유럽 배낭여행");
+        request.setStartDate(LocalDate.of(2023, 5, 1));
+        request.setEndDate(LocalDate.of(2023, 5, 14));
+        request.setCountryCodes(null); // 필수 필드 null
+        request.setEmotionId(2L);
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/timeline/past")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+    }
+
+    @Test
+    void 과거_여행_생성_countryCodes_empty_400() throws Exception {
+        // given
+        Long userId = 1L;
+        setSecurityContext(userId);
+
+        CreatePastTripRequest request = new CreatePastTripRequest();
+        request.setTripName("유럽 배낭여행");
+        request.setStartDate(LocalDate.of(2023, 5, 1));
+        request.setEndDate(LocalDate.of(2023, 5, 14));
+        request.setCountryCodes(List.of()); // 빈 리스트
+        request.setEmotionId(2L);
+
+        // Service 레이어 검증에서 MISSING_REQUIRED_FIELDS 발생
+        willThrow(new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS))
+                .given(tripService).createPastTrip(any(CreatePastTripRequest.class), eq(userId));
+
+        // when & then
+        mockMvc.perform(post("/api/users/me/timeline/past")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
     }
 }
 

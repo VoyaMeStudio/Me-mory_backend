@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import zim.tave.memory.dto.request.LoginRequestDto;
 import zim.tave.memory.dto.response.LoginResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.jwt.JwtUtil;
@@ -20,6 +21,7 @@ import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.security.JwtAuthenticationFilter;
 import zim.tave.memory.service.LoginService;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -63,7 +65,7 @@ class LoginControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data.userId").value(1L))
                 .andExpect(jsonPath("$.data.jwtAccessToken").value("jwt_token"));
     }
@@ -78,7 +80,9 @@ class LoginControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.KAKAO_TOKEN_MISSING.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.KAKAO_TOKEN_MISSING.getMessage())));
     }
 
     @Test
@@ -90,7 +94,7 @@ class LoginControllerTest {
 
         mockMvc.perform(patch("/api/auth/logout"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         Mockito.verify(loginService).logout(1L);
     }
