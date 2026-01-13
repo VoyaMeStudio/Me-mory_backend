@@ -97,21 +97,4 @@ public class SettingService {
 
         return UserResponseDto.from(user);
     }
-
-    //필수 필드 null 여부 검사
-    private void validateFields(UpdateUserRequestDto dto) {
-        if (isNullOrEmpty(dto.getSurName()) ||
-                isNullOrEmpty(dto.getFirstName()) ||
-                isNullOrEmpty(dto.getKoreanName()) ||
-                dto.getBirth() == null ||
-                isNullOrEmpty(dto.getNationality())) {
-            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
-        }
-    }
-
-    private boolean isNullOrEmpty(String value) {
-        return value == null || value.trim().isEmpty();
-    }
-
-
 }

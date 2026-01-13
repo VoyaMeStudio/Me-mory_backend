@@ -31,7 +31,8 @@ public class AlarmService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         //1. 알림 수신 동의 확인
-        if (user.getSetting() == null || Boolean.FALSE.equals(user.getSetting().getAlarm())) {
+        Setting setting = user.getSetting();
+        if (user.getSetting() == null || !setting.getAlarm()) {
             throw new CustomException(ErrorCode.ALARM_NOT_AGREED);
         }
 
@@ -69,7 +70,8 @@ public class AlarmService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        if (!user.getSetting().getAlarm()) {
+        Setting setting = user.getSetting();
+        if (setting == null || !setting.getAlarm()) {
             throw new CustomException(ErrorCode.ALARM_NOT_AGREED);
         }
 
