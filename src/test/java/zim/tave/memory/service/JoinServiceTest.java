@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static zim.tave.memory.service.SettingServiceTest.*;
 
 @ExtendWith(MockitoExtension.class)
 public class JoinServiceTest {
@@ -41,11 +42,11 @@ public class JoinServiceTest {
         user.setRegistered(false);
 
         requestDto = new JoinRequestDto(
-                "sur",
-                "first",
-                "최형원",
-                LocalDate.of(2222, 2, 2),
-                "REPUBLIC OF KOREA",
+                TEST_SURNAME,
+                TEST_FIRSTNAME,
+                TEST_KOREAN_NAME,
+                TEST_BIRTH,
+                TEST_NATIONALITY,
                 true
         );
     }

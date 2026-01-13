@@ -35,7 +35,7 @@ public class SettingServiceTest {
     private SettingService settingService;
 
     @Autowired
-    private LoginService loginService;  // @Autowired 추가
+    private LoginService loginService;
 
     @Autowired
     private UserRepository userRepository;
