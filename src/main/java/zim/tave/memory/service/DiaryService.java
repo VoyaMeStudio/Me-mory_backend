@@ -12,7 +12,6 @@ import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -122,6 +121,11 @@ public class DiaryService {
         if (request.getWeatherId() != null) {
             weather = weatherRepository.findById(request.getWeatherId())
                     .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
+        }
+
+        // content 검증
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
 
         // Diary 생성
