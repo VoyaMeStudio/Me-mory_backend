@@ -125,7 +125,7 @@ deploy_docker() {
           --name memory-app \
           --restart unless-stopped \
           -p 8081:8081 \
-          -e SPRING_DATASOURCE_URL="jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true" \
+          -e SPRING_DATASOURCE_URL="jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
           -e SPRING_DATASOURCE_USERNAME="${DB_USERNAME}" \
           -e SPRING_DATASOURCE_PASSWORD="${DB_PASSWORD}" \
           -e CLOUD_AWS_CREDENTIALS_ACCESS_KEY="${AWS_ACCESS_KEY_ID}" \
