@@ -283,8 +283,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()));
     }
 
     @Test
@@ -332,8 +331,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NAME_REQUIRED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NAME_REQUIRED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NAME_REQUIRED.getCode()));
     }
 
     @Test

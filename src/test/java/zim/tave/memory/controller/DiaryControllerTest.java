@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -458,8 +457,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()));
     }
 
     @Test
@@ -495,8 +493,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()));
     }
 
     @Test

@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -153,7 +152,7 @@ class TripControllerTest {
         // when & then
         mockMvc.perform(get("/api/users/me/trips"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].tripName").value("제주도 여행"))
                 .andExpect(jsonPath("$.data[1].tripName").value("부산 여행"));
