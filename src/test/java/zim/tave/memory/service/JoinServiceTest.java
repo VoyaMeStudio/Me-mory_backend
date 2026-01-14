@@ -24,6 +24,16 @@ import static zim.tave.memory.service.SettingServiceTest.*;
 @ExtendWith(MockitoExtension.class)
 public class JoinServiceTest {
 
+    private static final String TEST_KAKAO_ID = "testKakaoId000";
+    private static final String TEST_IMAGE_URL = "https://test.com/image.jpg";
+    private static final String TEST_SURNAME = "sur";
+    private static final String TEST_FIRSTNAME = "first";
+    private static final String TEST_KOREAN_NAME = "최형원";
+    private static final String TEST_NATIONALITY = "REPUBLIC OF KOREA";
+    private static final LocalDate TEST_BIRTH = LocalDate.of(2222, 2, 2);
+    private static final long INITIAL_COUNT = 0L;
+    private static final String INITIAL_FLAGS = "";
+
     @Mock
     private UserRepository userRepository;
 
@@ -62,16 +72,16 @@ public class JoinServiceTest {
 
         // then
         assertThat(savedUser).isNotNull();
-        assertThat(savedUser.getKakaoId()).isEqualTo("testKakaoId000");
-        assertThat(savedUser.getProfileImageUrl()).isEqualTo("https://test.com/image.jpg");
-        assertThat(savedUser.getSurName()).isEqualTo("sur");
-        assertThat(savedUser.getFirstName()).isEqualTo("first");
-        assertThat(savedUser.getKoreanName()).isEqualTo("최형원");
-        assertThat(savedUser.getBirth()).isEqualTo(LocalDate.of(2222, 2, 2));
-        assertThat(savedUser.getNationality()).isEqualTo("REPUBLIC OF KOREA");
-        assertThat(savedUser.getDiaryCount()).isEqualTo(0L);
-        assertThat(savedUser.getVisitedCountryCount()).isEqualTo(0L);
-        assertThat(savedUser.getFlags()).isEqualTo("");
+        assertThat(savedUser.getKakaoId()).isEqualTo(TEST_KAKAO_ID);
+        assertThat(savedUser.getProfileImageUrl()).isEqualTo(TEST_IMAGE_URL);
+        assertThat(savedUser.getSurName()).isEqualTo(TEST_SURNAME);
+        assertThat(savedUser.getFirstName()).isEqualTo(TEST_FIRSTNAME);
+        assertThat(savedUser.getKoreanName()).isEqualTo(TEST_KOREAN_NAME);
+        assertThat(savedUser.getBirth()).isEqualTo(TEST_BIRTH);
+        assertThat(savedUser.getNationality()).isEqualTo(TEST_NATIONALITY);
+        assertThat(savedUser.getDiaryCount()).isEqualTo(INITIAL_COUNT);
+        assertThat(savedUser.getVisitedCountryCount()).isEqualTo(INITIAL_COUNT);
+        assertThat(savedUser.getFlags()).isEqualTo(INITIAL_FLAGS);
         assertThat(savedUser.isRegistered()).isTrue();
         assertThat(savedUser.isStatus()).isTrue();
 
