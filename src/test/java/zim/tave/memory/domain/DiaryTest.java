@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 class DiaryTest {
 
@@ -29,7 +30,7 @@ class DiaryTest {
     void 다이어리_생성_테스트() {
         // given
         String city = "서울";
-        LocalDateTime dateTime = LocalDateTime.of(2024, 1, 15, 10, 0);
+        OffsetDateTime dateTime = OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC);
         String content = "서울 여행 첫째 날";
 
         // when
@@ -49,7 +50,7 @@ class DiaryTest {
     void 선택적_필드_설정_테스트() {
         // given
         Diary diary = Diary.createDiary(user, trip, country, "서울", 
-                                       LocalDateTime.now(), "테스트 내용");
+                                       OffsetDateTime.now(ZoneOffset.UTC), "테스트 내용");
         
         String detailedLocation = "강남역 1번 출구";
         Emotion emotion = new Emotion("행복", "#FFD700");
@@ -69,7 +70,7 @@ class DiaryTest {
     void 이미지_추가_테스트() {
         // given
         Diary diary = Diary.createDiary(user, trip, country, "서울", 
-                                       LocalDateTime.now(), "테스트 내용");
+                                       OffsetDateTime.now(ZoneOffset.UTC), "테스트 내용");
         DiaryImage image1 = new DiaryImage();
         image1.setImageUrl("image1.jpg");
         image1.setCameraType(DiaryImage.CameraType.FRONT);

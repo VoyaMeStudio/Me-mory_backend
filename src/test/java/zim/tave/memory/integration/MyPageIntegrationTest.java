@@ -73,14 +73,14 @@ public class MyPageIntegrationTest extends IntegrationTestBase {
         Diary diary1 = createTestDiary(
             trip,
             "제주시",
-            LocalDateTime.of(2024, 1, 1, 10, 0),
+            OffsetDateTime.of(2024, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC),
             "첫 번째 일기"
         );
 
         Diary diary2 = createTestDiary(
             trip,
             "서귀포시",
-            LocalDateTime.of(2024, 1, 2, 14, 0),
+            OffsetDateTime.of(2024, 1, 2, 14, 0, 0, 0, ZoneOffset.UTC),
             "두 번째 일기"
         );
 
