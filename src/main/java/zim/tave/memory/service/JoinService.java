@@ -47,9 +47,7 @@ public class JoinService {
         if (user.getSetting() == null) {
             Setting setting = new Setting();
             setting.setUser(user);
-            setting.setAlarm(
-                    requestDto.getAlarm() != null ? requestDto.getAlarm() : true
-            );
+            setting.setAlarm(requestDto.getAlarm() != null && requestDto.getAlarm());
             user.setSetting(setting);
         } else if (requestDto.getAlarm() != null) {
             user.getSetting().setAlarm(requestDto.getAlarm());
