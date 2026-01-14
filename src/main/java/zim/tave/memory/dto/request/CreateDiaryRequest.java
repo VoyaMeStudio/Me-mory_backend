@@ -41,16 +41,16 @@ import java.util.List;
 )
 public class CreateDiaryRequest {
 
-    @Schema(description = "사용자 ID", example = "1", required = true)
+    @Schema(description = "사용자 ID (필수)", example = "1")
     private Long userId;
 
-    @Schema(description = "여행 ID", example = "1", required = true)
+    @Schema(description = "여행 ID (필수)", example = "1")
     private Long tripId;
 
-    @Schema(description = "국가 코드", example = "KR", required = true)
+    @Schema(description = "국가 코드 (필수)", example = "KR")
     private String countryCode;
 
-    @Schema(description = "도시명", example = "제주시", required = true)
+    @Schema(description = "도시명 (필수)", example = "제주시")
     private String city;
 
     @Schema(
@@ -65,7 +65,7 @@ public class CreateDiaryRequest {
     private String content;
 
     @ArraySchema(
-            arraySchema = @Schema(description = "이미지 정보 목록 (정면/후면 카메라 각 1장씩, 총 2장 필요)", required = true),
+            arraySchema = @Schema(description = "이미지 정보 목록 (정면/후면 카메라 각 1장씩, 총 2장 필요) (필수)"),
             schema = @Schema(implementation = DiaryImageInfo.class),
             minItems = 2,
             maxItems = 2
@@ -87,13 +87,13 @@ public class CreateDiaryRequest {
     @Schema(description = "일기 이미지 정보")
     public static class DiaryImageInfo {
 
-        @Schema(description = "이미지 URL", example = "https://image-bucket.s3.amazonaws.com/front.jpg", required = true)
+        @Schema(description = "이미지 URL (필수)", example = "https://image-bucket.s3.amazonaws.com/front.jpg")
         private String imageUrl;
 
-        @Schema(description = "카메라 타입", example = "FRONT", required = true, allowableValues = {"FRONT", "BACK"})
+        @Schema(description = "카메라 타입 (필수)", example = "FRONT", allowableValues = {"FRONT", "BACK"})
         private CameraType cameraType;
 
-        @Schema(description = "대표 이미지 여부 (정확히 1개만 true여야 함)", example = "true", required = true)
+        @Schema(description = "대표 이미지 여부 (정확히 1개만 true여야 함) (필수)", example = "true")
         @JsonProperty("isRepresentative")
         private boolean representative;
 

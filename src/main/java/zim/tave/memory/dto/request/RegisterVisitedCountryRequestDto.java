@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "방문한 국가 등록 요청 DTO")
 public class RegisterVisitedCountryRequestDto {
 
-    @Schema(description = "국가 코드", example = "KR", required = true)
+    @Schema(description = "국가 코드 (필수)", example = "KR")
     private String countryCode;
 
     @Schema(description = "감정 ID (선택사항)", example = "1")
