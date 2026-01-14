@@ -123,12 +123,7 @@ public class DiaryService {
                     .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
         }
 
-        // content 검증
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
-
-        // Diary 생성
+        // Diary 생성 (content는 선택 필드이므로 null 허용)
         Diary diary = Diary.createDiary(user, trip, country,
                 request.getCity(), dateTime, request.getContent());
 
