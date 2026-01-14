@@ -64,8 +64,9 @@ tasks.named('test') {
 
 // 통합 테스트 제외하고 실행하는 태스크 (CI에서 사용)
 tasks.register('unitTest', Test) {
-    useJUnitPlatform()
-    excludeTags 'integration'
+    useJUnitPlatform {
+        excludeTags 'integration'
+    }
     
     testLogging {
         events "passed", "skipped", "failed"
@@ -76,8 +77,9 @@ tasks.register('unitTest', Test) {
 
 // integrationTest 테스트만 실행하는 태스크 (선택적 사용)
 tasks.register('integrationTest', Test) {
-    useJUnitPlatform()
-    includeTags 'integration'
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
     
     testLogging {
         events "passed", "skipped", "failed"
