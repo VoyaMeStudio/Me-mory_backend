@@ -77,7 +77,7 @@ public class Diary {
         diary.setCountry(country);
         diary.setCity(city);
         diary.setDateTime(dateTime);
-        diary.setContent(content);
+        diary.setContent(content != null ? content : ""); // content는 선택 필드이므로 null인 경우 빈 문자열로 처리
         diary.setCreatedAt(dateTime != null ? dateTime : LocalDateTime.now());
         diary.setIsStored(false);
         return diary;

@@ -13,17 +13,7 @@
 ---
 ## 진행사항
 
-### 테스트 통과 현황 (최신)
-- ✅ **총 테스트**: 198개
-- ✅ **통과**: 160개
-- ❌ **실패**: 38개
-- 📊 **성공률**: 81%
-- ⏱️ **실행 시간**: 약 14분
-
 ### 실패 테스트 분류
-- **Controller 테스트**: 11개 실패
-  - DiaryControllerTest: 6개 실패
-  - TripControllerTest: 5개 실패
 - **Integration 테스트**: 27개 실패
   - RecordingFlowIntegrationTest: 5개 실패
   - SettingsIntegrationTest: 9개 실패
@@ -33,41 +23,27 @@
 ### ⚠️ 중요 원칙
 **실무 원칙: 실패하는 테스트가 있는 상태로 머지(Merge)하지 않습니다.**
 
-### 현재 상황 및 문제사항
-**⚠️ 주의: Integration 테스트는 일부 통과하지 못하고 있는데 Windows 환경 문제인지 파악중입니다. 우선은 제외하고 테스트해주세요요**
-
-현재 확인된 문제사항:
-- Integration 테스트 실패 (27개)
-  - **원인 추정**: Windows 환경에서 Testcontainers/Docker Desktop 설정 문제 가능성
-  - Docker Desktop 실행 상태, 리소스 할당, 네트워크 설정 등 확인 필요
-  - CI/CD 환경(Linux)에서는 정상 작동할 가능성 있음
-- Controller Validation 테스트 실패 (11개)
-  - 필수 필드 검증 테스트 실패
 
 ### 테스트 실행 방법
 **⚠️ Integration 테스트는 제외하고 실행해주세요:**
+
+로컬 개발 시에는 `unitTest` 태스크를 사용하여 통합 테스트를 제외하고 실행하는 것을 권장합니다:
+
 ```bash
 # Windows (PowerShell)
-.\gradlew.bat test --exclude-tests "*IntegrationTest"
+.\gradlew.bat unitTest
+
+# Linux/Mac 또는 Git Bash
+./gradlew unitTest
 ```
+
+**태스크 설정 방식**:
+- `build.gradle`에서 `useJUnitPlatform { excludeTags 'integration' }`을 사용하여 `@Tag("integration")` 어노테이션이 있는 테스트를 제외합니다.
+- 통합 테스트 베이스 클래스(`AbstractContainerBaseTest`, `IntegrationTestBase`, `ApiTestBase`)에 `@Tag("integration")` 어노테이션이 적용되어 있습니다.
 
 단위 테스트(Service, Controller, Domain, Util)는 모두 정상 작동하며 빠르게 실행됩니다.
 Integration 테스트는 Docker Desktop으로 데이터베이스(MySQL) 컨테이너를 생성한 후 통합 테스트를 진행하기 때문에 **현재 약 14분 정도** 걸립니다. 
 
-### 개선 계획
-1. **✅ Shared Container 패턴 적용 완료**
-   - AbstractContainerBaseTest 생성 완료
-   - 모든 통합 테스트가 하나의 컨테이너를 공유하도록 구현
-   - Testcontainers 설정 파일에 reuse 활성화
-   - 컨테이너 준비 대기 메커니즘 개선 (타임아웃 120초, 연결 대기 60초)
-   - ⚠️ Windows 환경에서 테스트 실패 원인 분석 필요
-2. **Controller Validation 테스트 수정 필요**
-   - 필수 필드 누락 시 400 에러 검증 테스트 실패
-   - @NotNull, @NotBlank 위반 케이스 테스트 수정 필요
-3. **Integration 테스트 환경 문제 해결**
-   - Windows 환경에서 Testcontainers/Docker Desktop 설정 확인
-   - CI/CD 환경(Linux)에서 테스트 실행하여 환경 차이 확인
-   - Docker Desktop 리소스 할당 확인 (메모리, 디스크 공간)
 
 ### Docker 환경 확인 (실패 시)
 실행 전 다음을 확인하세요:
@@ -653,6 +629,29 @@ public abstract class AbstractContainerBaseTest {
 ./gradlew test
 ```
 
+### 단위 테스트만 실행 (통합 테스트 제외) ⭐ 권장
+로컬 개발 시 빠른 테스트 실행을 위해 통합 테스트를 제외하고 실행합니다:
+```bash
+# Windows (PowerShell)
+.\gradlew.bat unitTest
+
+# Linux/Mac 또는 Git Bash
+./gradlew unitTest
+```
+
+**참고**: `unitTest` 태스크는 `@Tag("integration")` 어노테이션이 있는 테스트를 제외합니다.
+
+### 통합 테스트만 실행
+```bash
+# Windows (PowerShell)
+.\gradlew.bat integrationTest
+
+# Linux/Mac 또는 Git Bash
+./gradlew integrationTest
+```
+
+**참고**: `integrationTest` 태스크는 `@Tag("integration")` 어노테이션이 있는 테스트만 실행합니다.
+
 ### 특정 테스트 클래스 실행
 ```bash
 # Windows
@@ -669,15 +668,6 @@ public abstract class AbstractContainerBaseTest {
 
 # Linux/Mac 또는 Git Bash
 ./gradlew test --tests DiaryServiceTest.다이어리_생성_테스트
-```
-
-### 통합 테스트만 실행
-```bash
-# Windows
-.\gradlew.bat test --tests "*IntegrationTest"
-
-# Linux/Mac 또는 Git Bash
-./gradlew test --tests "*IntegrationTest"
 ```
 
 ### Service 테스트만 실행

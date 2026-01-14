@@ -102,7 +102,7 @@ tasks.named('test') {
 // 통합 테스트 제외하고 실행하는 태스크 (CI에서 사용)
 tasks.register('unitTest', Test) {
     useJUnitPlatform {
-        excludeTags = ['integration']
+        excludeTags 'integration'
     }
     
     testLogging {
@@ -132,7 +132,7 @@ tasks.register('jacocoUnitTestReport', JacocoReport) {
 // integrationTest 테스트만 실행하는 태스크 (선택적 사용)
 tasks.register('integrationTest', Test) {
     useJUnitPlatform {
-        includeTags = ['integration']
+        includeTags 'integration'
     }
     
     testLogging {

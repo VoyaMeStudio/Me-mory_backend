@@ -12,7 +12,6 @@ import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -124,7 +123,7 @@ public class DiaryService {
                     .orElseThrow(() -> new CustomException(ErrorCode.WEATHER_NOT_FOUND));
         }
 
-        // Diary 생성
+        // Diary 생성 (content는 선택 필드이므로 null 허용)
         Diary diary = Diary.createDiary(user, trip, country,
                 request.getCity(), dateTime, request.getContent());
 

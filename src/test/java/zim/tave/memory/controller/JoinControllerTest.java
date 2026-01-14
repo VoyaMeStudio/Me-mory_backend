@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.request.JoinRequestDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.jwt.JwtUtil;
@@ -22,6 +23,7 @@ import zim.tave.memory.service.JoinService;
 
 import java.time.LocalDate;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -81,7 +83,7 @@ public class JoinControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.code").value(ResponseCode.JOIN_SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data.userId").value(1L))
                 .andExpect(jsonPath("$.data.firstName").value("JIHYE"));
     }
@@ -102,7 +104,8 @@ public class JoinControllerTest {
         mockMvc.perform(post("/api/auth/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(ResponseCode.ALREADY_JOINED.getCode()));
     }
 
     @Test
@@ -121,6 +124,7 @@ public class JoinControllerTest {
         mockMvc.perform(post("/api/auth/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ResponseCode.KAKAO_LOGIN_REQUIRED.getCode()));
     }
 }

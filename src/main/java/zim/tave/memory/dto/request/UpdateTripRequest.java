@@ -1,7 +1,6 @@
 package zim.tave.memory.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,11 +23,9 @@ public class UpdateTripRequest {
     @Schema(description = "대표 이미지 URL", example = "https://example.com/image.jpg")
     private String representativeImageUrl;
 
-    @NotNull
     @Schema(description = "여행 시작일", example = "2025-01-01")
     private LocalDate startDate;
 
-    @NotNull
     @Schema(description = "여행 종료일", example = "2025-01-07")
     private LocalDate endDate;
 }
