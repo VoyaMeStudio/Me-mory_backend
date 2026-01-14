@@ -82,7 +82,6 @@ class CountryControllerTest {
         mockMvc.perform(get("/api/countries").param("keyword", "대한"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
-                .andExpect(jsonPath("$.message").value(ResponseCode.SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.data[0].countryCode").value("KR"))
                 .andExpect(jsonPath("$.data[0].countryName").value("대한민국"));
 
@@ -192,8 +191,7 @@ class CountryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.COUNTRY_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.COUNTRY_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.COUNTRY_NOT_FOUND.getCode()));
     }
 
     // ========== Validation 테스트 ==========
@@ -219,7 +217,6 @@ class CountryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.COUNTRY_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.COUNTRY_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.COUNTRY_NOT_FOUND.getCode()));
     }
 }

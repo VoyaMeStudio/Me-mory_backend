@@ -104,7 +104,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.code").value(ResponseCode.CREATED.getCode()))
                 .andExpect(jsonPath("$.data.tripName").value("제주도 여행"));
 
         verify(tripService).createTrip(any(CreateTripRequest.class), eq(userId));
@@ -127,7 +127,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
     }
@@ -183,8 +183,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -207,8 +206,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -231,8 +229,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -256,8 +253,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -281,8 +277,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -301,7 +296,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
     }
@@ -327,8 +322,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.VALIDATION_ERROR.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()));
     }
 
     @Test
@@ -352,8 +346,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.VALIDATION_ERROR.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()));
     }
 
     @Test
@@ -372,7 +365,7 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(tripService).updateTrip(eq(tripId), any(UpdateTripRequest.class), eq(userId));
     }

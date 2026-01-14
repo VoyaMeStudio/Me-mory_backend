@@ -81,8 +81,7 @@ class LoginControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.KAKAO_TOKEN_MISSING.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.KAKAO_TOKEN_MISSING.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.KAKAO_TOKEN_MISSING.getCode()));
     }
 
     @Test

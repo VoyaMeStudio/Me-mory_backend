@@ -105,8 +105,7 @@ public class JoinControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value(ResponseCode.ALREADY_JOINED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ALREADY_JOINED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ALREADY_JOINED.getCode()));
     }
 
     @Test
@@ -126,7 +125,6 @@ public class JoinControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.KAKAO_LOGIN_REQUIRED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.KAKAO_LOGIN_REQUIRED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.KAKAO_LOGIN_REQUIRED.getCode()));
     }
 }

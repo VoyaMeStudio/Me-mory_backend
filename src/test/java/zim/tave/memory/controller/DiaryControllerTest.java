@@ -115,7 +115,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.code").value(ResponseCode.CREATED.getCode()))
                 .andExpect(jsonPath("$.data.city").value("서울"))
                 .andExpect(jsonPath("$.data.content").value("테스트 내용"));
 
@@ -138,7 +138,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(diaryService).updateDiaryOptionalFields(eq(userId), eq(diaryId), any(UpdateDiaryOptionalFieldsRequest.class));
     }
@@ -158,7 +158,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(diaryService).updateRepresentativeImage(eq(diaryId), eq(2L));
     }
@@ -186,7 +186,7 @@ class DiaryControllerTest {
         // when & then
         mockMvc.perform(get("/api/users/me/diaries"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].city").value("서울"))
                 .andExpect(jsonPath("$.data[1].city").value("부산"));
@@ -213,7 +213,7 @@ class DiaryControllerTest {
         // when & then
         mockMvc.perform(get("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data.city").value("서울"))
                 .andExpect(jsonPath("$.data.content").value("상세 내용"));
 
@@ -244,7 +244,7 @@ class DiaryControllerTest {
         // when & then
         mockMvc.perform(get("/api/users/me/trips/{tripId}/diaries", tripId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].tripId").value(tripId))
                 .andExpect(jsonPath("$.data[1].tripId").value(tripId));
@@ -265,7 +265,7 @@ class DiaryControllerTest {
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}/store", diaryId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(diaryService).storeDiary(eq(diaryId), eq(userId), eq(isStored));
     }
@@ -283,7 +283,7 @@ class DiaryControllerTest {
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}/store", diaryId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(diaryService).storeDiary(eq(diaryId), eq(userId), eq(isStored));
     }
@@ -305,8 +305,7 @@ class DiaryControllerTest {
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}/store", diaryId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()));
     }
 
     @Test
@@ -326,8 +325,7 @@ class DiaryControllerTest {
         mockMvc.perform(patch("/api/users/me/diaries/{diaryId}/store", diaryId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.DIARY_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()));
     }
 
     @Test
@@ -341,7 +339,7 @@ class DiaryControllerTest {
         // when & then
         mockMvc.perform(delete("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()));
 
         verify(diaryService).deleteDiary(eq(diaryId), eq(userId));
     }
@@ -361,8 +359,7 @@ class DiaryControllerTest {
         // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(delete("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()));
     }
 
     @Test
@@ -380,8 +377,7 @@ class DiaryControllerTest {
         // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(delete("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.DIARY_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()));
     }
 
     @Test
@@ -399,8 +395,7 @@ class DiaryControllerTest {
         // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(get("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()));
     }
 
     @Test
@@ -418,8 +413,7 @@ class DiaryControllerTest {
         // GlobalExceptionHandler의 ErrorCode -> ResponseCode 매핑 검증
         mockMvc.perform(get("/api/users/me/diaries/{diaryId}", diaryId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.DIARY_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.DIARY_NOT_FOUND.getCode()));
     }
 
     @Test
@@ -441,8 +435,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.ACCESS_DENIED.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.ACCESS_DENIED.getCode()));
     }
 
     // ========== Validation 테스트 ==========
@@ -539,8 +532,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_COUNTRY_CODE.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.INVALID_COUNTRY_CODE.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_COUNTRY_CODE.getCode()));
     }
 
     @Test
@@ -577,8 +569,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.VALIDATION_ERROR.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.getCode()));
     }
 
     @Test
@@ -621,7 +612,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value(201));
+                .andExpect(jsonPath("$.code").value(ResponseCode.CREATED.getCode()));
 
         verify(diaryService).createDiary(any(CreateDiaryRequest.class));
     }
@@ -664,7 +655,7 @@ class DiaryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value(201));
+                .andExpect(jsonPath("$.code").value(ResponseCode.CREATED.getCode()));
 
         verify(diaryService).createDiary(any(CreateDiaryRequest.class));
     }

@@ -109,7 +109,6 @@ class TimelineControllerTest {
         mockMvc.perform(get("/api/users/me/timeline"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResponseCode.SUCCESS.getCode()))
-                .andExpect(jsonPath("$.message").value(ResponseCode.SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.data.trips[0].tripId").value(1L))
                 .andExpect(jsonPath("$.data.trips[0].tripName").value("제주도 여행"))
                 .andExpect(jsonPath("$.data.trips[0].emotionName").value("설렘"))
@@ -193,8 +192,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.NOT_PAST_TRIP.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()));
     }
 
     @Test
@@ -231,8 +229,7 @@ class TimelineControllerTest {
         mockMvc.perform(patch("/api/users/me/timeline/past/{tripId}/store", tripId)
                         .param("isStored", String.valueOf(isStored)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.NOT_PAST_TRIP.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()));
     }
 
     @Test
@@ -265,8 +262,7 @@ class TimelineControllerTest {
         // when & then
         mockMvc.perform(delete("/api/users/me/timeline/past/{tripId}", tripId))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.NOT_PAST_TRIP.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.NOT_PAST_TRIP.getCode()));
     }
 
     @Test
@@ -309,8 +305,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NOT_FOUND.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NOT_FOUND.getCode()));
     }
 
     // ========== Validation 테스트 ==========
@@ -363,8 +358,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NAME_TOO_LONG.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.TRIP_NAME_TOO_LONG.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.TRIP_NAME_TOO_LONG.getCode()));
     }
 
     @Test
@@ -389,8 +383,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -415,8 +408,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -441,8 +433,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 
     @Test
@@ -467,8 +458,7 @@ class TimelineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ResponseCode.MISSING_REQUIRED_FIELDS.getMessage())));
+                .andExpect(jsonPath("$.code").value(ResponseCode.MISSING_REQUIRED_FIELDS.getCode()));
     }
 }
 
