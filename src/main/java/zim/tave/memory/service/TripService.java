@@ -121,10 +121,18 @@ public class TripService {
         }
         
         // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
-        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : findTrip.getStartDate();
-        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : findTrip.getEndDate();
+        LocalDate existingStartDate = findTrip.getStartDate();
+        LocalDate existingEndDate = findTrip.getEndDate();
         
-        if (newStartDate != null && newEndDate != null && newStartDate.isAfter(newEndDate)) {
+        // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
+        if (existingStartDate == null || existingEndDate == null) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        
+        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
+        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
+        
+        if (newStartDate.isAfter(newEndDate)) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
 
@@ -313,10 +321,18 @@ public class TripService {
         }
         
         // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
-        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : trip.getStartDate();
-        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : trip.getEndDate();
+        LocalDate existingStartDate = trip.getStartDate();
+        LocalDate existingEndDate = trip.getEndDate();
         
-        if (newStartDate != null && newEndDate != null && newStartDate.isAfter(newEndDate)) {
+        // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
+        if (existingStartDate == null || existingEndDate == null) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+        
+        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
+        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
+        
+        if (newStartDate.isAfter(newEndDate)) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
 
