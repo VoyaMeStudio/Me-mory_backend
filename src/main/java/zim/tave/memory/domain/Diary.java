@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class Diary {
     private String city;
 
     @Column(nullable = false)
-    private LocalDateTime dateTime;
+    private OffsetDateTime dateTime;
 
     @Lob
     @Column(nullable = false, length = 88)
@@ -54,14 +55,16 @@ public class Diary {
     private List<DiaryImage> diaryImages = new ArrayList<>();
 
     @Column(updatable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(nullable = false)
     private Boolean isStored;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now(ZoneOffset.UTC);
+        }
     }
 
     public void addDiaryImage(DiaryImage image) {
@@ -70,7 +73,7 @@ public class Diary {
     }
 
     public static Diary createDiary(User user, Trip trip, Country country, String city,
-                                   LocalDateTime dateTime, String content) {
+                                   OffsetDateTime dateTime, String content) {
         Diary diary = new Diary();
         diary.setUser(user);
         diary.setTrip(trip);
@@ -78,7 +81,7 @@ public class Diary {
         diary.setCity(city);
         diary.setDateTime(dateTime);
         diary.setContent(content != null ? content : ""); // content는 선택 필드이므로 null인 경우 빈 문자열로 처리
-        diary.setCreatedAt(dateTime != null ? dateTime : LocalDateTime.now());
+        diary.setCreatedAt(dateTime != null ? dateTime : OffsetDateTime.now(ZoneOffset.UTC));
         diary.setIsStored(false);
         return diary;
     }

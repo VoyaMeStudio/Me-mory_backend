@@ -14,7 +14,8 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +48,7 @@ public class BoardService {
         board.setUser(user);
         board.setBoardTheme(theme);
         board.setTitle(requestDto.getTitle());
-        board.setCreatedAt(LocalDateTime.now());
-        board.setUpdatedAt(LocalDateTime.now());
+        // createdAt과 updatedAt은 @PrePersist, @PreUpdate에서 자동 설정됨
 
         Board saved = boardRepository.save(board);
 
@@ -148,7 +148,7 @@ public class BoardService {
         BoardStickerMap saved = boardStickerMapRepository.save(map);
 
         // 보드 업데이트 시간 갱신
-        board.setUpdatedAt(LocalDateTime.now());
+        board.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
         return BoardStickerAddResponseDto.from(saved);
     }
@@ -181,7 +181,7 @@ public class BoardService {
         map.setPosY(BigDecimal.valueOf(dto.getPosY()));
         map.setRotation(BigDecimal.valueOf(dto.getRotation()));
 
-        board.setUpdatedAt(LocalDateTime.now());
+        board.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
         return BoardStickerUpdateResponseDto.from(map);
     }
@@ -207,7 +207,7 @@ public class BoardService {
 
         boardStickerMapRepository.delete(map);
 
-        board.setUpdatedAt(LocalDateTime.now());
+        board.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
     }
 
 }

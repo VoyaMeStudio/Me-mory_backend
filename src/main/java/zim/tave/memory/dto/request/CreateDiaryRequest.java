@@ -22,7 +22,6 @@ import java.util.List;
                   "tripId": 1,
                   "countryCode": "KR",
                   "city": "제주시",
-                  "dateTime": "2025-11-30T11:20:01.570Z",
                   "content": "오늘은 제주도에서 멋진 하루를 보냈다.",
                   "images": [
                     {
@@ -55,14 +54,6 @@ public class CreateDiaryRequest {
 
     @Schema(description = "도시명 (필수)", example = "제주시")
     private String city;
-
-    @Schema(
-            description = """
-                    일기 작성 날짜 및 시간 (ISO 8601 형식) : 자동 생성됩니다.
-                    """,
-            example = "2025-11-30T11:20:01.570Z"
-    )
-    private String dateTime;
 
     @Schema(description = "일기 내용", example = "오늘은 제주도에서 멋진 하루를 보냈다.")
     private String content;
