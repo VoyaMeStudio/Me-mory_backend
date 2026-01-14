@@ -22,6 +22,8 @@ import java.util.Map;
 public class AlarmController {
 
     private final AlarmService alarmService;
+    private static final String NOTIFICATION_TYPE_KEY = "notificationType";
+    private static final String NOTIFICATION_TYPE_NONE = "NONE";
 
     @PostMapping("/send")
     public ResponseEntity<ApiResponseDto<Map<String, String>>> sendAlarm(
@@ -34,7 +36,7 @@ public class AlarmController {
             return ResponseEntity.ok(
                     ApiResponseDto.success(
                             ResponseCode.NO_ALARM_TO_SEND,
-                            Map.of("notificationType", "NONE")
+                            Map.of(NOTIFICATION_TYPE_KEY, NOTIFICATION_TYPE_NONE)
                     )
             );
         }
@@ -43,7 +45,7 @@ public class AlarmController {
         return ResponseEntity.ok(
                 ApiResponseDto.success(
                         ResponseCode.SUCCESS,
-                        Map.of("notificationType", type.name())
+                        Map.of(NOTIFICATION_TYPE_KEY, type.name())
                 )
         );
     }
