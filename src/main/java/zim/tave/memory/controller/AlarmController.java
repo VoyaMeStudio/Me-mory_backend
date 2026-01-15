@@ -26,7 +26,7 @@ public class AlarmController {
     private static final String NOTIFICATION_TYPE_NONE = "NONE";
 
     @PostMapping("/send")
-    public ResponseEntity<ApiResponseDto<Map<String, String>>> sendAlarm(
+    public ResponseEntity<ApiResponseDto<AlarmSendResponseDto>> sendAlarm(
             @AuthenticationPrincipal(expression = "userId") Long userId
     ) {
         AlarmType type = alarmService.decideAlarmType(userId);
@@ -36,7 +36,7 @@ public class AlarmController {
             return ResponseEntity.ok(
                     ApiResponseDto.success(
                             ResponseCode.NO_ALARM_TO_SEND,
-                            Map.of(NOTIFICATION_TYPE_KEY, NOTIFICATION_TYPE_NONE)
+                            null
                     )
             );
         }
@@ -45,7 +45,7 @@ public class AlarmController {
         return ResponseEntity.ok(
                 ApiResponseDto.success(
                         ResponseCode.SUCCESS,
-                        Map.of(NOTIFICATION_TYPE_KEY, type.name())
+                        new AlarmSendResponseDto(type)
                 )
         );
     }

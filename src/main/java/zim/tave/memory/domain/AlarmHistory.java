@@ -14,7 +14,7 @@ public class AlarmHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "alarmHistoryId")
+    @Column(name = "alarm_history_id")
     private Long id;
 
     // 알림을 받을 사용자

@@ -8,6 +8,7 @@ import zim.tave.memory.domain.User;
 import zim.tave.memory.repository.AlarmHistoryRepository;
 import zim.tave.memory.repository.DiaryRepository;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -19,13 +20,22 @@ public class AlarmPolicyService {
 
     private final AlarmHistoryRepository alarmHistoryRepository;
     private final DiaryRepository diaryRepository;
+    private final Clock clock;
+
+    // 정책 상수
+    private static final int DAILY_CAP = 1;
+    private static final int WEEKLY_WINDOW_DAYS = 7;
+    private static final int WEEKLY_CAP = 3;
+    private static final int COOLDOWN_HOURS = 48;
+    private static final double SERVICE_SLOT_RATIO = 0.25;
+    private static final double INCOMPLETE_SLOT_RATIO = 0.4;
 
     public AlarmType decide(User user, Trip trip) {
 
         Long userId = user.getId();
         Long tripId = trip.getId();
 
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime now = LocalDateTime.now(clock);
         LocalDate today = now.toLocalDate();
 
         // 하루 캡 (하루 1번 한정)
@@ -36,22 +46,21 @@ public class AlarmPolicyService {
         // 주간 캡 (최근 7일, 최대 3회)
         long weeklyCount =
                 alarmHistoryRepository.countByUserIdAndSentAtAfter(
-                        userId, now.minusDays(7)
+                        userId, now.minusDays(WEEKLY_WINDOW_DAYS)
                 );
 
-        if (weeklyCount >= 3) {
+        if (weeklyCount >= WEEKLY_CAP) {
             return null;
         }
 
         // 여행 중 전체 슬롯 계산
-        long totalTripDays =
-                ChronoUnit.DAYS.between(
+        long totalTripDays = ChronoUnit.DAYS.between(
                         trip.getStartDate(),
                         trip.getEndDate()
-                ) + 1;
+        ) + 1;
 
-        long serviceSlotLimit = Math.max(1, (long) Math.floor(totalTripDays * 0.25));
-        long maxIncompleteSlot = (long) Math.floor(serviceSlotLimit * 0.4);
+        long serviceSlotLimit = Math.max(1, (long) Math.floor(totalTripDays * SERVICE_SLOT_RATIO));
+        long maxIncompleteSlot = (long) Math.floor(serviceSlotLimit * INCOMPLETE_SLOT_RATIO);
 
         long usedServiceCount =
                 alarmHistoryRepository.countByTripIdAndAlarmType(
@@ -97,7 +106,7 @@ public class AlarmPolicyService {
                 .existsByUserIdAndAlarmTypeAndSentAtAfter(
                         userId,
                         type,
-                        now.minusHours(48)
+                        now.minusHours(COOLDOWN_HOURS)
                 );
     }
 }

@@ -1,6 +1,7 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import zim.tave.memory.repository.AlarmHistoryRepository;
 import zim.tave.memory.repository.SettingRepository;
 import zim.tave.memory.repository.UserRepository;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -22,6 +24,7 @@ public class AlarmService {
     private final AlarmHistoryRepository alarmHistoryRepository;
     private final TripService tripService;
     private final UserRepository userRepository;
+    private final Clock clock;
 
     @Transactional
     public AlarmType decideAlarmType(Long userId) {
@@ -49,14 +52,14 @@ public class AlarmService {
         }
 
         // 4. 알림 전송 히스토리에 저장
-        alarmHistoryRepository.save(
-                AlarmHistory.create(
-                        userId,
-                        trip.getId(),
-                        type,
-                        LocalDateTime.now()
-                )
-        );
+        try {
+            alarmHistoryRepository.save(
+                    AlarmHistory.create(userId, trip.getId(), type, LocalDateTime.now(clock))
+            );
+        } catch (DataIntegrityViolationException e) {
+            // 동시 요청으로 인한 중복 저장 시도 - 이미 처리됨
+            return null;
+        }
 
         // 전송할 알림 타입 결정
         return type;
