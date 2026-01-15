@@ -1,5 +1,7 @@
 package zim.tave.memory.controller;
 
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +21,15 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/users/me/alarm")
+@Table(
+        name = "alarm_history",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_sent_date",
+                        columnNames = {"user_id", "sent_date"}
+                )
+        }
+)
 public class AlarmController {
 
     private final AlarmService alarmService;
