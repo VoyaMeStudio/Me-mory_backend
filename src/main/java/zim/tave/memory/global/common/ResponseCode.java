@@ -26,6 +26,7 @@ public enum ResponseCode {
     STORED_DIARY_FOUND_SUCCESS(200, "보관된 일기 목록을 성공적으로 조회하였습니다."),
     //설정
     USER_DELETE_SUCCESS(200, "회원 탈퇴가 성공적으로 처리되었습니다."),
+    NO_FIELDS_TO_UPDATE(400, "수정할 필드가 없습니다."),
     //카카오 로그인 성공 메세지
     KAKAO_USERINFO_FETCH_SUCCESS(200, "카카오 사용자 정보 조회 성공"),
     //보드
@@ -33,6 +34,8 @@ public enum ResponseCode {
     BOARD_UPDATE_SUCCESS(200, "보드 수정이 완료되었습니다."),
     BOARD_DELETE_SUCCESS(200, "보드가 성공적으로 삭제되었습니다."),
     BOARD_FETCH_SUCCESS(200, "보드 정보가 성공적으로 조회되었습니다."),
+    //알림
+    NO_ALARM_TO_SEND(200, "전송할 알림이 없습니다."),
 
     // 실패 응답
     INVALID_REQUEST(400, "잘못된 요청입니다."),
@@ -108,6 +111,9 @@ public enum ResponseCode {
     BOARD_DELETE_FORBIDDEN(403, "해당 보드를 삭제할 권한이 없습니다."),
     BOARD_STICKER_MAP_NOT_FOUND(404, "스티커가 보드에 존재하지 않습니다."),
     BOARD_ACCESS_FORBIDDEN(403, "해당 보드에 접근할 수 없습니다."),
+
+    //알림
+    ALARM_NOT_AGREED(403, "알림 수신 미동의 사용자입니다."),
     ;
 
     private final int code;

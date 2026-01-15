@@ -27,4 +27,7 @@ public class JoinRequestDto {
     @Schema(description = "국가명(필수)", example = "REPUBLIC OF KOREA")
     private String nationality;
 
+    @Schema(description = "알림 동의 여부 (기본: true, false는 알림 전송X)", example = "true")
+    private Boolean alarm;
+
 }

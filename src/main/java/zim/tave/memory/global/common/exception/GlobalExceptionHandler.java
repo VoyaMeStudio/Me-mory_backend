@@ -90,6 +90,7 @@ public class GlobalExceptionHandler {
             case BOARD_DELETE_FORBIDDEN -> ResponseCode.BOARD_DELETE_FORBIDDEN;
             case BOARD_STICKER_MAP_NOT_FOUND -> ResponseCode.BOARD_STICKER_MAP_NOT_FOUND;
             case BOARD_ACCESS_FORBIDDEN -> ResponseCode.BOARD_ACCESS_FORBIDDEN;
+            case ALARM_NOT_AGREED -> ResponseCode.ALARM_NOT_AGREED;
 
             default -> ResponseCode.SERVER_ERROR;
         };
@@ -106,10 +107,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponseDto<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         String errorId = UUID.randomUUID().toString();
-        
+
         // 에러 로그 기록
         log.error("[{}] HttpMessageNotReadableException: {}", errorId, ex.getMessage(), ex);
-        
+
         // 원인 체인을 순회하여 CustomException, DateTimeParseException 등을 찾음
         Throwable cause = ex;
         while (cause != null) {
@@ -117,25 +118,25 @@ public class GlobalExceptionHandler {
             if (cause instanceof CustomException) {
                 return handleCustomException((CustomException) cause);
             }
-            
+
             // DateTimeParseException인 경우
             if (cause instanceof DateTimeParseException) {
                 DateTimeParseException dtpe = (DateTimeParseException) cause;
-                String message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식을 사용해주세요.", 
+                String message = String.format("날짜 및 시간 형식이 올바르지 않습니다. 입력값: '%s'. ISO 8601 형식을 사용해주세요.",
                         dtpe.getParsedString());
                 String safeMessage = message + " (errorId: " + errorId + ")";
                 return ResponseEntity.badRequest()
                         .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
             }
-            
+
             // 다음 원인으로 이동
             cause = cause.getCause();
         }
-        
+
         // 원인을 찾지 못한 경우 기본 메시지
         String message = "요청 본문을 파싱할 수 없습니다. 요청 형식을 확인해주세요.";
         String safeMessage = message + " (errorId: " + errorId + ")";
-        
+
         return ResponseEntity.badRequest()
                 .body(ApiResponseDto.error(ResponseCode.VALIDATION_ERROR, safeMessage));
     }
