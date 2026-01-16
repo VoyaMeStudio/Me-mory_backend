@@ -27,6 +27,7 @@ public class TripService {
     private final UserRepository userRepository;
     private final VisitedCountryService visitedCountryService;
     private final DiaryRepository diaryRepository;
+    private final TripService self; // self-injection 추가
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
@@ -120,19 +121,19 @@ public class TripService {
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
+
         // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
         LocalDate existingStartDate = findTrip.getStartDate();
         LocalDate existingEndDate = findTrip.getEndDate();
-        
+
         // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
         if (existingStartDate == null || existingEndDate == null) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
+
         LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
         LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
-        
+
         if (newStartDate.isAfter(newEndDate)) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
@@ -233,7 +234,7 @@ public class TripService {
             throw new CustomException(ErrorCode.IMAGE_ID_REQUIRED);
         }
         validateOwnership(tripId, userId);
-        updateTripRepresentativeImage(tripId, imageId);
+        self.updateTripRepresentativeImage(tripId, imageId);
     }
 
     // DiaryImage ID로 DiaryImage 찾기
@@ -320,19 +321,19 @@ public class TripService {
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
+
         // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
         LocalDate existingStartDate = trip.getStartDate();
         LocalDate existingEndDate = trip.getEndDate();
-        
+
         // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
         if (existingStartDate == null || existingEndDate == null) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
+
         LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
         LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
-        
+
         if (newStartDate.isAfter(newEndDate)) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
@@ -383,7 +384,7 @@ public class TripService {
         }
 
         validateIsPastTrip(trip);
-        storeTrip(tripId, userId, isStored);
+        self.storeTrip(tripId, userId, isStored);
     }
 
     /**
