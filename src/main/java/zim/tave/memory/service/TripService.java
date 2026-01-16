@@ -122,21 +122,7 @@ public class TripService {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
 
-        // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
-        LocalDate existingStartDate = findTrip.getStartDate();
-        LocalDate existingEndDate = findTrip.getEndDate();
-
-        // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
-        if (existingStartDate == null || existingEndDate == null) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
-
-        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
-        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
-
-        if (newStartDate.isAfter(newEndDate)) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
+        validateUpdatedDates(findTrip, request);
 
         if (request.getTripName() != null) {
             findTrip.setTripName(request.getTripName());
@@ -162,6 +148,23 @@ public class TripService {
 
         if (request.getEndDate() != null) {
             findTrip.setEndDate(request.getEndDate());
+        }
+    }
+
+    // 날짜 검증
+    private void validateUpdatedDates(Trip trip, UpdateTripRequest request) {
+        LocalDate existingStartDate = trip.getStartDate();
+        LocalDate existingEndDate = trip.getEndDate();
+
+        if (existingStartDate == null || existingEndDate == null) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+
+        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
+        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
+
+        if (newStartDate.isAfter(newEndDate)) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
     }
 
