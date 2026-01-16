@@ -31,11 +31,11 @@ public class DiaryResponseDto {
 	@Schema(description = "상세 위치", example = "한라산 정상")
 	private final String detailedLocation;
 
-	@Schema(description = "일기 작성 날짜 및 시간", example = "2024-05-20T10:00:00.000Z")
+	@Schema(description = "일기 작성 날짜 및 시간 (UTC 기준, ISO-8601 형식). 프론트엔드에서는 사용자의 로컬 타임존으로 변환하여 표시해야 합니다.", example = "2024-05-20T10:00:00.000Z")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 	private final OffsetDateTime dateTime;
 
-	@Schema(description = "일기 생성 날짜 및 시간", example = "2024-05-20T10:00:00.000Z")
+	@Schema(description = "일기 생성 날짜 및 시간 (UTC 기준, ISO-8601 형식). 프론트엔드에서는 사용자의 로컬 타임존으로 변환하여 표시해야 합니다.", example = "2024-05-20T10:00:00.000Z")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 	private final OffsetDateTime createdAt;
 

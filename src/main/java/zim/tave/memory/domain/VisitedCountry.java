@@ -20,7 +20,7 @@ public class VisitedCountry {
 
     private String color;
 
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
