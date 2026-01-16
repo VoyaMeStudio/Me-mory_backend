@@ -1,6 +1,8 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
@@ -27,7 +29,12 @@ public class TripService {
     private final UserRepository userRepository;
     private final VisitedCountryService visitedCountryService;
     private final DiaryRepository diaryRepository;
-    private final TripService self; // self-injection 추가
+
+    private TripService self; // self-injection 추가
+    @Autowired
+    public void setSelf(@Lazy TripService self) {
+        this.self = self;
+    }
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
