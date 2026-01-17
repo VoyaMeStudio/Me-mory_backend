@@ -238,6 +238,16 @@ public class TripService {
         return buildTripResponseDto(trip);
     }
 
+    /**
+     * 여행 대표 이미지를 소유권 검증 후 업데이트합니다.
+     *
+     * @param tripId 여행 ID
+     * @param imageId 이미지 ID
+     * @param userId 사용자 ID
+     * @throws CustomException 이미지 ID가 null이거나 소유권이 없는 경우
+     *
+     * @implNote self.updateTripRepresentativeImage()를 호출하여 Spring 프록시를 통한 트랜잭션 처리를 보장
+     */
     @Transactional
     public void updateTripRepresentativeImageWithOwnershipCheck(Long tripId, Long imageId, Long userId) {
         if (imageId == null) {
@@ -368,6 +378,7 @@ public class TripService {
      * @param userId 사용자 ID
      * @param isStored 보관 여부
      * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
+     * @implNote self.storeTrip()을 호출하여 트랜잭션 프록시를 통해 일관된 트랜잭션 관리 보장
      */
     @Transactional
     public void storePastTrip(Long tripId, Long userId, boolean isStored) {
