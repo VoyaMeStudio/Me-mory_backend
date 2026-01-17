@@ -75,6 +75,8 @@ class TripServiceTest {
         trip.setTripTheme(tripTheme);
         trip.setStartDate(LocalDate.of(2024, 1, 1));
         trip.setEndDate(LocalDate.of(2024, 1, 5));
+
+        tripService.setSelf(tripService);
     }
 
     @Test
@@ -412,4 +414,102 @@ class TripServiceTest {
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TRIP_UPDATE_FORBIDDEN);
     }
+
+    @Test
+    void 날짜_검증_시작날짜가_null인_경우() {
+        // given
+        trip.setStartDate(null);
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setEndDate(LocalDate.of(2024, 2, 1));
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.updateTrip(1L, request, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.VALIDATION_ERROR);
+    }
+
+    @Test
+    void 날짜_검증_종료날짜가_null인_경우() {
+        // given
+        trip.setEndDate(null);
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStartDate(LocalDate.of(2024, 2, 1));
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when & then
+        assertThatThrownBy(() -> tripService.updateTrip(1L, request, 1L))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.VALIDATION_ERROR);
+    }
+
+    @Test
+    void 날짜_검증_시작날짜만_업데이트() {
+        // given
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStartDate(LocalDate.of(2024, 1, 2));
+        // endDate는 null (기존 값 유지)
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.updateTrip(1L, request, 1L);
+
+        // then
+        assertThat(trip.getStartDate()).isEqualTo(LocalDate.of(2024, 1, 2));
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 5)); // 기존 값 유지
+    }
+
+    @Test
+    void 날짜_검증_종료날짜만_업데이트() {
+        // given
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setEndDate(LocalDate.of(2024, 1, 10));
+        // startDate는 null (기존 값 유지)
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.updateTrip(1L, request, 1L);
+
+        // then
+        assertThat(trip.getStartDate()).isEqualTo(LocalDate.of(2024, 1, 1)); // 기존 값 유지
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 10));
+    }
+
+    @Test
+    void 날짜_검증_시작종료_날짜_동일() {
+        // given
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStartDate(LocalDate.of(2024, 1, 5));
+        request.setEndDate(LocalDate.of(2024, 1, 5));
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        tripService.updateTrip(1L, request, 1L);
+
+        // then
+        assertThat(trip.getStartDate()).isEqualTo(LocalDate.of(2024, 1, 5));
+        assertThat(trip.getEndDate()).isEqualTo(LocalDate.of(2024, 1, 5));
+    }
+
+    @Test
+    void 과거_여행_보관_시_self_트랜잭션_호출() {
+        // given
+        trip.setIsPast(true);
+        TripService spyService = spy(tripService);
+        spyService.setSelf(spyService);
+
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+
+        // when
+        spyService.storePastTrip(1L, 1L, true);
+
+        // then
+        verify(spyService).storeTrip(1L, 1L, true); // self를 통해 호출되었는지 확인
+    }
+
 }
