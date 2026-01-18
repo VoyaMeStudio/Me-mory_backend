@@ -5,9 +5,14 @@ import lombok.Getter;
 import zim.tave.memory.domain.AlarmType;
 
 @Getter
+@Schema(description = "알림 전송 결과 DTO")
 public class AlarmSendResponseDto {
 
-    @Schema(description = "알림 종류", example = "DIARY_REMIND")
+    @Schema(
+            description = "전송된 알림 타입",
+            example = "BOARD_DECORATE_REMIND",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private String notificationType;
 
     public AlarmSendResponseDto(AlarmType type) {
