@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.models.media.Schema;
+import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -29,4 +32,33 @@ import org.springframework.context.annotation.Configuration;
     in = SecuritySchemeIn.HEADER
 )
 public class OpenApiConfig {
+
+    @Bean
+    public OpenApiCustomizer apiResponseDtoVoidSchemaCustomizer() {
+        return openApi -> {
+            // ApiResponseDto<Void> 스키마를 명시적으로 등록
+            Schema<?> voidSchema = new Schema<>();
+            voidSchema.setType("object");
+            voidSchema.setDescription("공통 응답 형식 (에러 응답용 - data 필드는 null)");
+            
+            Schema<?> codeSchema = new Schema<>();
+            codeSchema.setType("integer");
+            codeSchema.setDescription("응답 코드");
+            voidSchema.addProperty("code", codeSchema);
+            
+            Schema<?> messageSchema = new Schema<>();
+            messageSchema.setType("string");
+            messageSchema.setDescription("응답 메시지");
+            voidSchema.addProperty("message", messageSchema);
+            
+            Schema<?> dataSchema = new Schema<>();
+            dataSchema.setType("object");
+            dataSchema.setNullable(true);
+            dataSchema.setDescription("데이터 (에러 응답에서는 항상 null)");
+            voidSchema.addProperty("data", dataSchema);
+            
+            // 스키마 등록
+            openApi.getComponents().addSchemas("ApiResponseDtoVoid", voidSchema);
+        };
+    }
 }
