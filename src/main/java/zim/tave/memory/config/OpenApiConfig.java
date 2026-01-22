@@ -36,6 +36,12 @@ public class OpenApiConfig {
     @Bean
     public OpenApiCustomizer apiResponseDtoVoidSchemaCustomizer() {
         return openApi -> {
+
+            // Components가 null일 경우 NPE 방지
+            if (openApi.getComponents() == null) {
+                openApi.setComponents(new Components());
+            }
+            
             // ApiResponseDto<Void> 스키마를 명시적으로 등록
             Schema<?> voidSchema = new Schema<>();
             voidSchema.setType("object");
@@ -56,6 +62,13 @@ public class OpenApiConfig {
             dataSchema.setNullable(true);
             dataSchema.setDescription("데이터 (에러 응답에서는 항상 null)");
             voidSchema.addProperty("data", dataSchema);
+
+            // addProperty 사용 제거 → Map + setProperties 방식으로 안전하게 설정
+            Map<String, Schema<?>> properties = new LinkedHashMap<>();
+            properties.put("code", codeSchema);
+            properties.put("message", messageSchema);
+            properties.put("data", dataSchema);
+            voidSchema.setProperties(properties);
             
             // 스키마 등록
             openApi.getComponents().addSchemas("ApiResponseDtoVoid", voidSchema);
