@@ -2,7 +2,6 @@ package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,7 +18,6 @@ import zim.tave.memory.dto.response.VisitedCountryListResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.MyPageService;
 import zim.tave.memory.service.VisitedCountryService;
 
@@ -93,7 +91,8 @@ public class MyPageController {
                 - USER_NOT_FOUND: 사용자를 찾을 수 없습니다.
                 - VISITED_COUNTRY_NOT_FOUND: 방문한 국가 정보가 없습니다.
                 """, content = @Content),
-            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 방문 국가 조회에 실패하였습니다.")
+            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 방문 국가 조회에 실패하였습니다.",
+                content = @Content)
     })
     @GetMapping("/mypage-visited-countries")
     public ResponseEntity<ApiResponseDto<VisitedCountryListResponseDto>> getVisitedCountries(
