@@ -1,6 +1,5 @@
 package zim.tave.memory.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +20,6 @@ public class BoardUpdateResponseDto {
     private Long boardId;
 
     @Schema(description = "보드 최종 수정 시각 (UTC 기준, ISO-8601 형식). 프론트엔드에서는 사용자의 로컬 타임존으로 변환하여 표시해야 합니다.", example = "2025-12-01T17:30:00.000Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private OffsetDateTime updatedAt;
 
     @Schema(description = "적용된 스티커 리스트")

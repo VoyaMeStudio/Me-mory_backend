@@ -1,6 +1,5 @@
 package zim.tave.memory.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +24,6 @@ public class StoredDiaryResponseDto {
     private String representativeImageUrl;
 
     @Schema(description = "일기 작성 날짜 (UTC 기준, ISO-8601 형식). 프론트엔드에서는 사용자의 로컬 타임존으로 변환하여 표시해야 합니다.", example = "2024-11-14T18:20:00.000Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private OffsetDateTime createdAt;
 
     @Schema(description = "작성 요일", example = "THURSDAY")
