@@ -84,7 +84,8 @@ public class SettingController {
                 리소스를 찾을 수 없습니다:
                 - USER_NOT_FOUND: 사용자를 찾을 수 없습니다.
                 """, content = @Content),
-            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 회원 정보 수정 실패")
+            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 회원 정보 수정 실패",
+                content = @Content)
     })
     @PatchMapping("/users/me")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> updateUserInfo(

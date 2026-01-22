@@ -2,7 +2,6 @@ package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.domain.Emotion;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.service.EmotionService;
 
@@ -35,8 +36,8 @@ public class EmotionController {
             content = @Content)
     })
     @GetMapping("")
-    public ResponseEntity<List<Emotion>> getAllEmotions() {
+    public ResponseEntity<ApiResponseDto<List<Emotion>>> getAllEmotions() {
         List<Emotion> emotions = emotionService.getAllEmotions();
-        return ResponseEntity.ok(emotions);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, emotions));
     }
 }

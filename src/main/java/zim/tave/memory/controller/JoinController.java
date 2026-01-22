@@ -2,7 +2,6 @@ package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -45,17 +44,17 @@ public class JoinController {
             @ApiResponse(responseCode = "400", description = """
                     잘못된 요청입니다. 다음 에러 코드가 발생할 수 있습니다:
                     - KAKAO_LOGIN_REQUIRED: 카카오 로그인이 필요합니다.
-                    """),
+                    """, content = @Content),
             @ApiResponse(responseCode = "401", description = """
                     인증 실패입니다. 다음 에러 코드가 발생할 수 있습니다:
                     - AUTHENTICATION_FAILED
                     - INVALID_TOKEN
                     - UNAUTHORIZED_USER
-                    """),
+                    """, content = @Content),
             @ApiResponse(responseCode = "409", description = """
                     중복 가입 오류입니다:
                     - ALREADY_JOINED: 이미 가입된 사용자입니다.
-                    """)
+                    """, content = @Content)
     })
     @PostMapping("/join")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> join(

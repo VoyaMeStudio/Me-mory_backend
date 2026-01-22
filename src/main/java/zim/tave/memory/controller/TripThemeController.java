@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.domain.TripTheme;
 import zim.tave.memory.dto.response.TripThemeResponseDto;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.TripThemeRepository;
 
@@ -37,11 +39,11 @@ public class TripThemeController {
             @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.",
                     content = @Content)
     })
-    public ResponseEntity<List<TripThemeResponseDto>> getAllThemes() {
+    public ResponseEntity<ApiResponseDto<List<TripThemeResponseDto>>> getAllThemes() {
         List<TripTheme> themes = tripThemeRepository.findAllByOrderById();
         List<TripThemeResponseDto> response = themes.stream()
                 .map(TripThemeResponseDto::from)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, response));
     }
 }

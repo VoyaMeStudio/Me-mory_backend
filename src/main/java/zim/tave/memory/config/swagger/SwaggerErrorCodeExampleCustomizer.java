@@ -65,10 +65,10 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
                 apiResponse.getContent().addMediaType("application/json", mediaType);
             }
 
-            // Schema 설정 (ApiResponseDto 참조)
+            // Schema 설정 (ApiResponseDto<Void> 참조 - 에러 응답은 data가 null이므로 ApiResponseDtoVoid로 생성됨)
             if (mediaType.getSchema() == null) {
                 io.swagger.v3.oas.models.media.Schema<?> schema = new io.swagger.v3.oas.models.media.Schema<>();
-                schema.set$ref("#/components/schemas/ApiResponseDto");
+                schema.set$ref("#/components/schemas/ApiResponseDtoVoid");
                 mediaType.setSchema(schema);
             }
 
@@ -142,6 +142,8 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
             case TRIP_NAME_REQUIRED -> ResponseCode.TRIP_NAME_REQUIRED;
             case TRIP_NAME_TOO_LONG -> ResponseCode.TRIP_NAME_TOO_LONG;
             case TRIP_DESCRIPTION_TOO_LONG -> ResponseCode.TRIP_DESCRIPTION_TOO_LONG;
+            case NOT_PAST_TRIP -> ResponseCode.NOT_PAST_TRIP;
+            case CANNOT_ADD_DIARY_TO_PAST_TRIP -> ResponseCode.CANNOT_ADD_DIARY_TO_PAST_TRIP;
             case KAKAO_LOGIN_REQUIRED -> ResponseCode.KAKAO_LOGIN_REQUIRED;
             case INCOMPLETE_USER_INFO -> ResponseCode.INCOMPLETE_USER_INFO;
             case ALREADY_JOINED -> ResponseCode.ALREADY_JOINED;
@@ -151,6 +153,29 @@ public class SwaggerErrorCodeExampleCustomizer implements OperationCustomizer {
             case FILE_TOO_LARGE -> ResponseCode.FILE_TOO_LARGE;
             case FILE_TYPE_NOT_ALLOWED -> ResponseCode.FILE_TYPE_NOT_ALLOWED;
             case FILE_UPLOAD_FAILED -> ResponseCode.FILE_UPLOAD_FAILED;
+            // 보관
+            case TRIP_NOT_STORED -> ResponseCode.TRIP_NOT_STORED;
+            case DIARY_NOT_STORED -> ResponseCode.DIARY_NOT_STORED;
+            // 카카오 로그인
+            case KAKAO_TOKEN_MISSING -> ResponseCode.KAKAO_TOKEN_MISSING;
+            case KAKAO_INVALID_TOKEN -> ResponseCode.KAKAO_INVALID_TOKEN;
+            case KAKAO_UNAUTHORIZED -> ResponseCode.KAKAO_UNAUTHORIZED;
+            case KAKAO_SERVER_ERROR -> ResponseCode.KAKAO_SERVER_ERROR;
+            case KAKAO_RESPONSE_PARSING_ERROR -> ResponseCode.KAKAO_RESPONSE_PARSING_ERROR;
+            case KAKAO_API_UNKNOWN_ERROR -> ResponseCode.KAKAO_API_UNKNOWN_ERROR;
+            // 보드
+            case BOARD_REQUIRED_FIELDS_MISSING -> ResponseCode.BOARD_REQUIRED_FIELDS_MISSING;
+            case BOARD_THEME_NOT_FOUND -> ResponseCode.BOARD_THEME_NOT_FOUND;
+            case BOARD_CREATE_FAILED -> ResponseCode.BOARD_CREATE_FAILED;
+            case BOARD_NOT_FOUND -> ResponseCode.BOARD_NOT_FOUND;
+            case BOARD_UPDATE_FORBIDDEN -> ResponseCode.BOARD_UPDATE_FORBIDDEN;
+            case BOARD_STICKER_NOT_FOUND -> ResponseCode.BOARD_STICKER_NOT_FOUND;
+            case BOARD_UPDATE_INTERNAL_ERROR -> ResponseCode.BOARD_UPDATE_INTERNAL_ERROR;
+            case BOARD_DELETE_FORBIDDEN -> ResponseCode.BOARD_DELETE_FORBIDDEN;
+            case BOARD_STICKER_MAP_NOT_FOUND -> ResponseCode.BOARD_STICKER_MAP_NOT_FOUND;
+            case BOARD_ACCESS_FORBIDDEN -> ResponseCode.BOARD_ACCESS_FORBIDDEN;
+            // 알림
+            case ALARM_NOT_AGREED -> ResponseCode.ALARM_NOT_AGREED;
             default -> ResponseCode.SERVER_ERROR;
         };
     }

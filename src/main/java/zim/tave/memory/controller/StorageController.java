@@ -18,7 +18,6 @@ import zim.tave.memory.dto.response.StoredTripListResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
-import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.StorageService;
 
 import java.util.List;
