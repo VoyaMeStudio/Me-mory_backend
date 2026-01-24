@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(name = "ApiResponseDto", description = "공통 응답 형식")
+@Schema(description = "공통 응답 형식")
 public class ApiResponseDto<T> {
 
     @Schema(description = "응답 코드")
@@ -18,6 +18,8 @@ public class ApiResponseDto<T> {
 
     @Schema(description = "응답 메시지")
     private String message;
+    
+    @Schema(description = "데이터")
     private T data;
 
     // 성공 응답

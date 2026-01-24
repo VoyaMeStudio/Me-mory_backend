@@ -3,10 +3,12 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zim.tave.memory.domain.Setting;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.request.JoinRequestDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
+import zim.tave.memory.repository.SettingRepository;
 import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
@@ -17,6 +19,7 @@ import java.time.ZoneOffset;
 public class JoinService {
 
     private final UserRepository userRepository;
+    private final SettingRepository settingRepository;
 
     @Transactional
     public User join(Long userId, JoinRequestDto requestDto) {
@@ -43,11 +46,22 @@ public class JoinService {
         user.setStatus(true);
         user.setRegistered(true);
 
+        if (user.getSetting() == null) {
+            Setting setting = new Setting();
+            setting.setUser(user);
+            setting.setAlarm(requestDto.getAlarm() != null && requestDto.getAlarm());
+            user.setSetting(setting);
+        } else if (requestDto.getAlarm() != null) {
+            user.getSetting().setAlarm(requestDto.getAlarm());
+        }
+
         //마이페이지 Statistics 정보
         user.setDiaryCount(0L);
         user.setVisitedCountryCount(0L);
         user.setFlags("");
 
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        return user;
     }
 }

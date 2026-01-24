@@ -1,6 +1,8 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
@@ -13,6 +15,7 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -26,6 +29,12 @@ public class TripService {
     private final UserRepository userRepository;
     private final VisitedCountryService visitedCountryService;
     private final DiaryRepository diaryRepository;
+
+    private TripService self; // self-injection 추가
+    @Autowired
+    public void setSelf(@Lazy TripService self) {
+        this.self = self;
+    }
 
     @Transactional
     public TripResponseDto createTrip(CreateTripRequest request, Long userId) {
@@ -119,22 +128,8 @@ public class TripService {
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
-        // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
-        LocalDate existingStartDate = findTrip.getStartDate();
-        LocalDate existingEndDate = findTrip.getEndDate();
-        
-        // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
-        if (existingStartDate == null || existingEndDate == null) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
-        
-        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
-        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
-        
-        if (newStartDate.isAfter(newEndDate)) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
+
+        validateUpdatedDates(findTrip, request);
 
         if (request.getTripName() != null) {
             findTrip.setTripName(request.getTripName());
@@ -160,6 +155,23 @@ public class TripService {
 
         if (request.getEndDate() != null) {
             findTrip.setEndDate(request.getEndDate());
+        }
+    }
+
+    // 날짜 검증
+    private void validateUpdatedDates(Trip trip, UpdateTripRequest request) {
+        LocalDate existingStartDate = trip.getStartDate();
+        LocalDate existingEndDate = trip.getEndDate();
+
+        if (existingStartDate == null || existingEndDate == null) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
+        }
+
+        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
+        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
+
+        if (newStartDate.isAfter(newEndDate)) {
+            throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
     }
 
@@ -226,13 +238,23 @@ public class TripService {
         return buildTripResponseDto(trip);
     }
 
+    /**
+     * 여행 대표 이미지를 소유권 검증 후 업데이트합니다.
+     *
+     * @param tripId 여행 ID
+     * @param imageId 이미지 ID
+     * @param userId 사용자 ID
+     * @throws CustomException 이미지 ID가 null이거나 소유권이 없는 경우
+     *
+     * @implNote self.updateTripRepresentativeImage()를 호출하여 Spring 프록시를 통한 트랜잭션 처리를 보장
+     */
     @Transactional
     public void updateTripRepresentativeImageWithOwnershipCheck(Long tripId, Long imageId, Long userId) {
         if (imageId == null) {
             throw new CustomException(ErrorCode.IMAGE_ID_REQUIRED);
         }
         validateOwnership(tripId, userId);
-        updateTripRepresentativeImage(tripId, imageId);
+        self.updateTripRepresentativeImage(tripId, imageId);
     }
 
     // DiaryImage ID로 DiaryImage 찾기
@@ -282,7 +304,7 @@ public class TripService {
 
     /**
      * 과거 여행인지 확인하는 검증 로직
-     * 
+     *
      * @param trip 여행 엔티티
      * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
      */
@@ -294,7 +316,7 @@ public class TripService {
 
     /**
      * 과거 여행만 수정하는 메서드 (타임라인 뷰용)
-     * 
+     *
      * @param tripId 여행 ID
      * @param request 수정 요청
      * @param userId 사용자 ID
@@ -319,22 +341,8 @@ public class TripService {
         if (request.getDescription() != null && request.getDescription().trim().length() > 56) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
-        // 날짜 검증: 하나의 날짜만 수정되더라도 기존 날짜와 비교 검증
-        LocalDate existingStartDate = trip.getStartDate();
-        LocalDate existingEndDate = trip.getEndDate();
-        
-        // DB 제약에 의해 null이 아니어야 하지만, 데이터 무결성 검증
-        if (existingStartDate == null || existingEndDate == null) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
-        
-        LocalDate newStartDate = request.getStartDate() != null ? request.getStartDate() : existingStartDate;
-        LocalDate newEndDate = request.getEndDate() != null ? request.getEndDate() : existingEndDate;
-        
-        if (newStartDate.isAfter(newEndDate)) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
+
+        validateUpdatedDates(trip, request);
 
         if (request.getTripName() != null) {
             trip.setTripName(request.getTripName());
@@ -365,11 +373,12 @@ public class TripService {
 
     /**
      * 과거 여행만 보관하는 메서드 (타임라인 뷰용)
-     * 
+     *
      * @param tripId 여행 ID
      * @param userId 사용자 ID
      * @param isStored 보관 여부
      * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
+     * @implNote self.storeTrip()을 호출하여 트랜잭션 프록시를 통해 일관된 트랜잭션 관리 보장
      */
     @Transactional
     public void storePastTrip(Long tripId, Long userId, boolean isStored) {
@@ -382,12 +391,12 @@ public class TripService {
         }
 
         validateIsPastTrip(trip);
-        storeTrip(tripId, userId, isStored);
+        self.storeTrip(tripId, userId, isStored);
     }
 
     /**
      * 과거 여행만 삭제하는 메서드 (타임라인 뷰용)
-     * 
+     *
      * @param tripId 여행 ID
      * @param userId 사용자 ID
      * @throws CustomException 과거 여행이 아니면 NOT_PAST_TRIP 예외 발생
@@ -457,5 +466,15 @@ public class TripService {
                 .themeCardImageUrl(trip.getTripTheme() != null ? trip.getTripTheme().getCardImageUrl() : null)
                 .diaryCount(trip.getDiaries() != null ? trip.getDiaries().size() : 0)
                 .build();
+    }
+
+    // (알림 전송용) 현재 진행중인 여행 확인
+    public Trip findCurrentOngoingTrip(Long userId) {
+        ensureAuthenticated(userId);
+
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        return tripRepository.findOngoingTripByUserId(userId, today)
+                .orElse(null);
     }
 }

@@ -3,6 +3,7 @@ package zim.tave.memory.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zim.tave.memory.domain.Setting;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.request.UpdateUserRequestDto;
 import zim.tave.memory.dto.response.UserResponseDto;
@@ -50,40 +51,50 @@ public class SettingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 필수 필드 검증 (하나라도 비어 있으면 예외)
-        validateFields(requestDto);
+        boolean isUpdated = false;
 
         // null이 아닌 필드만 업데이트
-        if (requestDto.getSurName() != null)
+        if (requestDto.getSurName() != null) {
             user.setSurName(requestDto.getSurName());
-        if (requestDto.getFirstName() != null)
+            isUpdated = true;
+        }
+        if (requestDto.getFirstName() != null) {
             user.setFirstName(requestDto.getFirstName());
-        if (requestDto.getKoreanName() != null)
+            isUpdated = true;
+        }
+        if (requestDto.getKoreanName() != null) {
             user.setKoreanName(requestDto.getKoreanName());
-        if (requestDto.getBirth() != null)
+            isUpdated = true;
+        }
+
+        if (requestDto.getBirth() != null) {
             user.setBirth(requestDto.getBirth());
-        if (requestDto.getNationality() != null)
+            isUpdated = true;
+        }
+
+        if (requestDto.getNationality() != null){
             user.setNationality(requestDto.getNationality());
+            isUpdated = true;
+        }
+
+        if (requestDto.getAlarm() != null) {
+            Setting setting = user.getSetting();
+
+            if (setting == null) {
+                setting = new Setting();
+                setting.setUser(user);
+            }
+
+            setting.setAlarm(requestDto.getAlarm());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new CustomException(ErrorCode.NO_FIELDS_TO_UPDATE);
+        }
 
         userRepository.save(user);
 
         return UserResponseDto.from(user);
     }
-
-    //필수 필드 null 여부 검사
-    private void validateFields(UpdateUserRequestDto dto) {
-        if (isNullOrEmpty(dto.getSurName()) ||
-                isNullOrEmpty(dto.getFirstName()) ||
-                isNullOrEmpty(dto.getKoreanName()) ||
-                dto.getBirth() == null ||
-                isNullOrEmpty(dto.getNationality())) {
-            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
-        }
-    }
-
-    private boolean isNullOrEmpty(String value) {
-        return value == null || value.trim().isEmpty();
-    }
-
-
 }

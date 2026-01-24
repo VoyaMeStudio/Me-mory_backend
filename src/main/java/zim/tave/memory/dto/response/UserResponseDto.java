@@ -46,7 +46,16 @@ public class UserResponseDto {
     @Schema(description = "방문한 국가의 국기 이모지(초기값 null)", example = "🇰🇷🇫🇷🇯🇵")
     private String flags;
 
+    @Schema(description = "알림 수신 동의 여부", example = "true")
+    private Boolean alarm;
+
     public static UserResponseDto from(User user) {
+
+        Boolean alarm = null;
+        if (user.getSetting() != null) {
+            alarm = user.getSetting().getAlarm();
+        }
+
         return new UserResponseDto(
                 user.getId(),
                 user.getKakaoId(),
@@ -58,7 +67,8 @@ public class UserResponseDto {
                 user.getNationality(),
                 user.getDiaryCount(),
                 user.getVisitedCountryCount(),
-                user.getFlags()
+                user.getFlags(),
+                alarm
         );
     }
 }

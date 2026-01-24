@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.dto.response.WeatherResponseDto;
+import zim.tave.memory.global.common.ApiResponseDto;
+import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.service.WeatherService;
 
@@ -34,9 +36,9 @@ public class WeatherController {
             @ApiResponse(responseCode = "500", description = "서버 오류입니다.",
                     content = @Content)
     })
-    public ResponseEntity<List<WeatherResponseDto>> getAllWeathers() {
+    public ResponseEntity<ApiResponseDto<List<WeatherResponseDto>>> getAllWeathers() {
         List<WeatherResponseDto> weathers = weatherService.getAllWeathers();
-        return ResponseEntity.ok(weathers);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, weathers));
     }
 
     @GetMapping("/{weatherId}")
@@ -47,9 +49,10 @@ public class WeatherController {
             @ApiResponse(responseCode = "404", description = "날씨를 찾을 수 없습니다.\n- WEATHER_NOT_FOUND: 날씨를 찾을 수 없습니다.",
                     content = @Content)
     })
-    public WeatherResponseDto getWeatherById(
+    public ResponseEntity<ApiResponseDto<WeatherResponseDto>> getWeatherById(
             @Parameter(description = "날씨 ID", required = true, example = "1")
             @PathVariable Long weatherId) {
-        return weatherService.getWeatherById(weatherId);
+        WeatherResponseDto weather = weatherService.getWeatherById(weatherId);
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.SUCCESS, weather));
     }
 }

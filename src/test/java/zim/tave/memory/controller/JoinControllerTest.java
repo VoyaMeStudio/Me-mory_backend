@@ -65,7 +65,8 @@ public class JoinControllerTest {
                 "JIHYE",
                 "강지혜",
                 LocalDate.of(2000, 1, 1),
-                "REPUBLIC OF KOREA"
+                "REPUBLIC OF KOREA",
+                true
         );
 
         User user = new User();
@@ -95,7 +96,8 @@ public class JoinControllerTest {
         JoinRequestDto request = new JoinRequestDto(
                 "KANG", "JIHYE", "강지혜",
                 LocalDate.of(2000, 1, 1),
-                "REPUBLIC OF KOREA"
+                "REPUBLIC OF KOREA",
+                true
         );
 
         Mockito.when(joinService.join(eq(1L), any()))
@@ -115,7 +117,8 @@ public class JoinControllerTest {
         JoinRequestDto request = new JoinRequestDto(
                 "KANG", "JIHYE", "강지혜",
                 LocalDate.of(2000, 1, 1),
-                "REPUBLIC OF KOREA"
+                "REPUBLIC OF KOREA",
+                true
         );
 
         Mockito.when(joinService.join(eq(1L), any()))
