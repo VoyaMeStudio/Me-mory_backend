@@ -12,6 +12,7 @@ import zim.tave.memory.repository.SettingRepository;
 import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,8 @@ public class JoinService {
         user.setKoreanName(requestDto.getKoreanName());
         user.setBirth(requestDto.getBirth());
         user.setNationality(requestDto.getNationality());
-        user.setCreatedAt(LocalDate.now());
+        user.setCreatedAt(LocalDate.now(ZoneOffset.UTC));
+        user.setStatus(true);
         user.setRegistered(true);
 
         if (user.getSetting() == null) {

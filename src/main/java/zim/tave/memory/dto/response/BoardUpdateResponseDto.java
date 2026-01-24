@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import zim.tave.memory.domain.Board;
 import zim.tave.memory.domain.BoardStickerMap;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
@@ -20,23 +19,20 @@ public class BoardUpdateResponseDto {
     @Schema(description = "보드 ID", example = "21")
     private Long boardId;
 
-    @Schema(description = "보드 최종 수정 시각", example = "2025-12-01T17:30:00")
-    private String updatedAt;
+    @Schema(description = "보드 최종 수정 시각 (UTC 기준, ISO-8601 형식). 프론트엔드에서는 사용자의 로컬 타임존으로 변환하여 표시해야 합니다.", example = "2025-12-01T17:30:00.000Z")
+    private OffsetDateTime updatedAt;
 
     @Schema(description = "적용된 스티커 리스트")
     private List<BoardStickerItem> stickers;
 
     public static BoardUpdateResponseDto from(Board board, List<BoardStickerMap> stickerMaps) {
-
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
         List<BoardStickerItem> stickerItems = stickerMaps.stream()
                 .map(BoardStickerItem::from)
                 .toList();
 
         return new BoardUpdateResponseDto(
                 board.getBoardId(),
-                board.getUpdatedAt().format(formatter),
+                board.getUpdatedAt(),
                 stickerItems
         );
     }

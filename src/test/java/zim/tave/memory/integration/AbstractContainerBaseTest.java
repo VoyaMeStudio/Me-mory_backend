@@ -95,7 +95,8 @@ public abstract class AbstractContainerBaseTest {
         
         // Spring Boot의 데이터소스 속성 설정
         // Supplier를 사용하여 런타임에 값을 가져옵니다
-        registry.add("spring.datasource.url", () -> jdbcUrl);
+        // UTC 타임존 설정 추가
+        registry.add("spring.datasource.url", () -> jdbcUrl + (jdbcUrl.contains("?") ? "&serverTimezone=UTC" : "?serverTimezone=UTC"));
         registry.add("spring.datasource.username", mysql::getUsername);
         registry.add("spring.datasource.password", mysql::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");

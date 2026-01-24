@@ -13,11 +13,8 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,29 +32,6 @@ public class DiaryService {
 	private final DiaryImageRepository diaryImageRepository;
     private final CountryService countryService;
     private final VisitedCountryService visitedCountryService;
-
-    // 날짜 및 시간 파싱 (ISO 8601 형식 지원)
-    private LocalDateTime parseDateTime(String dateTimeString) {
-        if (dateTimeString == null || dateTimeString.trim().isEmpty()) {
-            throw new CustomException(ErrorCode.VALIDATION_ERROR);
-        }
-        
-        String trimmed = dateTimeString.trim();
-        
-        try {
-            // offset 또는 Z 포함 ISO => OffsetDateTime.parse가 대부분 처리
-            OffsetDateTime odt = OffsetDateTime.parse(trimmed);
-            return odt.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        } catch (DateTimeParseException ignored) {
-            try {
-                // 타임존 없는 로컬 포맷: yyyy-MM-dd'T'HH:mm:ss[.SSS...]
-                // ISO_LOCAL_DATE_TIME은 0-9자리의 소수점 초를 모두 처리 가능
-                return LocalDateTime.parse(trimmed, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            } catch (DateTimeParseException e) {
-                throw new CustomException(ErrorCode.VALIDATION_ERROR);
-            }
-        }
-    }
 
     // 이미지 검증&저장
     private void validateAndAttachImages(Diary diary, List<CreateDiaryRequest.DiaryImageInfo> images) {
@@ -108,8 +82,8 @@ public class DiaryService {
         Country country = countryService.findByCode(request.getCountryCode());
         if (country == null) throw new CustomException(ErrorCode.INVALID_COUNTRY_CODE);
 
-        // 날짜 및 시간 파싱 및 검증
-        LocalDateTime dateTime = parseDateTime(request.getDateTime());
+        // 날짜 및 시간 자동 생성 (UTC 기준)
+        OffsetDateTime dateTime = OffsetDateTime.now(ZoneOffset.UTC);
 
         // 감정 검증 (기본 = 1)
         Emotion emotion = emotionRepository.findById(

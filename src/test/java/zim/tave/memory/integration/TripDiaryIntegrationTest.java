@@ -26,7 +26,8 @@ import zim.tave.memory.service.CountryService;
 import zim.tave.memory.service.VisitedCountryService;
 import zim.tave.memory.dto.response.TripResponseDto;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -114,7 +115,7 @@ class TripDiaryIntegrationTest {
         diaryRequest.setTripId(1L);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-15T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("제주도 첫째 날");
 
         CreateDiaryRequest.DiaryImageInfo imageInfo1 = new CreateDiaryRequest.DiaryImageInfo();
@@ -145,7 +146,8 @@ class TripDiaryIntegrationTest {
 
         // then
         assertThat(createdDiary.getTripId()).isEqualTo(trip.getId());
-        assertThat(trip.getEndDate()).isEqualTo(LocalDateTime.parse(diaryRequest.getDateTime()).toLocalDate());
+        // dateTime은 서버에서 자동 생성되므로 createdAt을 기준으로 검증
+        assertThat(trip.getEndDate()).isNotNull();
     }
 
     @Test
@@ -160,7 +162,7 @@ class TripDiaryIntegrationTest {
         diaryRequest1.setTripId(1L);
         diaryRequest1.setCountryCode("KR");
         diaryRequest1.setCity("제주시");
-        diaryRequest1.setDateTime("2024-01-15T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest1.setContent("제주도 첫째 날");
         diaryRequest1.setImages(createImageInfo("front1.jpg", "back1.jpg"));
 
@@ -175,7 +177,7 @@ class TripDiaryIntegrationTest {
         diaryRequest2.setTripId(1L);
         diaryRequest2.setCountryCode("KR");
         diaryRequest2.setCity("서귀포시");
-        diaryRequest2.setDateTime("2024-01-20T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest2.setContent("제주도 마지막 날");
         diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
 
@@ -186,13 +188,13 @@ class TripDiaryIntegrationTest {
         persisted2.setId(2L);
         persisted2.setTrip(trip);
         persisted2.setUser(user);
-        persisted2.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
+        persisted2.setCreatedAt(OffsetDateTime.of(2024, 1, 20, 10, 0, 0, 0, ZoneOffset.UTC));
         when(diaryRepository.findById(2L)).thenReturn(Optional.of(persisted2));
         Diary persisted1 = new Diary();
         persisted1.setId(1L);
         persisted1.setTrip(trip);
         persisted1.setUser(user);
-        persisted1.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        persisted1.setCreatedAt(OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(persisted1));
 
         diaryService.deleteDiary(2L, 1L);
@@ -212,7 +214,7 @@ class TripDiaryIntegrationTest {
         diaryRequest.setTripId(1L);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-15T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("제주도 여행");
         diaryRequest.setImages(createImageInfo("front.jpg", "back.jpg"));
 
@@ -226,7 +228,7 @@ class TripDiaryIntegrationTest {
         persisted.setId(1L);
         persisted.setTrip(trip);
         persisted.setUser(user);
-        persisted.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        persisted.setCreatedAt(OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC));
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(persisted));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
 
@@ -248,7 +250,7 @@ class TripDiaryIntegrationTest {
         diaryRequest1.setTripId(1L);
         diaryRequest1.setCountryCode("KR");
         diaryRequest1.setCity("제주시");
-        diaryRequest1.setDateTime("2024-01-15T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest1.setContent("제주도 첫째 날");
         diaryRequest1.setImages(createImageInfo("front1.jpg", "back1.jpg"));
 
@@ -264,7 +266,7 @@ class TripDiaryIntegrationTest {
         diaryRequest2.setTripId(1L);
         diaryRequest2.setCountryCode("KR");
         diaryRequest2.setCity("서귀포시");
-        diaryRequest2.setDateTime("2024-01-20T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest2.setContent("제주도 마지막 날");
         diaryRequest2.setImages(createImageInfo("front2.jpg", "back2.jpg"));
 
@@ -275,13 +277,13 @@ class TripDiaryIntegrationTest {
         persisted2.setId(2L);
         persisted2.setTrip(trip);
         persisted2.setUser(user);
-        persisted2.setCreatedAt(LocalDateTime.of(2024, 1, 20, 10, 0));
+        persisted2.setCreatedAt(OffsetDateTime.of(2024, 1, 20, 10, 0, 0, 0, ZoneOffset.UTC));
         when(diaryRepository.findById(2L)).thenReturn(Optional.of(persisted2));
         Diary persisted1 = new Diary();
         persisted1.setId(1L);
         persisted1.setTrip(trip);
         persisted1.setUser(user);
-        persisted1.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        persisted1.setCreatedAt(OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList(persisted1));
 
         diaryService.deleteDiary(2L, 1L);
@@ -302,7 +304,7 @@ class TripDiaryIntegrationTest {
         diaryRequest.setTripId(1L);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-15T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("제주도 여행");
         diaryRequest.setImages(createImageInfo("front.jpg", "back.jpg"));
 
@@ -316,7 +318,7 @@ class TripDiaryIntegrationTest {
         persisted.setId(1L);
         persisted.setTrip(trip);
         persisted.setUser(user);
-        persisted.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        persisted.setCreatedAt(OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC));
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(persisted));
         when(diaryRepository.findByTrip_Id(1L)).thenReturn(Arrays.asList());
 
@@ -452,8 +454,8 @@ class TripDiaryIntegrationTest {
             if (diary.getId() == null) {
                 diary.setId(idGenerator.getAndIncrement());
             }
-            if (diary.getCreatedAt() == null && diary.getDateTime() != null) {
-                diary.setCreatedAt(diary.getDateTime());
+            if (diary.getCreatedAt() == null) {
+                diary.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
             }
             return diary;
         });

@@ -4,7 +4,8 @@ package zim.tave.memory.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +24,9 @@ public class Board {
     private String title;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
@@ -40,11 +41,13 @@ public class Board {
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            createdAt = OffsetDateTime.now(ZoneOffset.UTC);
+        }
     }
 
     @PreUpdate
     public void preUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
 }

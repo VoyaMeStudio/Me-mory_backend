@@ -570,8 +570,8 @@ class DiaryControllerTest {
     }
 
     @Test
-    void 일기_생성_dateTime_null_성공() throws Exception {
-        // given - dateTime은 선택 필드(자동 생성)이므로 null이어도 성공해야 함
+    void 일기_생성_dateTime_자동생성_성공() throws Exception {
+        // given - dateTime은 서버에서 자동 생성되므로 요청에 포함하지 않음
         Long userId = 1L;
         setSecurityContext(userId);
 
@@ -579,7 +579,7 @@ class DiaryControllerTest {
         request.setTripId(1L);
         request.setCountryCode("KR");
         request.setCity("서울");
-        request.setDateTime(null); // 선택 필드 null
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         request.setContent("테스트 내용");
 
         // 필수 필드: images
