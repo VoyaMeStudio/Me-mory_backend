@@ -20,7 +20,8 @@ import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.TripRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,10 +93,10 @@ class TimelineServiceTest {
         activeDiary.setTrip(activeTrip);
         activeDiary.setCountry(country);
         activeDiary.setCity("제주시");
-        activeDiary.setDateTime(LocalDateTime.of(2024, 1, 2, 10, 0));
+        activeDiary.setDateTime(OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC));
         activeDiary.setContent("제주도 일기 내용");
         activeDiary.setIsStored(false);
-        activeDiary.setCreatedAt(LocalDateTime.of(2024, 1, 2, 10, 0));
+        activeDiary.setCreatedAt(OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC));
         activeDiary.setEmotion(emotion);
         activeDiary.setDiaryImages(new ArrayList<>());
 
@@ -106,10 +107,10 @@ class TimelineServiceTest {
         storedDiary.setTrip(activeTrip);
         storedDiary.setCountry(country);
         storedDiary.setCity("서귀포시");
-        storedDiary.setDateTime(LocalDateTime.of(2024, 1, 3, 10, 0));
+        storedDiary.setDateTime(OffsetDateTime.of(2024, 1, 3, 10, 0, 0, 0, ZoneOffset.UTC));
         storedDiary.setContent("보관된 일기 내용");
         storedDiary.setIsStored(true);
-        storedDiary.setCreatedAt(LocalDateTime.of(2024, 1, 3, 10, 0));
+        storedDiary.setCreatedAt(OffsetDateTime.of(2024, 1, 3, 10, 0, 0, 0, ZoneOffset.UTC));
         storedDiary.setDiaryImages(new ArrayList<>());
     }
 
@@ -231,10 +232,10 @@ class TimelineServiceTest {
         diary2.setTrip(activeTrip);
         diary2.setCountry(country2);
         diary2.setCity("뉴욕");
-        diary2.setDateTime(LocalDateTime.of(2024, 1, 4, 10, 0));
+        diary2.setDateTime(OffsetDateTime.of(2024, 1, 4, 10, 0, 0, 0, ZoneOffset.UTC));
         diary2.setContent("미국 일기");
         diary2.setIsStored(false);
-        diary2.setCreatedAt(LocalDateTime.of(2024, 1, 4, 10, 0));
+        diary2.setCreatedAt(OffsetDateTime.of(2024, 1, 4, 10, 0, 0, 0, ZoneOffset.UTC));
         diary2.setDiaryImages(new ArrayList<>());
 
         activeTrip.setDiaries(Arrays.asList(activeDiary, diary2));
@@ -352,10 +353,10 @@ class TimelineServiceTest {
         diary1.setTrip(activeTrip);
         diary1.setCountry(country);
         diary1.setCity("제주시");
-        diary1.setDateTime(LocalDateTime.of(2024, 1, 2, 10, 0));
+        diary1.setDateTime(OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC));
         diary1.setContent("첫 번째 일기");
         diary1.setIsStored(false);
-        diary1.setCreatedAt(LocalDateTime.of(2024, 1, 2, 10, 0));
+        diary1.setCreatedAt(OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC));
         diary1.setEmotion(emotion); // 설렘
         diary1.setDiaryImages(new ArrayList<>());
 
@@ -365,10 +366,10 @@ class TimelineServiceTest {
         diary2.setTrip(activeTrip);
         diary2.setCountry(country);
         diary2.setCity("서귀포시");
-        diary2.setDateTime(LocalDateTime.of(2024, 1, 3, 10, 0));
+        diary2.setDateTime(OffsetDateTime.of(2024, 1, 3, 10, 0, 0, 0, ZoneOffset.UTC));
         diary2.setContent("두 번째 일기");
         diary2.setIsStored(false);
-        diary2.setCreatedAt(LocalDateTime.of(2024, 1, 4, 10, 0)); // 더 최근
+        diary2.setCreatedAt(OffsetDateTime.of(2024, 1, 4, 10, 0, 0, 0, ZoneOffset.UTC)); // 더 최근
         diary2.setEmotion(emotion2); // 행복
         diary2.setDiaryImages(new ArrayList<>());
 
@@ -403,10 +404,10 @@ class TimelineServiceTest {
         diaryWithoutEmotion.setTrip(activeTrip);
         diaryWithoutEmotion.setCountry(country);
         diaryWithoutEmotion.setCity("제주시");
-        diaryWithoutEmotion.setDateTime(LocalDateTime.of(2024, 1, 2, 10, 0));
+        diaryWithoutEmotion.setDateTime(OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC));
         diaryWithoutEmotion.setContent("감정 없는 일기");
         diaryWithoutEmotion.setIsStored(false);
-        diaryWithoutEmotion.setCreatedAt(LocalDateTime.of(2024, 1, 2, 10, 0));
+        diaryWithoutEmotion.setCreatedAt(OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC));
         diaryWithoutEmotion.setEmotion(null);
         diaryWithoutEmotion.setDiaryImages(new ArrayList<>());
 

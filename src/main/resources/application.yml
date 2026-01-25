@@ -3,9 +3,14 @@ spring:
     import: optional:application-secret.yml
 
   datasource:
-    url: jdbc:mysql://localhost:3306/memory_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/memory_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: memory_user
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
   servlet:
     multipart:
       max-file-size: 500MB
@@ -19,6 +24,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
+        timezone:
+          default_storage: NORMALIZE_UTC
         connection:
           characterEncoding: utf8mb4
           useUnicode: true

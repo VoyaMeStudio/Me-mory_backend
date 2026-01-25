@@ -13,7 +13,8 @@ import zim.tave.memory.service.StorageService;
 import zim.tave.memory.service.TripService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class SettingsIntegrationTest extends IntegrationTestBase {
         testDiary = createTestDiary(
             testTrip,
             "제주시",
-            LocalDateTime.of(2024, 1, 1, 10, 0),
+            OffsetDateTime.of(2024, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC),
             "일기 내용"
         );
     }

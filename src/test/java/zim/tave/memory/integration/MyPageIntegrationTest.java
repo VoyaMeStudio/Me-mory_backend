@@ -12,7 +12,8 @@ import zim.tave.memory.service.VisitedCountryService;
 import zim.tave.memory.repository.VisitedCountryRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,14 +73,14 @@ public class MyPageIntegrationTest extends IntegrationTestBase {
         Diary diary1 = createTestDiary(
             trip,
             "제주시",
-            LocalDateTime.of(2024, 1, 1, 10, 0),
+            OffsetDateTime.of(2024, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC),
             "첫 번째 일기"
         );
 
         Diary diary2 = createTestDiary(
             trip,
             "서귀포시",
-            LocalDateTime.of(2024, 1, 2, 14, 0),
+            OffsetDateTime.of(2024, 1, 2, 14, 0, 0, 0, ZoneOffset.UTC),
             "두 번째 일기"
         );
 
@@ -109,8 +110,8 @@ public class MyPageIntegrationTest extends IntegrationTestBase {
         );
 
         // 같은 국가(한국)로 일기 생성
-        createTestDiary(trip1, "제주시", LocalDateTime.now(), "일기 1");
-        createTestDiary(trip2, "서귀포시", LocalDateTime.now(), "일기 2");
+        createTestDiary(trip1, "제주시", OffsetDateTime.now(ZoneOffset.UTC), "일기 1");
+        createTestDiary(trip2, "서귀포시", OffsetDateTime.now(ZoneOffset.UTC), "일기 2");
 
         // 다른 국가 추가
         Country japanCountry = new Country("JP", "일본", "🇯🇵");

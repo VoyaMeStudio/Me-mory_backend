@@ -55,7 +55,7 @@ public class RecordingFlowIntegrationTest extends IntegrationTestBase {
         diaryRequest.setTripId(createdTrip.getId());
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("제주도 첫째 날 - 한라산 등반");
         diaryRequest.setDetailedLocation("한라산 정상");
         diaryRequest.setEmotionId(defaultEmotion.getId());
@@ -115,7 +115,7 @@ public class RecordingFlowIntegrationTest extends IntegrationTestBase {
         firstDiaryRequest.setTripId(existingTrip.getId());
         firstDiaryRequest.setCountryCode("KR");
         firstDiaryRequest.setCity("제주시");
-        firstDiaryRequest.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         firstDiaryRequest.setContent("첫째 날 일기");
         firstDiaryRequest.setEmotionId(defaultEmotion.getId());
         firstDiaryRequest.setWeatherId(sunnyWeather.getId());
@@ -139,7 +139,7 @@ public class RecordingFlowIntegrationTest extends IntegrationTestBase {
         secondDiaryRequest.setTripId(existingTrip.getId());
         secondDiaryRequest.setCountryCode("KR");
         secondDiaryRequest.setCity("서귀포시");
-        secondDiaryRequest.setDateTime("2024-01-02T14:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         secondDiaryRequest.setContent("둘째 날 일기");
         secondDiaryRequest.setEmotionId(defaultEmotion.getId());
         secondDiaryRequest.setWeatherId(sunnyWeather.getId());
@@ -187,7 +187,7 @@ public class RecordingFlowIntegrationTest extends IntegrationTestBase {
         diaryRequest.setTripId(trip.getId());
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("대표사진 테스트");
         diaryRequest.setEmotionId(defaultEmotion.getId());
 
@@ -231,7 +231,7 @@ public class RecordingFlowIntegrationTest extends IntegrationTestBase {
         diaryRequest.setTripId(trip.getId());
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("감정색 기본값 테스트");
         // emotionId를 설정하지 않음 (기본값 사용)
 
@@ -271,7 +271,7 @@ public class RecordingFlowIntegrationTest extends IntegrationTestBase {
         diaryRequest.setTripId(trip.getId());
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("날씨 선택 안함 테스트");
         diaryRequest.setEmotionId(defaultEmotion.getId());
         // weatherId를 설정하지 않음

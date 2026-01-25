@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class Trip {
     @PrePersist
     protected void onCreate() {
         if (this.startDate == null) {
-            this.startDate = LocalDate.now();
+            this.startDate = LocalDate.now(ZoneOffset.UTC);
         }
         if (this.endDate == null) {
             this.endDate = this.startDate;
@@ -76,8 +77,8 @@ public class Trip {
         trip.setTripName(tripName);
         trip.setDescription(description);
         trip.setTripTheme(tripTheme);
-        trip.setStartDate(LocalDate.now());
-        trip.setEndDate(LocalDate.now());
+        trip.setStartDate(LocalDate.now(ZoneOffset.UTC));
+        trip.setEndDate(LocalDate.now(ZoneOffset.UTC));
         return trip;
     }
 

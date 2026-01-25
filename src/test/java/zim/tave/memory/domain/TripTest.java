@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 class TripTest {
 
@@ -36,7 +37,7 @@ class TripTest {
         assertThat(trip.getDescription()).isEqualTo(description);
         assertThat(trip.getUser()).isEqualTo(user);
         assertThat(trip.getTripTheme()).isEqualTo(tripTheme);
-        assertThat(trip.getStartDate()).isEqualTo(LocalDate.now());
+        assertThat(trip.getStartDate()).isEqualTo(LocalDate.now(ZoneOffset.UTC));
     }
 
     @Test
@@ -44,7 +45,7 @@ class TripTest {
         // given
         Trip trip = Trip.createTrip(user, "제주도 여행", "제주도 여행", tripTheme);
         Diary diary = new Diary();
-        diary.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 0));
+        diary.setCreatedAt(OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC));
 
         // when
         trip.addDiary(diary);

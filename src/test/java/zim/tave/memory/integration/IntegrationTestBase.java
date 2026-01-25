@@ -7,7 +7,8 @@ import zim.tave.memory.domain.*;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * 통합 테스트 베이스 클래스
@@ -169,7 +170,7 @@ public abstract class IntegrationTestBase extends AbstractContainerBaseTest {
     /**
      * 테스트용 일기 생성 헬퍼 메서드
      */
-    protected Diary createTestDiary(Trip trip, String city, LocalDateTime dateTime, String content) {
+    protected Diary createTestDiary(Trip trip, String city, OffsetDateTime dateTime, String content) {
         Diary diary = Diary.createDiary(testUser, trip, koreaCountry, city, dateTime, content);
         diary.setOptionalFields(null, defaultEmotion, sunnyWeather);
         return diaryRepository.save(diary);

@@ -14,6 +14,7 @@ import zim.tave.memory.kakao.KakaoUserInfo;
 import zim.tave.memory.repository.UserRepository;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +43,7 @@ public class LoginService {
         User newUser = new User();
         newUser.setKakaoId(kakaoUserInfo.getKakaoId());
         newUser.setProfileImageUrl(kakaoUserInfo.getProfileImageUrl());
-        newUser.setCreatedAt(LocalDate.now());
+        newUser.setCreatedAt(LocalDate.now(ZoneOffset.UTC));
         newUser.setStatus(true);
         newUser.setRegistered(false);
         newUser.setDiaryCount(0L);

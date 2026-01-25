@@ -62,7 +62,7 @@ docker run -d \
   --network "$NETWORK_NAME" \
   --restart unless-stopped \
   -p 8081:8081 \
-  -e SPRING_DATASOURCE_URL="jdbc:mysql://memory-mysql:3306/$MYSQL_DATABASE?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true" \
+      -e SPRING_DATASOURCE_URL="jdbc:mysql://memory-mysql:3306/$MYSQL_DATABASE?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
   -e SPRING_DATASOURCE_USERNAME="$MYSQL_USER" \
   -e SPRING_DATASOURCE_PASSWORD="$MYSQL_PASSWORD" \
   "$IMAGE_NAME:$IMAGE_TAG"

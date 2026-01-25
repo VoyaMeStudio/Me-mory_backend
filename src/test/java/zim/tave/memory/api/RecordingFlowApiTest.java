@@ -57,7 +57,7 @@ public class RecordingFlowApiTest extends ApiTestBase {
         diaryRequest.setTripId(tripId);
         diaryRequest.setCountryCode("KR");
         diaryRequest.setCity("제주시");
-        diaryRequest.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         diaryRequest.setContent("제주도 첫째 날");
         diaryRequest.setEmotionId(defaultEmotion.getId());
         diaryRequest.setWeatherId(sunnyWeather.getId());
@@ -112,7 +112,7 @@ public class RecordingFlowApiTest extends ApiTestBase {
         firstDiary.setTripId(tripId);
         firstDiary.setCountryCode("KR");
         firstDiary.setCity("제주시");
-        firstDiary.setDateTime("2024-01-01T10:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         firstDiary.setContent("첫째 날");
 
         CreateDiaryRequest.DiaryImageInfo front1 = new CreateDiaryRequest.DiaryImageInfo();
@@ -138,7 +138,7 @@ public class RecordingFlowApiTest extends ApiTestBase {
         secondDiary.setTripId(tripId);
         secondDiary.setCountryCode("KR");
         secondDiary.setCity("서귀포시");
-        secondDiary.setDateTime("2024-01-02T14:00:00");
+        // dateTime 필드 제거 - 서버에서 UTC 기준으로 자동 생성됨
         secondDiary.setContent("둘째 날");
 
         CreateDiaryRequest.DiaryImageInfo front2 = new CreateDiaryRequest.DiaryImageInfo();
