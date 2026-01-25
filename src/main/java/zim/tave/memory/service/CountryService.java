@@ -1,6 +1,7 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Country;
@@ -12,6 +13,7 @@ import zim.tave.memory.util.EmojiValidator;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -54,9 +56,9 @@ public class CountryService {
 
     @Transactional
     public void init() {
-        //System.out.println(">> CountryService.init() 실행됨");
+        log.info("CountryService.init() 실행됨");
         if (!countryRepository.findAll().isEmpty()) {
-            //System.out.println(">> 이미 데이터 있음, return");
+            log.info("이미 Country 데이터가 존재함 → init 종료");
             return;
         }
 
@@ -310,7 +312,8 @@ public class CountryService {
         );
         countries.forEach(countryRepository::save);
         countryRepository.flush(); // 강제 DB 반영
-        //List<Country> check = countryRepository.findAll();
-        //System.out.println(">> 실제 저장된 수: " + check.size());
+
+        List<Country> check = countryRepository.findAll();
+        log.info("실제 저장된 Country 수: {}", check.size());
     }
 }
