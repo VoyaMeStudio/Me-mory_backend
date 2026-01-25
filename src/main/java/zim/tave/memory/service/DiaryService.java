@@ -1,6 +1,7 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.*;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -41,9 +43,9 @@ public class DiaryService {
         if (dateTimeString == null || dateTimeString.trim().isEmpty()) {
             throw new CustomException(ErrorCode.VALIDATION_ERROR);
         }
-        
+
         String trimmed = dateTimeString.trim();
-        
+
         try {
             // offset 또는 Z 포함 ISO => OffsetDateTime.parse가 대부분 처리
             OffsetDateTime odt = OffsetDateTime.parse(trimmed);
@@ -140,7 +142,7 @@ public class DiaryService {
         try {
             visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
         } catch (Exception e) {
-            System.err.println("VisitedCountry 등록 실패: " + e.getMessage());
+            log.error("VisitedCountry 등록 실패", e);
         }
 
 		return convertToDto(saved);
