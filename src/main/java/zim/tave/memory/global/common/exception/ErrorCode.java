@@ -34,6 +34,8 @@ public enum ErrorCode {
     INCOMPLETE_USER_INFO(HttpStatus.BAD_REQUEST, "회원 정보 입력을 완료해주세요."),
     ALREADY_JOINED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
     MISSING_REQUIRED_FIELDS(HttpStatus.BAD_REQUEST, "값을 입력해주세요."),
+    KAKAO_TOKEN_REQUEST_FAILED(HttpStatus.BAD_REQUEST, "카카오 토큰 요청에 실패했습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
     //설정
     NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 필드가 없습니다."),
     //보관

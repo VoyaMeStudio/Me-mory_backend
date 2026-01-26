@@ -70,3 +70,6 @@ memory:
       - ".webp"
       - ".heic"
 
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}  # application-secret.yml에서 주입
+  redirect-uri: http://localhost:8081/api/auth/login/kakao

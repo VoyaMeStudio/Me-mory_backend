@@ -29,6 +29,7 @@ public enum ResponseCode {
     NO_FIELDS_TO_UPDATE(400, "수정할 필드가 없습니다."),
     //카카오 로그인 성공 메세지
     KAKAO_USERINFO_FETCH_SUCCESS(200, "카카오 사용자 정보 조회 성공"),
+    TOKEN_REFRESH_SUCCESS(200, "토큰 갱신에 성공했습니다."),
     //보드
     BOARD_CREATE_SUCCESS(200, "보드 생성에 성공하였습니다."),
     BOARD_UPDATE_SUCCESS(200, "보드 수정이 완료되었습니다."),
@@ -99,6 +100,8 @@ public enum ResponseCode {
     KAKAO_SERVER_ERROR(500, "카카오 서버 오류입니다."),
     KAKAO_RESPONSE_PARSING_ERROR(500, "카카오 응답 데이터를 처리할 수 없습니다."),
     KAKAO_API_UNKNOWN_ERROR(500, "카카오 API 처리 중 알 수 없는 오류가 발생했습니다."),
+    KAKAO_TOKEN_REQUEST_FAILED(400, "카카오 토큰 요청에 실패했습니다."),
+    INVALID_REFRESH_TOKEN(401, "유효하지 않은 Refresh Token입니다."),
 
     //보드
     BOARD_REQUIRED_FIELDS_MISSING(400, "필수 입력값(boardThemeId, title)이 누락되었습니다."),

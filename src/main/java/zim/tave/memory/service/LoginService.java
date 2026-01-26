@@ -30,13 +30,15 @@ public class LoginService {
             throw new CustomException(ErrorCode.KAKAO_TOKEN_MISSING);
         }
 
+        // 카카오 액세스 토큰으로 사용자 정보 조회
         KakaoUserInfo kakaoUserInfo = kakaoApiClient.getKakaoUserInfo(request.getAccessToken());
         User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoId()).orElse(null);
 
-
+        // 기존 사용자
         if (user != null) {
-            String token = jwtUtil.generateToken(user.getId(), user.getKakaoId());
-            return LoginResponseDto.from(user, token, true);
+            String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getKakaoId());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+            return LoginResponseDto.from(user, accessToken, refreshToken, user.isRegistered());
         }
 
         // 처음 로그인한 사용자 → User 생성
@@ -51,10 +53,11 @@ public class LoginService {
         newUser.setFlags("");
         User savedUser = userRepository.save(newUser);
 
-        //JWT AT 발급
-        String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getKakaoId());
+        // JWT 토큰 발급 (AT + RT)
+        String accessToken = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getKakaoId());
+        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId());
 
-        return LoginResponseDto.from(savedUser, token, false);
+        return LoginResponseDto.from(savedUser, accessToken, refreshToken, false);
     }
 
     @Transactional
@@ -66,8 +69,8 @@ public class LoginService {
             throw new CustomException(ErrorCode.ALREADY_LOGGED_OUT);
         }
 
-        user.setStatus(false); //로그아웃 시 status false로 설정
-        //프론트에서 accessToken 삭제
+        user.setStatus(false); // 로그아웃 시 status false로 설정
+        // 프론트에서 accessToken, refreshToken 삭제 필요
     }
 }
 

@@ -4,11 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 //클라이언트 앱에 accessToken 요청
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 public class LoginRequestDto {
 
     @Schema(description = "카카오 사용자 인증 후 토큰 발급, 토큰 이용하여 백엔드 서버가 로그인 처리",
