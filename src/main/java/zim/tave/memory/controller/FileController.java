@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "File", description = "파일 다운로드 API")
@@ -39,9 +41,9 @@ public class FileController {
             @Parameter(description = "S3 파일 키 (경로 포함)", required = true, example = "images/2024/01/01/abc123.jpg")
             @RequestParam String key) {
         try {
-            System.out.println("FileController - Requested key: " + key);
-            System.out.println("FileController - Bucket: " + bucket);
-            
+            log.info("FileController - Requested key: {}", key);
+            log.info("FileController - Bucket: {}", bucket);
+
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(key)
@@ -53,9 +55,9 @@ public class FileController {
             HttpHeaders headers = new HttpHeaders();
             String contentType = response.contentType();
             String fileName = key.substring(key.lastIndexOf("/") + 1);
-            
+
             // HEIF 파일의 경우 브라우저 호환성을 위해 적절한 Content-Type 설정
-            if (key.toLowerCase().contains(".heic") || 
+            if (key.toLowerCase().contains(".heic") ||
                 (contentType != null && contentType.contains("heif"))) {
                 headers.setContentType(MediaType.parseMediaType("image/heic"));
                 // HEIF는 브라우저 지원이 제한적이므로 다운로드 유도
@@ -65,18 +67,18 @@ public class FileController {
             } else {
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             }
-            
+
             headers.setContentLength(response.contentLength());
 
-            System.out.println("FileController - File found successfully: " + key);
+            log.info("FileController - File found successfully: {}", key);
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(new InputStreamResource(s3Object));
 
         } catch (Exception e) {
-            System.out.println("FileController - Error: " + e.getMessage());
+            log.error("FileController - Error while fetching key={}", key, e);
             e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
     }
-} 
+}
