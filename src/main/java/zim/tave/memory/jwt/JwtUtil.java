@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import zim.tave.memory.repository.UserRepository;
 import java.security.Key;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtUtil {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -69,7 +71,7 @@ public class JwtUtil {
             User user = userRepository.findByKakaoId("test_강지혜")
                     .orElseThrow(() -> new RuntimeException("테스트 유저 없음"));
             String token = jwtUtil.generateToken(user.getId(), user.getKakaoId());
-            System.out.println("🧩 테스트 유저 JWT 토큰: " + token);
+            log.info("🧩 테스트 유저 JWT 토큰: {}", token);
         }
     }
 }

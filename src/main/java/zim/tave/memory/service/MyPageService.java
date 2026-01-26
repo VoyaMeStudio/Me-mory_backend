@@ -79,11 +79,4 @@ public class MyPageService {
         return value == null || value.trim().isEmpty();
     }
 
-    /*
-    // 에러 테스트 코드
-    public MyPageResponseDto getErrorExample(Long userId) {
-        // 일부러 예외 발생
-        throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
-     */
 }
