@@ -1,3 +1,6 @@
+# =========================
+# 기본 (local / default)
+# =========================
 spring:
   config:
     import: optional:application-secret.yml
@@ -6,16 +9,17 @@ spring:
     url: jdbc:mysql://localhost:3306/memory_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: memory_user
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jackson:
     time-zone: UTC
     serialization:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
+
   servlet:
     multipart:
       max-file-size: 500MB
       max-request-size: 500MB
-
 
   jpa:
     hibernate:
@@ -73,3 +77,4 @@ memory:
 kakao:
   client-id: ${KAKAO_CLIENT_ID}  # application-secret.yml에서 주입
   redirect-uri: http://localhost:8081/api/auth/login/kakao
+

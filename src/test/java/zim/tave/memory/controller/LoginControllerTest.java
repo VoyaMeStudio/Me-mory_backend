@@ -19,6 +19,7 @@ import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.jwt.JwtUtil;
+import zim.tave.memory.kakao.KakaoApiClient;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.security.JwtAuthenticationFilter;
@@ -56,6 +57,9 @@ class LoginControllerTest {
 
     @MockBean
     UserRepository userRepository;
+
+    @MockBean
+    private KakaoApiClient kakaoApiClient;
 
     @Test
     @DisplayName("카카오 로그인 (인가 코드 방식) - 성공")
@@ -105,7 +109,7 @@ class LoginControllerTest {
         when(loginService.login(any(LoginRequestDto.class))).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(get("/api/auth/login/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -133,7 +137,7 @@ class LoginControllerTest {
         when(loginService.login(any(LoginRequestDto.class))).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(get("/api/auth/login/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -155,7 +159,7 @@ class LoginControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ErrorCode.KAKAO_TOKEN_MISSING.getHttpStatus()));
+                .andExpect(jsonPath("$.code").value(ErrorCode.KAKAO_TOKEN_MISSING.name()));
     }
 
     @Test
@@ -171,7 +175,7 @@ class LoginControllerTest {
         mockMvc.perform(get("/api/auth/login/kakao")
                         .param("code", invalidCode))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(ErrorCode.KAKAO_TOKEN_REQUEST_FAILED.getHttpStatus()));
+                .andExpect(jsonPath("$.code").value(ErrorCode.KAKAO_TOKEN_REQUEST_FAILED.name()));
     }
 
     @Test
@@ -209,7 +213,7 @@ class LoginControllerTest {
         mockMvc.perform(post("/api/auth/refresh")
                         .header("Authorization", "Bearer " + invalidRefreshToken))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_REFRESH_TOKEN.getHttpStatus()));
+                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_REFRESH_TOKEN.name()));
     }
 
     @Test
@@ -225,7 +229,7 @@ class LoginControllerTest {
         mockMvc.perform(post("/api/auth/refresh")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_REFRESH_TOKEN.getHttpStatus()));
+                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_REFRESH_TOKEN.name()));
     }
 
     @Test
@@ -234,7 +238,7 @@ class LoginControllerTest {
         // when & then
         mockMvc.perform(post("/api/auth/refresh"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_REFRESH_TOKEN.getHttpStatus()));
+                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_REFRESH_TOKEN.name()));
     }
 
     @Test
