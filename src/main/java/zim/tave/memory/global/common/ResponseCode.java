@@ -93,6 +93,14 @@ public enum ResponseCode {
     TRIP_DESCRIPTION_TOO_LONG(400, "여행 설명은 최대 56자입니다."),
     NOT_PAST_TRIP(400, "과거 여행만 수정/보관/삭제할 수 있습니다."),
     CANNOT_ADD_DIARY_TO_PAST_TRIP(400, "과거 여행에는 일기를 추가할 수 없습니다."),
+
+    // JWT 토큰 관련 세분화된 에러
+    EXPIRED_TOKEN(401, "토큰이 만료되었습니다."),
+    MALFORMED_TOKEN(401, "올바르지 않은 JWT 형식입니다."),
+    INVALID_TOKEN_SIGNATURE(401, "JWT 서명이 유효하지 않습니다."),
+    UNSUPPORTED_TOKEN(401, "지원하지 않는 JWT 토큰입니다."),
+
+
     // 카카오로그인 관련 에러
     KAKAO_TOKEN_MISSING(400, "카카오 액세스 토큰이 누락되었습니다."),
     KAKAO_INVALID_TOKEN(401, "유효하지 않거나 만료된 카카오 액세스 토큰입니다."),

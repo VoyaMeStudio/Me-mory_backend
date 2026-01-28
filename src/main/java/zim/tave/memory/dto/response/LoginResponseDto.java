@@ -25,17 +25,15 @@ public class LoginResponseDto {
     @Schema(description = "로그인 시 AT 발급", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6...")
     private String accessToken;
 
-    @Schema(description = "JWT Refresh Token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6...")
-    private String refreshToken;
+    // Refresh Token은 HttpOnly 쿠키로 전송
 
-    public static LoginResponseDto from(User user, String accessToken, String refreshToken, boolean registered) {
+    public static LoginResponseDto from(User user, String accessToken, boolean registered) {
         return new LoginResponseDto(
                 user.getId(),
                 registered,
                 user.getKakaoId(),
                 user.getProfileImageUrl(),
-                accessToken,
-                refreshToken
+                accessToken
         );
     }
 }

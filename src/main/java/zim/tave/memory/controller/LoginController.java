@@ -2,12 +2,14 @@ package zim.tave.memory.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,20 +30,23 @@ import zim.tave.memory.security.CustomUserDetails;
 import zim.tave.memory.service.KakaoOAuthService;
 import zim.tave.memory.service.LoginService;
 
+import java.util.Arrays;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 @Tag(name = "kakaoLogin-controller", description = "카카오 로그인")
 public class LoginController {
-    /*
-    토큰 발급 URL
-    https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=8faa2ba724cbfef5c2abf54ebf9bed65&redirect_uri=http://localhost:8080/callback
-    */
+
     private final LoginService loginService;
     private final KakaoOAuthService kakaoOAuthService;
     private final KakaoApiClient kakaoApiClient;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final int REFRESH_TOKEN_COOKIE_MAX_AGE = 14 * 24 * 60 * 60; // 14일 (초 단위)
+
 
     @Operation(summary = "카카오 로그인 (인가 코드 방식)",
             description = """
@@ -79,7 +84,8 @@ public class LoginController {
     })
     @GetMapping("/login/kakao")
     public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLoginWithCode(
-            @RequestParam String code) {
+            @RequestParam String code,
+            HttpServletResponse response) {
 
         // 1. 인가 코드로 카카오 액세스 토큰 획득
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
@@ -88,8 +94,18 @@ public class LoginController {
         LoginRequestDto loginRequest = new LoginRequestDto();
         loginRequest.setAccessToken(kakaoAccessToken);
 
-        LoginResponseDto response = loginService.login(loginRequest);
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.LOGIN_SUCCESS, response));
+        // 3. 로그인 처리 및 토큰 발급
+        String[] tokens = loginService.loginAndGenerateTokens(loginRequest);
+        String accessToken = tokens[0];
+        String refreshToken = tokens[1];
+        User user = loginService.getUserByKakaoAccessToken(kakaoAccessToken);
+
+        // 4. Refresh Token을 HttpOnly 쿠키로 설정
+        setRefreshTokenCookie(response, refreshToken);
+
+        // 5. Access Token만 응답 바디로 반환
+        LoginResponseDto loginResponse = LoginResponseDto.from(user, accessToken, user.isRegistered());
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.LOGIN_SUCCESS, loginResponse));
     }
 
     @Operation(summary = "토큰 갱신",
@@ -119,31 +135,39 @@ public class LoginController {
     })
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponseDto<TokenRefreshResponse>> refreshToken(
-            @RequestHeader("Authorization") String refreshTokenHeader) {
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        if (refreshTokenHeader == null || !refreshTokenHeader.startsWith("Bearer ")) {
+        // 1. HttpOnly 쿠키에서 Refresh Token 추출
+        String refreshToken = getRefreshTokenFromCookie(request);
+
+        if (refreshToken == null) {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String refreshToken = refreshTokenHeader.substring(7); // "Bearer " 제거
+        // 2. Refresh Token 검증
+        jwtUtil.validateTokenWithException(refreshToken);
 
-        // Refresh Token 검증
-        if (!jwtUtil.validateToken(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
+        if (!jwtUtil.isRefreshToken(refreshToken)) {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        // 새 Access Token 발급
+        // 3. 새 Access Token 발급
         Long userId = jwtUtil.getUserIdFromToken(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getKakaoId());
 
-        TokenRefreshResponse response = TokenRefreshResponse.builder()
+        // 4. 새 Refresh Token도 발급하여 쿠키 갱신 (Refresh Token Rotation)
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
+        setRefreshTokenCookie(response, newRefreshToken);
+
+        TokenRefreshResponse tokenResponse = TokenRefreshResponse.builder()
                 .accessToken(newAccessToken)
                 .build();
 
-        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.TOKEN_REFRESH_SUCCESS, response));
+        return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.TOKEN_REFRESH_SUCCESS, tokenResponse));
     }
 
     @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
@@ -176,9 +200,55 @@ public class LoginController {
                     content = @Content)
     })
     @PatchMapping("/logout")
-    public ResponseEntity<ApiResponseDto<Void>> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ApiResponseDto<Void>> logout(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletResponse response) {
+
         Long userId = userDetails.getUserId();
         loginService.logout(userId);
+
+        // Refresh Token 쿠키 삭제
+        clearRefreshTokenCookie(response);
+
         return ResponseEntity.ok(ApiResponseDto.success(ResponseCode.LOGOUT_SUCCESS, null));
+    }
+
+    /**
+     * HttpOnly 쿠키에 Refresh Token 설정
+     */
+    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
+        cookie.setHttpOnly(true);  // XSS 공격 방지
+        cookie.setSecure(true);    // HTTPS에서만 전송 (프로덕션 환경)
+        cookie.setPath("/");       // 모든 경로에서 쿠키 전송
+        cookie.setMaxAge(REFRESH_TOKEN_COOKIE_MAX_AGE);  // 14일
+        response.addCookie(cookie);
+    }
+
+    /**
+     * HttpOnly 쿠키에서 Refresh Token 추출
+     */
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            return Arrays.stream(cookies)
+                    .filter(cookie -> REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    /**
+     * Refresh Token 쿠키 삭제 (로그아웃 시)
+     */
+    private void clearRefreshTokenCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);  // 즉시 만료
+        response.addCookie(cookie);
     }
 }

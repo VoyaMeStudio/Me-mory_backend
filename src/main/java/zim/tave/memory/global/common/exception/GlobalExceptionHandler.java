@@ -69,6 +69,13 @@ public class GlobalExceptionHandler {
             case FILE_TYPE_NOT_ALLOWED -> ResponseCode.FILE_TYPE_NOT_ALLOWED;
             case FILE_UPLOAD_FAILED -> ResponseCode.FILE_UPLOAD_FAILED;
 
+            // JWT 토큰 관련 세분화된 에러
+            case EXPIRED_TOKEN -> ResponseCode.EXPIRED_TOKEN;
+            case MALFORMED_TOKEN -> ResponseCode.MALFORMED_TOKEN;
+            case INVALID_TOKEN_SIGNATURE -> ResponseCode.INVALID_TOKEN_SIGNATURE;
+            case UNSUPPORTED_TOKEN -> ResponseCode.UNSUPPORTED_TOKEN;
+            case INVALID_REFRESH_TOKEN -> ResponseCode.INVALID_REFRESH_TOKEN;
+
             //보관
             case TRIP_NOT_STORED -> ResponseCode.TRIP_NOT_STORED;
             case DIARY_NOT_STORED -> ResponseCode.DIARY_NOT_STORED;

@@ -24,8 +24,11 @@ public class LoginService {
     private final KakaoApiClient kakaoApiClient;
     private final JwtUtil jwtUtil;
 
-    public LoginResponseDto login(LoginRequestDto request) {
-
+    /**
+     * 로그인 처리 및 토큰 생성 (Controller에서 쿠키 설정을 위해 분리)
+     * @return [accessToken, refreshToken]
+     */
+    public String[] loginAndGenerateTokens(LoginRequestDto request) {
         if (request.getAccessToken() == null || request.getAccessToken().isBlank()) {
             throw new CustomException(ErrorCode.KAKAO_TOKEN_MISSING);
         }
@@ -38,7 +41,7 @@ public class LoginService {
         if (user != null) {
             String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getKakaoId());
             String refreshToken = jwtUtil.generateRefreshToken(user.getId());
-            return LoginResponseDto.from(user, accessToken, refreshToken, user.isRegistered());
+            return new String[]{accessToken, refreshToken};
         }
 
         // 처음 로그인한 사용자 → User 생성
@@ -57,7 +60,20 @@ public class LoginService {
         String accessToken = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getKakaoId());
         String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId());
 
-        return LoginResponseDto.from(savedUser, accessToken, refreshToken, false);
+        return new String[]{accessToken, refreshToken};
+    }
+
+    /**
+     * 카카오 액세스 토큰으로 사용자 조회
+     */
+    public User getUserByKakaoAccessToken(String kakaoAccessToken) {
+        if (kakaoAccessToken == null || kakaoAccessToken.isBlank()) {
+            throw new CustomException(ErrorCode.KAKAO_TOKEN_MISSING);
+        }
+
+        KakaoUserInfo kakaoUserInfo = kakaoApiClient.getKakaoUserInfo(kakaoAccessToken);
+        return userRepository.findByKakaoId(kakaoUserInfo.getKakaoId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Transactional

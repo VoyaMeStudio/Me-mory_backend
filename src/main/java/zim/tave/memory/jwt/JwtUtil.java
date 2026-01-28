@@ -3,16 +3,20 @@ package zim.tave.memory.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import zim.tave.memory.domain.User;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.UserRepository;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class JwtUtil {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -59,13 +63,64 @@ public class JwtUtil {
         return parseClaims(token).get("type", String.class);
     }
 
+    // 토큰 만료 여부 확인
+    public boolean isTokenExpired(String token) {
+        try {
+            Date expiration = parseClaims(token).getExpiration();
+            return expiration.before(new Date());
+        } catch (JwtException e) {
+            return true;
+        }
+    }
+
     // 유효성 검사
     public boolean validateToken(String token) {
         try {
             parseClaims(token);
             return true;
-        } catch (JwtException e) {
+        } catch (ExpiredJwtException e) {
+            log.warn("토큰이 만료되었습니다: {}", e.getMessage());
             return false;
+        } catch (MalformedJwtException e) {
+            log.warn("올바르지 않은 JWT 형식입니다: {}", e.getMessage());
+            return false;
+        } catch (SignatureException e) {
+            log.warn("JWT 서명이 유효하지 않습니다: {}", e.getMessage());
+            return false;
+        } catch (UnsupportedJwtException e) {
+            log.warn("지원하지 않는 JWT 토큰입니다: {}", e.getMessage());
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT 토큰이 비어있거나 null입니다: {}", e.getMessage());
+            return false;
+        } catch (JwtException e) {
+            log.warn("JWT 토큰 검증 중 오류가 발생했습니다: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    // 유효성 검사 - 예외를 던지는 버전 (상세한 에러 처리가 필요한 경우)
+    public void validateTokenWithException(String token) {
+        try {
+            parseClaims(token);
+        } catch (ExpiredJwtException e) {
+            log.warn("토큰이 만료되었습니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        } catch (MalformedJwtException e) {
+            log.warn("올바르지 않은 JWT 형식입니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+        } catch (SignatureException e) {
+            log.warn("JWT 서명이 유효하지 않습니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INVALID_TOKEN_SIGNATURE);
+        } catch (UnsupportedJwtException e) {
+            log.warn("지원하지 않는 JWT 토큰입니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT 토큰이 비어있거나 null입니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        } catch (JwtException e) {
+            log.warn("JWT 토큰 검증 중 오류가 발생했습니다: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
     }
 
