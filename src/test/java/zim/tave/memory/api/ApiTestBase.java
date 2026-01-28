@@ -21,7 +21,7 @@ import java.time.ZoneOffset;
  * - AbstractContainerBaseTest를 상속하여 공유 컨테이너 사용
  * - MockMvc를 사용한 HTTP 레벨 테스트
  * - JWT 토큰 생성 헬퍼 메서드 제공
- * 
+ *
  * 주의: AbstractContainerBaseTest에서 @SpringBootTest(webEnvironment = NONE)를 설정했지만,
  * MockMvc를 사용하기 위해 @AutoConfigureMockMvc를 사용합니다.
  * 이는 Spring Context를 로드하지만, 컨테이너는 공유됩니다.
@@ -88,7 +88,7 @@ public abstract class ApiTestBase extends AbstractContainerBaseTest {
     protected String generateToken(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-        return jwtUtil.generateToken(user.getId(), user.getKakaoId());
+        return jwtUtil.generateAccessToken(user.getId(), user.getKakaoId());
     }
 
     /**

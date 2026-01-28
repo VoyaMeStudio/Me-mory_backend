@@ -13,10 +13,8 @@ public class LoginResponseDto {
     @Schema(description = "발급된 userId", example = "1")
     private Long userId;
 
-    @Schema(description = "기존 회원 여부 확인(true = 이미 가입된 회원 / false = 신규 회원)",
-            example = "true")
+    @Schema(description = "기존 회원 여부 확인(true = 이미 가입된 회원 / false = 신규 회원)", example = "true")
     private boolean registered; // 기존 회원 여부 확인
-
 
     @Schema(description = "카카오 사용자 ID", example = "4317757086")
     private String kakaoId;
@@ -25,15 +23,17 @@ public class LoginResponseDto {
     private String profileImageUrl;
 
     @Schema(description = "로그인 시 AT 발급", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6...")
-    private String jwtAccessToken;
+    private String accessToken;
 
-    public static LoginResponseDto from(User user, String jwt, boolean registered) {
+    // Refresh Token은 HttpOnly 쿠키로 전송
+
+    public static LoginResponseDto from(User user, String accessToken, boolean registered) {
         return new LoginResponseDto(
                 user.getId(),
                 registered,
                 user.getKakaoId(),
                 user.getProfileImageUrl(),
-                jwt
+                accessToken
         );
     }
 }

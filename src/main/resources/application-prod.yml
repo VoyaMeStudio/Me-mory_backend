@@ -1,0 +1,13 @@
+# =========================
+# prod 전용 override
+# =========================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+memory:
+  base-url: https://voyame-studio.org
+
+kakao:
+  redirect-uri: https://voyame-studio.org/api/auth/login/kakao
