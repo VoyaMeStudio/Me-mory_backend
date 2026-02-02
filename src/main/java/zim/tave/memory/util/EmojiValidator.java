@@ -1,7 +1,5 @@
 package zim.tave.memory.util;
 
-import java.util.regex.Pattern;
-
 public class EmojiValidator {
 
     private EmojiValidator() {
