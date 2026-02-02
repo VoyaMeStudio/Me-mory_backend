@@ -14,28 +14,28 @@ public class AlarmHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "alarm_history_id")
+    @Column(name = "alarmHistoryId")
     private Long id;
 
     // 알림을 받을 사용자
-    @Column(nullable = false)
+    @Column(name = "userId", nullable = false)
     private Long userId;
 
     // 어떤 여행에 대한 알림인지
-    @Column(nullable = false)
+    @Column(name = "tripId", nullable = false)
     private Long tripId;
 
     // 알림 종류
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
+    @Column(name = "alarmType", nullable = false, length = 50)
     private AlarmType alarmType;
 
     // 실제 발송 시각
-    @Column(nullable = false)
+    @Column(name = "sentAt", nullable = false)
     private LocalDateTime sentAt;
 
     // 일 단위 조회 최적화를 위한 필드 (캡 계산용)
-    @Column(nullable = false)
+    @Column(name = "sentDate", nullable = false)
     private LocalDate sentDate;
 
     public static AlarmHistory create(

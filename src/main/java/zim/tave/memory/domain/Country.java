@@ -14,8 +14,10 @@ import lombok.Setter;
 public class Country {
 
     @Id
+    @Column(name = "countryCode")
     private String countryCode; // 예: "KR", "US"
 
+    @Column(name = "countryName")
     private String countryName;
 
     @Column(columnDefinition = "VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")

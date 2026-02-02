@@ -13,14 +13,15 @@ public class BoardTheme {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "boardThemeId")
     private Long boardThemeId;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "themeName", nullable = false, length = 100)
     private String themeName;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "thumbnailUrl", nullable = false, length = 255)
     private String thumbnailUrl;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "cardUrl", nullable = false, length = 255)
     private String cardUrl;
 }

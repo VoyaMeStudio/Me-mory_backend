@@ -14,6 +14,7 @@ public class BoardStickerMap {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "boardStickerId")
     private Long boardStickerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -24,12 +25,12 @@ public class BoardStickerMap {
     @JoinColumn(name = "stickerId", nullable = false)
     private Sticker sticker;
 
-    @Column(nullable = false)
+    @Column(name = "posX", nullable = false)
     private BigDecimal posX;
 
-    @Column(nullable = false)
+    @Column(name = "posY", nullable = false)
     private BigDecimal posY;
 
-    @Column(nullable = false)
+    @Column(name = "rotation", nullable = false)
     private BigDecimal rotation;
 }

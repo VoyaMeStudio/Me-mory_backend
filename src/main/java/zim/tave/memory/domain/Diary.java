@@ -30,16 +30,17 @@ public class Diary {
     @JoinColumn(name = "countryId")
     private Country country;
 
-    @Column(nullable = false)
+    @Column(name = "city", nullable = false)
     private String city;
 
-    @Column(nullable = false)
+    @Column(name = "dateTime", nullable = false)
     private OffsetDateTime dateTime;
 
     @Lob
-    @Column(nullable = false, length = 88)
+    @Column(name = "content", nullable = false, length = 88)
     private String content;
 
+    @Column(name = "detailedLocation")
     private String detailedLocation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,10 +55,10 @@ public class Diary {
     @BatchSize(size = 20) // lazy loading 시 20개씩 조회
     private List<DiaryImage> diaryImages = new ArrayList<>();
 
-    @Column(updatable = false)
+    @Column(name = "createdAt", updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "isStored", nullable = false)
     private Boolean isStored;
 
     @PrePersist

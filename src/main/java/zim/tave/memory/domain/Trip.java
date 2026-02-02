@@ -19,20 +19,22 @@ public class Trip {
     @Column(name = "tripId")
     private Long id;
 
-    @Column(length = 14, nullable = false)
+    @Column(name = "tripName", length = 14, nullable = false)
     private String tripName;
 
-    @Column(length = 56)
+    @Column(name = "description", length = 56)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "startDate", nullable = false)
     private LocalDate startDate;
 
-    @Column(nullable = false)
+    @Column(name = "endDate", nullable = false)
     private LocalDate endDate;
 
+    @Column(name = "isStored")
     private Boolean isStored = false; //보관 여부 확인
 
+    @Column(name = "isPast")
     private Boolean isPast = false; //과거 여행 여부 확인
 
     @JsonBackReference
@@ -45,8 +47,10 @@ public class Trip {
     private TripTheme tripTheme;
 
     @Lob
+    @Column(name = "content")
     private String content;
 
+    @Column(name = "representativeImageUrl")
     private String representativeImageUrl;
 
     @JsonManagedReference

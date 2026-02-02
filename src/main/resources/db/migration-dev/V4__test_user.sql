@@ -9,9 +9,9 @@
 INSERT IGNORE INTO `user` (
     `kakaoId`,
     `profileImageUrl`,
-    `sur_name`,
-    `first_name`,
-    `korean_name`,
+    `surName`,
+    `firstName`,
+    `koreanName`,
     `birth`,
     `nationality`,
     `createdAt`,

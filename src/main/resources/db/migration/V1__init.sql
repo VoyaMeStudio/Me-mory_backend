@@ -52,9 +52,9 @@ CREATE TABLE IF NOT EXISTS `user` (
     `userId` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `kakaoId` VARCHAR(255) UNIQUE,
     `profileImageUrl` VARCHAR(255),
-    `sur_name` VARCHAR(255),
-    `first_name` VARCHAR(255),
-    `korean_name` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    `surName` VARCHAR(255),
+    `firstName` VARCHAR(255),
+    `koreanName` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
     `createdAt` DATE DEFAULT (CURRENT_DATE),
     `status` BOOLEAN DEFAULT FALSE,
     `birth` DATE,
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `board_sticker_map` (
 
 -- AlarmHistory 테이블 (FK 없음, 하지만 User, Trip 참조)
 CREATE TABLE IF NOT EXISTS `alarm_history` (
-    `alarm_history_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `alarmHistoryId` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `userId` BIGINT NOT NULL,
     `tripId` BIGINT NOT NULL,
     `alarmType` VARCHAR(50) NOT NULL,

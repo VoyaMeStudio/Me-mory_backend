@@ -19,31 +19,38 @@ public class User {
     private Long id;
 
     //카카오 로그인
-    @Column(unique=true)
+    @Column(name = "kakaoId", unique=true)
     private String kakaoId;
+    @Column(name = "profileImageUrl")
     private String profileImageUrl;
 
-    @Column(name = "sur_name")
+    @Column(name = "surName")
     private String surName;
 
-    @Column(name = "first_name")
+    @Column(name = "firstName")
     private String firstName;
 
-    @Column(name = "korean_name")
+    @Column(name = "koreanName")
     private String koreanName;
 
+    @Column(name = "createdAt")
     private LocalDate createdAt;
+    @Column(name = "status")
     private boolean status;
+    @Column(name = "birth")
     private LocalDate birth;
+    @Column(name = "nationality")
     private String nationality;
-    @Column(nullable = false)
+    @Column(name = "isRegistered", nullable = false)
     private boolean isRegistered; // 회원가입 완료 여 (true = 가입 완료)
 
     //마이페이지 Statistics 정보
+    @Column(name = "diaryCount")
     private Long diaryCount; //일기 수
+    @Column(name = "visitedCountryCount")
     private Long visitedCountryCount; //방문한 나라 수
 
-    @Column(length = 255)
+    @Column(name = "flags", length = 255)
     private String flags; //국기
 
     @JsonManagedReference

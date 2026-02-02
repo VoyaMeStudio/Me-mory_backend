@@ -12,6 +12,8 @@ public class Weather {
     @Column(name = "weather_id")
     private Long id;
 
+    @Column(name = "name")
     private String name;
+    @Column(name = "iconUrl")
     private String iconUrl;
 }
