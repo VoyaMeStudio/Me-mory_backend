@@ -10,6 +10,10 @@ spring:
     enabled: true
     baseline-on-migrate: true
     validate-on-migrate: true
+    # 운영 환경에서는 테스트 데이터 마이그레이션 제외
+    # V4__test_user.sql은 개발 환경에서만 실행됨
+    # 주의: 운영 환경 배포 시 V4__test_user.sql을 수동으로 제외하거나
+    # locations를 제한하여 V1~V3까지만 실행하도록 설정 필요
 
 memory:
   base-url: https://voyame-studio.org
