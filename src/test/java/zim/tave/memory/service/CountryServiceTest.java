@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Country;
 import zim.tave.memory.repository.CountryRepository;
@@ -28,32 +27,8 @@ public class CountryServiceTest {
         countryRepository.findAll().forEach(c -> countryRepository.delete(c));
     }
 
-    @Test
-    @Transactional
-    @Rollback(false)
-    void init_빈_DB에_정상작동_확인() {
-        // when
-        countryService.init();
-        // then
-        List<Country> result = countryRepository.findAll();
-        assertThat(result).isNotEmpty();
-        assertThat(result).anyMatch(c -> c.getCountryCode().equals("KR"));
-        assertThat(result).anyMatch(c -> c.getCountryCode().equals("US"));
-    }
-
-    @Test
-    void init_중복저장_방지_확인() {
-        // given
-        countryService.init();
-        int firstCount = countryRepository.findAll().size();
-
-        // when
-        countryService.init(); // 두 번째 실행
-        int secondCount = countryRepository.findAll().size();
-
-        // then
-        assertThat(secondCount).isEqualTo(firstCount); // 중복 저장 안 됐는지 확인
-    }
+    // init() 메서드는 Flyway 마이그레이션으로 대체되었으므로 테스트 제거
+    // Flyway가 V3__insert_countries.sql을 통해 국가 데이터를 관리합니다.
 
     @Test
     void searchCountryByKeyword() {

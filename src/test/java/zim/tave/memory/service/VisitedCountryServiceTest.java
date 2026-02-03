@@ -32,7 +32,7 @@ public class VisitedCountryServiceTest {
     void testRegisterVisitedCountry_SuccessAndUpdate() {
         // given: 테스트용 데이터 생성
         User user = createTestUser("testKakao1");
-        Country country = createTestCountry("KR1", "대한민국1", "🇰🇷");
+        Country country = createTestCountry("KR", "대한민국1", "🇰🇷");
         Emotion emotion1 = createTestEmotion("행복1", "#FFD700");
         Emotion emotion2 = createTestEmotion("슬픔1", "#0000FF");
 
@@ -50,7 +50,7 @@ public class VisitedCountryServiceTest {
         // first는 첫 번째 등록 결과이므로 "행복1"이 맞음
         assertThat(first.getEmotionName()).isEqualTo("행복1");
         assertThat(updated.getEmotionName()).isEqualTo("슬픔1");
-        assertThat(visitedList.get(0).getCountryCode()).isEqualTo("KR1");
+        assertThat(visitedList.get(0).getCountryCode()).isEqualTo("KR");
         assertThat(visitedList.get(0).getEmotionName()).isEqualTo("슬픔1");
         assertThat(visitedList.get(0).getColor()).isEqualTo("#0000FF");
     }
@@ -59,7 +59,7 @@ public class VisitedCountryServiceTest {
     void testRegisterVisitedCountry_ReturnsSavedEntity() {
         // given
         User user = createTestUser("testKakaoNew");
-        Country country = createTestCountry("KRNEW", "대한민국NEW", "🇰🇷");
+        Country country = createTestCountry("US", "미국", "🇺🇸");
         Emotion emotion = createTestEmotion("설렘", "#FDD7DE");
 
         // when
@@ -68,7 +68,7 @@ public class VisitedCountryServiceTest {
         // then
         assertThat(result.getVisitedCountryId()).isNotNull();
         assertThat(result.getUserId()).isEqualTo(user.getId());
-        assertThat(result.getCountryCode()).isEqualTo("KRNEW");
+        assertThat(result.getCountryCode()).isEqualTo("US");
         assertThat(result.getEmotionName()).isEqualTo("설렘");
         assertThat(result.getColor()).isEqualTo("#FDD7DE");
     }
@@ -77,7 +77,7 @@ public class VisitedCountryServiceTest {
     void testAlreadyVisited() {
         // given: 테스트용 데이터 생성
         User user = createTestUser("testKakao2");
-        Country country = createTestCountry("KR2", "대한민국2", "🇰🇷");
+        Country country = createTestCountry("JP", "일본", "🇯🇵");
         Emotion emotion = createTestEmotion("행복2", "#FFD700");
 
         // when & then: 방문 여부 확인
@@ -94,7 +94,7 @@ public class VisitedCountryServiceTest {
     void testGetVisitedCountries() {
         // given: 테스트용 데이터 생성
         User user = createTestUser("testKakao8");
-        Country country = createTestCountry("KR8", "대한민국8", "🇰🇷");
+        Country country = createTestCountry("CN", "중국", "🇨🇳");
         Emotion emotion = createTestEmotion("행복8", "#FFD700");
 
         // 방문 국가 등록

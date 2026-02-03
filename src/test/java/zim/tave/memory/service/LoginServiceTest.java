@@ -46,7 +46,7 @@ public class LoginServiceTest {
         request.setAccessToken(null);
 
         // when & then
-        assertThatThrownBy(() -> loginService.login(request))
+        assertThatThrownBy(() -> loginService.loginAndGenerateTokens(request))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.KAKAO_TOKEN_MISSING.getMessage());
     }
@@ -54,8 +54,9 @@ public class LoginServiceTest {
     @Test
     void 토큰_누락시_예외() {
         LoginRequestDto request = new LoginRequestDto("");
+        request.setAccessToken("");
 
-        assertThatThrownBy(() -> loginService.login(request))
+        assertThatThrownBy(() -> loginService.loginAndGenerateTokens(request))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.KAKAO_TOKEN_MISSING.getMessage());
     }
@@ -64,7 +65,8 @@ public class LoginServiceTest {
     @DisplayName("기존 회원 로그인 - Access Token과 Refresh Token 발급")
     void 기존회원_로그인() {
         // given
-        LoginRequestDto request = new LoginRequestDto("valid_kakao_token");
+        LoginRequestDto request = new LoginRequestDto();
+        request.setAccessToken("valid_kakao_token");
 
         KakaoUserInfo kakaoInfo = new KakaoUserInfo("kakao123", "http://img.jpg");
         User user = new User();
@@ -78,14 +80,13 @@ public class LoginServiceTest {
         when(jwtUtil.generateRefreshToken(anyLong())).thenReturn("refresh_token_456");
 
         // when
-        LoginResponseDto response = loginService.login(request);
+        String[] tokens = loginService.loginAndGenerateTokens(request);
 
         // then
-        assertThat(response.isRegistered()).isTrue();
-        assertThat(response.getUserId()).isEqualTo(1L);
-        assertThat(response.getKakaoId()).isEqualTo("kakao123");
-        assertThat(response.getAccessToken()).isEqualTo("access_token_123");
-        assertThat(response.getRefreshToken()).isEqualTo("refresh_token_456");
+        assertThat(tokens).isNotNull();
+        assertThat(tokens.length).isEqualTo(2);
+        assertThat(tokens[0]).isEqualTo("access_token_123");
+        assertThat(tokens[1]).isEqualTo("refresh_token_456");
 
         verify(jwtUtil, times(1)).generateAccessToken(1L, "kakao123");
         verify(jwtUtil, times(1)).generateRefreshToken(1L);
@@ -95,7 +96,8 @@ public class LoginServiceTest {
     @DisplayName("신규 회원 로그인 - 카카오 로그인만 완료, 앱 가입 미완료")
     void 신규회원_로그인() {
         // given
-        LoginRequestDto request = new LoginRequestDto("valid_kakao_token");
+        LoginRequestDto request = new LoginRequestDto();
+        request.setAccessToken("valid_kakao_token");
 
         KakaoUserInfo kakaoInfo = new KakaoUserInfo("kakao999", "http://profile.jpg");
 
@@ -111,14 +113,13 @@ public class LoginServiceTest {
         });
 
         // when
-        LoginResponseDto response = loginService.login(request);
+        String[] tokens = loginService.loginAndGenerateTokens(request);
 
         // then
-        assertThat(response.isRegistered()).isFalse(); // 앱 가입 미완료
-        assertThat(response.getUserId()).isEqualTo(10L);
-        assertThat(response.getKakaoId()).isEqualTo("kakao999");
-        assertThat(response.getAccessToken()).isEqualTo("new_access_token");
-        assertThat(response.getRefreshToken()).isEqualTo("new_refresh_token");
+        assertThat(tokens).isNotNull();
+        assertThat(tokens.length).isEqualTo(2);
+        assertThat(tokens[0]).isEqualTo("new_access_token");
+        assertThat(tokens[1]).isEqualTo("new_refresh_token");
 
         verify(userRepository, times(1)).save(any(User.class));
         verify(jwtUtil, times(1)).generateAccessToken(10L, "kakao999");
@@ -173,13 +174,14 @@ public class LoginServiceTest {
     @DisplayName("카카오 API 호출 실패 시 예외 전파")
     void 카카오_API_실패() {
         // given
-        LoginRequestDto request = new LoginRequestDto("invalid_kakao_token");
+        LoginRequestDto request = new LoginRequestDto();
+        request.setAccessToken("invalid_kakao_token");
 
         when(kakaoApiClient.getKakaoUserInfo("invalid_kakao_token"))
                 .thenThrow(new CustomException(ErrorCode.KAKAO_INVALID_TOKEN));
 
         // when & then
-        assertThatThrownBy(() -> loginService.login(request))
+        assertThatThrownBy(() -> loginService.loginAndGenerateTokens(request))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(ErrorCode.KAKAO_INVALID_TOKEN.getMessage());
     }

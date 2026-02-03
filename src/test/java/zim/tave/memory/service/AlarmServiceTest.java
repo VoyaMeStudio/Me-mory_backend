@@ -17,7 +17,10 @@ import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.repository.AlarmHistoryRepository;
 import zim.tave.memory.repository.UserRepository;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +43,9 @@ public class AlarmServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private Clock clock;
 
     @InjectMocks
     private AlarmService alarmService;
@@ -175,6 +181,14 @@ public class AlarmServiceTest {
 
             User user = userWithSetting(userId, true);
             Trip trip = trip(tripId, LocalDate.now().minusDays(1), LocalDate.now().plusDays(1));
+
+            // Clock 모킹 설정
+            Clock fixedClock = Clock.fixed(
+                    LocalDateTime.of(2026, 1, 15, 12, 0).atZone(ZoneId.systemDefault()).toInstant(),
+                    ZoneId.systemDefault()
+            );
+            when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+            when(clock.instant()).thenReturn(fixedClock.instant());
 
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(tripService.findCurrentOngoingTrip(userId)).thenReturn(trip);
