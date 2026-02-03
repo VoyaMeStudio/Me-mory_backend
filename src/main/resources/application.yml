@@ -6,7 +6,7 @@ spring:
     import: optional:application-secret.yml
 
   datasource:
-    url: jdbc:mysql://localhost:3306/memory_db_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/memory_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: memory_user
     driver-class-name: com.mysql.cj.jdbc.Driver
 
