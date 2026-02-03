@@ -6,7 +6,7 @@
 -- ============================================
 
 -- 테스트 사용자 삽입 (이미 존재하는 경우 무시)
-INSERT IGNORE INTO `user` (
+INSERT IGNORE INTO `User` (
     `kakaoId`,
     `profileImageUrl`,
     `surName`,
@@ -37,10 +37,10 @@ INSERT IGNORE INTO `user` (
 );
 
 -- 테스트 사용자의 Setting 생성 (이미 존재하는 경우 무시)
-INSERT IGNORE INTO `setting` (`userId`, `alarm`)
+INSERT IGNORE INTO `Setting` (`userId`, `alarm`)
 SELECT u.`userId`, TRUE
-FROM `user` u
+FROM `User` u
 WHERE u.`kakaoId` = 'test_강지혜'
 AND NOT EXISTS (
-    SELECT 1 FROM `setting` s WHERE s.`userId` = u.`userId`
+    SELECT 1 FROM `Setting` s WHERE s.`userId` = u.`userId`
 );

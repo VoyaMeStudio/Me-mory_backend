@@ -3,7 +3,7 @@
 -- Country 데이터 삽입 (245개 국가)
 -- ============================================
 
-INSERT INTO `country` (`countryCode`, `countryName`, `emoji`) VALUES
+INSERT INTO `Country` (`countryCode`, `countryName`, `emoji`) VALUES
 ('GH', '가나', '🇬🇭'),
 ('GA', '가봉', '🇬🇦'),
 ('GY', '가이아나', '🇬🇾'),
