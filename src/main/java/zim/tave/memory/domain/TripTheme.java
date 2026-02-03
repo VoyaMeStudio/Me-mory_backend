@@ -14,7 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 public class TripTheme {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "themeName")

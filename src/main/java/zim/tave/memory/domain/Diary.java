@@ -14,7 +14,8 @@ import java.util.List;
 @Getter @Setter
 public class Diary {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diaryId")
     private Long id;
 

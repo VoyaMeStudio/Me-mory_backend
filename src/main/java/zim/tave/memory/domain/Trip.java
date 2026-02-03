@@ -15,7 +15,8 @@ import java.util.List;
 @Getter @Setter
 public class Trip {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "tripId")
     private Long id;
 

@@ -6,11 +6,12 @@ import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @Entity
+@Table(name = "DiaryImage")
 @Getter @Setter
 public class DiaryImage {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "DiaryImageId")
     private Long id;
 
