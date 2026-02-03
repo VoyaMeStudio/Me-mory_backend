@@ -30,6 +30,8 @@ import jakarta.servlet.http.Cookie;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -216,8 +218,8 @@ class LoginControllerTest {
         // given
         String invalidRefreshToken = "invalid_refresh_token";
 
-        when(jwtUtil.validateTokenWithException(invalidRefreshToken))
-                .thenThrow(new CustomException(ErrorCode.INVALID_TOKEN));
+        doThrow(new CustomException(ErrorCode.INVALID_TOKEN))
+                .when(jwtUtil).validateTokenWithException(invalidRefreshToken);
 
         // when & then
         mockMvc.perform(post("/api/auth/refresh")
