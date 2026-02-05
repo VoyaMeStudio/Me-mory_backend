@@ -13,11 +13,12 @@ public class Sticker {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "stickerId")
     private Long stickerId;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "imageUrl", nullable = false)
     private String imageUrl;
 }

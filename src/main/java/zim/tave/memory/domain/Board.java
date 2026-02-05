@@ -18,14 +18,16 @@ public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "boardId")
     private Long boardId;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "createdAt", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "updatedAt")
     private OffsetDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

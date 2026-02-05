@@ -16,10 +16,13 @@ public class VisitedCountry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "visitedCountryId")
     private Long visitedCountryId;
 
+    @Column(name = "color")
     private String color;
 
+    @Column(name = "createdAt")
     private OffsetDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

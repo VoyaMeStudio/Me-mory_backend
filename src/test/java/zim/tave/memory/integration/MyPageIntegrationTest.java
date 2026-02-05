@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import zim.tave.memory.domain.*;
-import zim.tave.memory.dto.request.CreateDiaryRequest;
 import zim.tave.memory.dto.response.MyPageResponseDto;
 import zim.tave.memory.dto.response.VisitedCountryListResponseDto;
 import zim.tave.memory.service.MyPageService;
@@ -14,7 +13,6 @@ import zim.tave.memory.repository.VisitedCountryRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

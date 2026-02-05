@@ -10,11 +10,14 @@ import lombok.Setter;
 @Getter @Setter
 public class Emotion {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "emotion_id")
     private Long id;
 
+    @Column(name = "name")
     private String name;
+    @Column(name = "colorCode")
     private String colorCode;
 
     public Emotion(String name, String colorCode) {

@@ -23,7 +23,6 @@ import zim.tave.memory.service.JoinService;
 
 import java.time.LocalDate;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

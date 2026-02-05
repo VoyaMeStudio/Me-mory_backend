@@ -14,13 +14,17 @@ import java.util.List;
 @NoArgsConstructor
 public class TripTheme {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "themeName")
     private String themeName;
     
+    @Column(name = "sampleImageUrl")
     private String sampleImageUrl;  // 사용자가 테마를 선택할 때 보여줄 샘플 이미지
     
+    @Column(name = "cardImageUrl")
     private String cardImageUrl;    // 실제 카드에 들어갈 이미지
 
     @JsonManagedReference

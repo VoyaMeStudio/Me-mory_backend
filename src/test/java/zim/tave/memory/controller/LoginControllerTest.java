@@ -26,9 +26,12 @@ import zim.tave.memory.security.JwtAuthenticationFilter;
 import zim.tave.memory.service.KakaoOAuthService;
 import zim.tave.memory.service.LoginService;
 
+import jakarta.servlet.http.Cookie;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -65,34 +68,33 @@ class LoginControllerTest {
     @DisplayName("카카오 로그인 (인가 코드 방식) - 성공")
     void 카카오_로그인_인가코드_성공() throws Exception {
         // given
-        String authCode = "test_auth_code";
+        String authCode = "valid_auth_code";
         String kakaoAccessToken = "kakao_access_token";
 
-        LoginResponseDto response = new LoginResponseDto(
-                1L,
-                true,
-                "4317757086",
-                "http://img1.kakaocdn.net/profile.jpeg",
-                "jwt_access_token",
-                "jwt_refresh_token"
-        );
+        User user = new User();
+        user.setId(1L);
+        user.setKakaoId("4317757086");
+        user.setProfileImageUrl("http://img1.kakaocdn.net/profile.jpeg");
+        user.setRegistered(true);
+
+        String[] tokens = new String[]{"jwt_access_token", "jwt_refresh_token"};
+        LoginResponseDto response = LoginResponseDto.from(user, tokens[0], true);
 
         when(kakaoOAuthService.getAccessToken(authCode)).thenReturn(kakaoAccessToken);
-        when(loginService.login(any(LoginRequestDto.class))).thenReturn(response);
+        when(loginService.loginAndGenerateTokens(any(LoginRequestDto.class))).thenReturn(tokens);
+        when(loginService.getUserByKakaoAccessToken(kakaoAccessToken)).thenReturn(user);
 
         // when & then
         mockMvc.perform(
                         get("/api/auth/login/kakao")
-                                .param("code", "valid_auth_code")
+                                .param("code", authCode)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code")
                         .value(ResponseCode.LOGIN_SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data.userId").value(1L))
                 .andExpect(jsonPath("$.data.accessToken")
-                        .value("jwt_access_token"))
-                .andExpect(jsonPath("$.data.refreshToken")
-                        .value("jwt_refresh_token"));
+                        .value("jwt_access_token"));
 
     }
 
@@ -103,17 +105,18 @@ class LoginControllerTest {
         // given
         String kakaoAccessToken = "valid_kakao_token";
 
-        LoginResponseDto response = new LoginResponseDto(
-                1L,
-                true,
-                "4317757086",
-                "http://img1.kakaocdn.net/profile.jpeg",
-                "jwt_access_token",
-                "jwt_refresh_token"
-        );
+        User user = new User();
+        user.setId(1L);
+        user.setKakaoId("4317757086");
+        user.setProfileImageUrl("http://img1.kakaocdn.net/profile.jpeg");
+        user.setRegistered(true);
+
+        String[] tokens = new String[]{"jwt_access_token", "jwt_refresh_token"};
+        LoginResponseDto response = LoginResponseDto.from(user, tokens[0], true);
 
         when(kakaoOAuthService.getAccessToken(any())).thenReturn(kakaoAccessToken);
-        when(loginService.login(any(LoginRequestDto.class))).thenReturn(response);
+        when(loginService.loginAndGenerateTokens(any(LoginRequestDto.class))).thenReturn(tokens);
+        when(loginService.getUserByKakaoAccessToken(kakaoAccessToken)).thenReturn(user);
 
         // when & then
         mockMvc.perform(get("/api/auth/login/kakao")
@@ -121,8 +124,7 @@ class LoginControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResponseCode.LOGIN_SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data.userId").value(1L))
-                .andExpect(jsonPath("$.data.accessToken").value("jwt_access_token"))
-                .andExpect(jsonPath("$.data.refreshToken").value("jwt_refresh_token"));
+                .andExpect(jsonPath("$.data.accessToken").value("jwt_access_token"));
     }
 
     @Test
@@ -132,17 +134,18 @@ class LoginControllerTest {
         String authCode = "new_user_code";
         String kakaoAccessToken = "new_user_kakao_token";
 
-        LoginResponseDto response = new LoginResponseDto(
-                10L,
-                false, // 앱 가입 미완료
-                "9999999999",
-                "http://new-profile.jpg",
-                "new_access_token",
-                "new_refresh_token"
-        );
+        User user = new User();
+        user.setId(10L);
+        user.setKakaoId("9999999999");
+        user.setProfileImageUrl("http://new-profile.jpg");
+        user.setRegistered(false);
+
+        String[] tokens = new String[]{"new_access_token", "new_refresh_token"};
+        LoginResponseDto response = LoginResponseDto.from(user, tokens[0], false);
 
         when(kakaoOAuthService.getAccessToken(authCode)).thenReturn(kakaoAccessToken);
-        when(loginService.login(any(LoginRequestDto.class))).thenReturn(response);
+        when(loginService.loginAndGenerateTokens(any(LoginRequestDto.class))).thenReturn(tokens);
+        when(loginService.getUserByKakaoAccessToken(kakaoAccessToken)).thenReturn(user);
 
         // when & then
         mockMvc.perform(get("/api/auth/login/kakao")
@@ -159,7 +162,7 @@ class LoginControllerTest {
         String authCode = "test_code";
 
         when(kakaoOAuthService.getAccessToken(authCode)).thenReturn("");
-        when(loginService.login(any()))
+        when(loginService.loginAndGenerateTokens(any()))
                 .thenThrow(new CustomException(ErrorCode.KAKAO_TOKEN_MISSING));
 
         // when & then
@@ -194,15 +197,16 @@ class LoginControllerTest {
         user.setId(1L);
         user.setKakaoId("kakao123");
 
-        when(jwtUtil.validateToken(refreshToken)).thenReturn(true);
+        doNothing().when(jwtUtil).validateTokenWithException(refreshToken);
         when(jwtUtil.isRefreshToken(refreshToken)).thenReturn(true);
         when(jwtUtil.getUserIdFromToken(refreshToken)).thenReturn(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(jwtUtil.generateAccessToken(1L, "kakao123")).thenReturn("new_access_token");
+        when(jwtUtil.generateRefreshToken(1L)).thenReturn("new_refresh_token");
 
         // when & then
         mockMvc.perform(post("/api/auth/refresh")
-                        .header("Authorization", "Bearer " + refreshToken))
+                        .cookie(new Cookie("refreshToken", refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResponseCode.TOKEN_REFRESH_SUCCESS.getCode()))
                 .andExpect(jsonPath("$.data.accessToken").value("new_access_token"));
@@ -214,13 +218,14 @@ class LoginControllerTest {
         // given
         String invalidRefreshToken = "invalid_refresh_token";
 
-        when(jwtUtil.validateToken(invalidRefreshToken)).thenReturn(false);
+        doThrow(new CustomException(ErrorCode.INVALID_TOKEN))
+                .when(jwtUtil).validateTokenWithException(invalidRefreshToken);
 
         // when & then
         mockMvc.perform(post("/api/auth/refresh")
-                        .header("Authorization", "Bearer " + invalidRefreshToken))
+                        .cookie(new Cookie("refreshToken", invalidRefreshToken)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(500));  // GlobalExceptionHandler가 500을 반환
+                .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_TOKEN.getCode()));
     }
 
 
@@ -230,23 +235,23 @@ class LoginControllerTest {
         // given
         String accessToken = "access_token_not_refresh";
 
-        when(jwtUtil.validateToken(accessToken)).thenReturn(true);
+        doNothing().when(jwtUtil).validateTokenWithException(accessToken);
         when(jwtUtil.isRefreshToken(accessToken)).thenReturn(false); // Access Token
 
         // when & then
         mockMvc.perform(post("/api/auth/refresh")
-                        .header("Authorization", "Bearer " + accessToken))
+                        .cookie(new Cookie("refreshToken", accessToken)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(500));  // GlobalExceptionHandler가 500을 반환
+                .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_REFRESH_TOKEN.getCode()));
     }
 
     @Test
-    @DisplayName("토큰 갱신 실패 - Authorization 헤더 누락")
+    @DisplayName("토큰 갱신 실패 - 쿠키 누락")
     void 토큰_갱신_실패_헤더누락() throws Exception {
         // when & then
         mockMvc.perform(post("/api/auth/refresh"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.code").value(500));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_REFRESH_TOKEN.getCode()));
     }
 
     @Test

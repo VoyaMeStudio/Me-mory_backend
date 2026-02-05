@@ -6,6 +6,13 @@ spring:
     activate:
       on-profile: prod
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    # 운영 환경: db/migration만 실행 (테스트 데이터 제외)
+    locations: classpath:db/migration
+
 memory:
   base-url: https://voyame-studio.org
 

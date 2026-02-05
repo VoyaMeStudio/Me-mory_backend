@@ -6,11 +6,12 @@ import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @Entity
+@Table(name = "DiaryImage")
 @Getter @Setter
 public class DiaryImage {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "DiaryImageId")
     private Long id;
 
@@ -18,15 +19,17 @@ public class DiaryImage {
     @JoinColumn(name = "diaryId")
     private Diary diary;
 
-    @Column(nullable = false)
+    @Column(name = "imageUrl", nullable = false)
     private String imageUrl;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "cameraType", nullable = false)
     private CameraType cameraType; // FRONT, BACK
     
+    @Column(name = "isRepresentative")
     private boolean isRepresentative; // 사용자가 선택한 대표사진
     
+    @Column(name = "imageOrder")
     private int imageOrder; // 이미지 순서 (1, 2)
 
     public enum CameraType {

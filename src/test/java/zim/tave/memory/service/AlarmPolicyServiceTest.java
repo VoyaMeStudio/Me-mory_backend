@@ -1,7 +1,6 @@
 package zim.tave.memory.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,8 +12,10 @@ import zim.tave.memory.domain.User;
 import zim.tave.memory.repository.AlarmHistoryRepository;
 import zim.tave.memory.repository.DiaryRepository;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -28,6 +29,9 @@ public class AlarmPolicyServiceTest {
 
     @Mock
     private DiaryRepository diaryRepository;
+
+    @Mock
+    private Clock clock;
 
     @InjectMocks
     private AlarmPolicyService alarmPolicyService;
@@ -47,6 +51,14 @@ public class AlarmPolicyServiceTest {
         // totalTripDays = 12 (inclusive), serviceSlotLimit=floor(12*0.25)=3, maxIncompleteSlot=floor(3*0.4)=1
         trip.setStartDate(LocalDate.of(2026, 1, 1));
         trip.setEndDate(LocalDate.of(2026, 1, 12));
+
+        // Clock 모킹 설정 - 현재 시간을 고정된 값으로 설정
+        Clock fixedClock = Clock.fixed(
+                LocalDateTime.of(2026, 1, 15, 12, 0).atZone(ZoneId.systemDefault()).toInstant(),
+                ZoneId.systemDefault()
+        );
+        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+        when(clock.instant()).thenReturn(fixedClock.instant());
     }
 
     @Test

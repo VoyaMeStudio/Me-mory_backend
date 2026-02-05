@@ -17,14 +17,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import zim.tave.memory.config.swagger.ApiErrorCodeExamples;
 import zim.tave.memory.domain.AlarmType;
-import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.response.AlarmSendResponseDto;
 import zim.tave.memory.global.common.ApiResponseDto;
 import zim.tave.memory.global.common.ResponseCode;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.service.AlarmService;
 
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor

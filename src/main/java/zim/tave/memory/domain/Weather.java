@@ -8,10 +8,13 @@ import lombok.Setter;
 @Getter @Setter
 public class Weather {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "weather_id")
     private Long id;
 
+    @Column(name = "name")
     private String name;
+    @Column(name = "iconUrl")
     private String iconUrl;
 }
