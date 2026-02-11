@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import zim.tave.memory.domain.User;
@@ -150,6 +151,7 @@ public class JwtUtil {
                 .getBody();
     }
 
+    @Profile("local")
     @Component
     @RequiredArgsConstructor
     public class TestTokenGenerator {
