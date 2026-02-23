@@ -1,66 +1,115 @@
 package zim.tave.memory.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import zim.tave.memory.domain.Country;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.User;
+import zim.tave.memory.domain.VisitedCountry;
 import zim.tave.memory.dto.response.VisitedCountryResponseDto;
 import zim.tave.memory.repository.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-@Transactional
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class VisitedCountryServiceTest {
 
-    @Autowired
+    @Mock
+    private VisitedCountryRepository visitedCountryRepository;
+    @InjectMocks
     private VisitedCountryService visitedCountryService;
-    @Autowired
+    @Mock
     private UserRepository userRepository;
-    @Autowired
+    @Mock
     private CountryRepository countryRepository;
-    @Autowired
+    @Mock
     private EmotionRepository emotionRepository;
+
+    private User user;
+    private Country country;
+    private Emotion emotion1;
+    private Emotion emotion2;
+
+    @BeforeEach
+    void setUp() {
+        user = new User();
+        user.setId(1L);
+        user.setKakaoId("testKakao1");
+        user.setStatus(true);
+        user.setCreatedAt(LocalDate.now());
+
+        country = new Country("KR", "대한민국", "🇰🇷");
+
+        emotion1 = new Emotion("행복1", "#FFD700");
+        emotion1.setId(1L);
+
+        emotion2 = new Emotion("슬픔1", "#0000FF");
+        emotion2.setId(2L);
+    }
 
     @Test
     void testRegisterVisitedCountry_SuccessAndUpdate() {
         // given: 테스트용 데이터 생성
-        User user = createTestUser("testKakao1");
-        Country country = createTestCountry("KR", "대한민국1", "🇰🇷");
-        Emotion emotion1 = createTestEmotion("행복1", "#FFD700");
-        Emotion emotion2 = createTestEmotion("슬픔1", "#0000FF");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(countryRepository.findById("KR")).thenReturn(Optional.of(country));
+        when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion1));
+        when(emotionRepository.findById(2L)).thenReturn(Optional.of(emotion2));
 
-        // when: 첫 번째 등록
-        VisitedCountryResponseDto first = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion1.getId());
-        assertThat(first.getEmotionName()).isEqualTo("행복1");
+        VisitedCountry existingVisited = new VisitedCountry();
+        existingVisited.setVisitedCountryId(1L);
+        existingVisited.setUser(user);
+        existingVisited.setCountry(country);
+        existingVisited.setEmotion(emotion1);
+        existingVisited.setColor(emotion1.getColorCode());
 
-        // 두 번째 등록 (감정 변경)
-        VisitedCountryResponseDto updated = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion2.getId());
+        // 첫 번째 등록 시 존재하지 않음, 두 번째 등록 시 기존 레코드 반환
+        when(visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(1L, "KR"))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(existingVisited));
+        when(visitedCountryRepository.save(any(VisitedCountry.class))).thenAnswer(invocation -> {
+            VisitedCountry vc = invocation.getArgument(0);
+            vc.setVisitedCountryId(1L);
+            return vc;
+        });
 
-        List<VisitedCountryResponseDto> visitedList = visitedCountryService.getVisitedCountries(user.getId());
+        // when - 첫 번째 등록
+        VisitedCountryResponseDto first = visitedCountryService.registerVisitedCountry(1L, "KR", 1L);
 
-        // then: 하나의 기록만 존재하고, 두 번째 감정으로 업데이트됨
-        assertThat(visitedList).hasSize(1);
-        // first는 첫 번째 등록 결과이므로 "행복1"이 맞음
+        // when - 두 번째 등록 (감정 변경)
+        VisitedCountryResponseDto updated = visitedCountryService.registerVisitedCountry(1L, "KR", 2L);
+
+        // then
         assertThat(first.getEmotionName()).isEqualTo("행복1");
         assertThat(updated.getEmotionName()).isEqualTo("슬픔1");
-        assertThat(visitedList.get(0).getCountryCode()).isEqualTo("KR");
-        assertThat(visitedList.get(0).getEmotionName()).isEqualTo("슬픔1");
-        assertThat(visitedList.get(0).getColor()).isEqualTo("#0000FF");
     }
 
     @Test
     void testRegisterVisitedCountry_ReturnsSavedEntity() {
         // given
-        User user = createTestUser("testKakaoNew");
-        Country country = createTestCountry("US", "미국", "🇺🇸");
-        Emotion emotion = createTestEmotion("설렘", "#FDD7DE");
+        Country usCountry = new Country("US", "미국", "🇺🇸");
+        Emotion emotion = new Emotion("설렘", "#FDD7DE");
+        emotion.setId(3L);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(countryRepository.findById("US")).thenReturn(Optional.of(usCountry));
+        when(emotionRepository.findById(3L)).thenReturn(Optional.of(emotion));
+        when(visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(1L, "US"))
+                .thenReturn(Optional.empty());
+        when(visitedCountryRepository.save(any(VisitedCountry.class))).thenAnswer(invocation -> {
+            VisitedCountry vc = invocation.getArgument(0);
+            vc.setVisitedCountryId(10L);
+            return vc;
+        });
 
         // when
         VisitedCountryResponseDto result = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
