@@ -31,7 +31,7 @@ public class VisitedCountryServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private CountryRepository countryRepository;
+    private CountryService countryService;
     @Mock
     private EmotionRepository emotionRepository;
 
@@ -61,7 +61,7 @@ public class VisitedCountryServiceTest {
     void testRegisterVisitedCountry_SuccessAndUpdate() {
         // given: 테스트용 데이터 생성
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(countryRepository.findById("KR")).thenReturn(Optional.of(country));
+        when(countryService.findByCode("KR")).thenReturn(country);
         when(emotionRepository.findById(1L)).thenReturn(Optional.of(emotion1));
         when(emotionRepository.findById(2L)).thenReturn(Optional.of(emotion2));
 
@@ -76,11 +76,8 @@ public class VisitedCountryServiceTest {
         when(visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(1L, "KR"))
                 .thenReturn(Optional.empty())
                 .thenReturn(Optional.of(existingVisited));
-        when(visitedCountryRepository.save(any(VisitedCountry.class))).thenAnswer(invocation -> {
-            VisitedCountry vc = invocation.getArgument(0);
-            vc.setVisitedCountryId(1L);
-            return vc;
-        });
+        when(visitedCountryRepository.save(any(VisitedCountry.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when - 첫 번째 등록
         VisitedCountryResponseDto first = visitedCountryService.registerVisitedCountry(1L, "KR", 1L);
@@ -101,7 +98,7 @@ public class VisitedCountryServiceTest {
         emotion.setId(3L);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(countryRepository.findById("US")).thenReturn(Optional.of(usCountry));
+        when(countryService.findByCode("US")).thenReturn(usCountry);
         when(emotionRepository.findById(3L)).thenReturn(Optional.of(emotion));
         when(visitedCountryRepository.findByUserIdAndCountryCodeWithDetails(1L, "US"))
                 .thenReturn(Optional.empty());
@@ -112,7 +109,8 @@ public class VisitedCountryServiceTest {
         });
 
         // when
-        VisitedCountryResponseDto result = visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
+        VisitedCountryResponseDto result =
+                visitedCountryService.registerVisitedCountry(1L, "US", 3L);
 
         // then
         assertThat(result.getVisitedCountryId()).isNotNull();
@@ -124,66 +122,43 @@ public class VisitedCountryServiceTest {
 
     @Test
     void testAlreadyVisited() {
-        // given: 테스트용 데이터 생성
-        User user = createTestUser("testKakao2");
-        Country country = createTestCountry("JP", "일본", "🇯🇵");
-        Emotion emotion = createTestEmotion("행복2", "#FFD700");
+        // given
+        when(visitedCountryRepository.existsByUserIdAndCountryCode(1L, "JP"))
+                .thenReturn(false)
+                .thenReturn(true);
 
-        // when & then: 방문 여부 확인
-        boolean before = visitedCountryService.alreadyVisited(user.getId(), country.getCountryCode());
+        // when & then: 방문 여부 화인
+        boolean before = visitedCountryService.alreadyVisited(1L, "JP");
         assertThat(before).isFalse();
 
-        visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
-
-        boolean after = visitedCountryService.alreadyVisited(user.getId(), country.getCountryCode());
+        boolean after = visitedCountryService.alreadyVisited(1L, "JP");
         assertThat(after).isTrue();
     }
 
     @Test
     void testGetVisitedCountries() {
         // given: 테스트용 데이터 생성
-        User user = createTestUser("testKakao8");
-        Country country = createTestCountry("CN", "중국", "🇨🇳");
-        Emotion emotion = createTestEmotion("행복8", "#FFD700");
+        Country cn = new Country("CN", "중국", "🇨🇳");
+        Emotion emo = new Emotion("행복8", "#FFD700");
+        emo.setId(8L);
 
-        // 방문 국가 등록
-        visitedCountryService.registerVisitedCountry(user.getId(), country.getCountryCode(), emotion.getId());
+        VisitedCountry visited = new VisitedCountry();
+        visited.setVisitedCountryId(100L);
+        visited.setUser(user);
+        visited.setCountry(cn);
+        visited.setEmotion(emo);
+        visited.setColor(emo.getColorCode());
 
-        // when: 방문 국가 목록 조회
-        List<VisitedCountryResponseDto> visitedList = visitedCountryService.getVisitedCountries(user.getId());
+        when(visitedCountryRepository.findByUserIdWithDetails(1L))
+                .thenReturn(List.of(visited));
 
-        // then: 조회된 목록 확인
+        // when
+        List<VisitedCountryResponseDto> visitedList = visitedCountryService.getVisitedCountries(1L);
+
+        // then
         assertThat(visitedList).hasSize(1);
-        assertThat(visitedList.get(0).getUserId()).isEqualTo(user.getId());
-        assertThat(visitedList.get(0).getCountryCode()).isEqualTo(country.getCountryCode());
+        assertThat(visitedList.get(0).getUserId()).isEqualTo(1L);
+        assertThat(visitedList.get(0).getCountryCode()).isEqualTo("CN");
     }
 
-    // 헬퍼 메서드들
-    private User createTestUser(String kakaoId) {
-        User user = new User();
-        user.setKakaoId(kakaoId);
-        user.setFirstName("Hong");
-        user.setSurName("Gil");
-        user.setStatus(true);
-        user.setCreatedAt(LocalDate.now());
-        userRepository.save(user);
-        return user;
-    }
-
-    private Country createTestCountry(String countryCode, String countryName, String emoji) {
-        Country country = new Country();
-        country.setCountryCode(countryCode);
-        country.setCountryName(countryName);
-        country.setEmoji(emoji);
-        countryRepository.save(country);
-        return country;
-    }
-
-    private Emotion createTestEmotion(String name, String colorCode) {
-        Emotion emotion = new Emotion();
-        emotion.setName(name);
-        emotion.setColorCode(colorCode);
-        emotionRepository.save(emotion);
-        return emotion;
-    }
 }
