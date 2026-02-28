@@ -81,12 +81,13 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	annotationProcessor 'org.projectlombok:lombok'
+    //testImplementation 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	testImplementation platform('org.testcontainers:testcontainers-bom:1.21.0')
-	testImplementation 'org.testcontainers:testcontainers'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:mysql'
+	testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+    testImplementation 'org.testcontainers:testcontainers:1.19.8'
+    testImplementation 'org.testcontainers:mysql:1.19.8'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
 }
 
 //로컬에서 사용하는 전체 테스트 실행행
@@ -142,4 +143,10 @@ tasks.register('integrationTest', Test) {
         showStandardStreams = true
         exceptionFormat = "full"
     }
+}
+
+test {
+    environment "DOCKER_HOST", "unix:///Users/choehyungwon/.docker/run/docker.sock"
+    environment "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/Users/choehyungwon/.docker/run/docker.sock"
+    environment "TESTCONTAINERS_RYUK_DISABLED", "true"
 }
