@@ -17,4 +17,5 @@ memory:
   base-url: https://voyame-studio.org
 
 kakao:
+  client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: https://voyame-studio.org/api/auth/login/kakao
