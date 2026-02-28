@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import zim.tave.memory.global.common.ApiResponseDto;
@@ -75,6 +76,7 @@ public class GlobalExceptionHandler {
             case INVALID_TOKEN_SIGNATURE -> ResponseCode.INVALID_TOKEN_SIGNATURE;
             case UNSUPPORTED_TOKEN -> ResponseCode.UNSUPPORTED_TOKEN;
             case INVALID_REFRESH_TOKEN -> ResponseCode.INVALID_REFRESH_TOKEN;
+            case INVALID_REQUEST_PARAMETER -> ResponseCode.INVALID_REQUEST_PARAMETER;
 
             //보관
             case TRIP_NOT_STORED -> ResponseCode.TRIP_NOT_STORED;
@@ -162,5 +164,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponseDto.error(ResponseCode.SERVER_ERROR, safeMessage));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleMissingParam(
+            MissingServletRequestParameterException e,
+            HttpServletRequest request) {
+
+        log.error("[MISSING PARAM] uri={}, missingParam={}",
+                request.getRequestURI(),
+                e.getParameterName());
+
+        return ResponseEntity
+                .status(ErrorCode.INVALID_REQUEST_PARAMETER.getHttpStatus())
+                .body(ApiResponseDto.error(
+                        ResponseCode.INVALID_REQUEST,
+                        "필수 요청 파라미터가 누락되었습니다: " + e.getParameterName()
+                ));
     }
 }

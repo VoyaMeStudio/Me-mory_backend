@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ import zim.tave.memory.service.LoginService;
 
 import java.util.Arrays;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -85,7 +87,13 @@ public class LoginController {
     @GetMapping("/login/kakao")
     public ResponseEntity<ApiResponseDto<LoginResponseDto>> kakaoLoginWithCode(
             @RequestParam String code,
+            HttpServletRequest request,
             HttpServletResponse response) {
+
+        log.error("[KAKAO CONTROLLER] URI={}, queryString={}, code={}",
+                request.getRequestURI(),
+                request.getQueryString(),
+                code);
 
         // 1. 인가 코드로 카카오 액세스 토큰 획득
         String kakaoAccessToken = kakaoOAuthService.getAccessToken(code);
@@ -137,6 +145,10 @@ public class LoginController {
     public ResponseEntity<ApiResponseDto<TokenRefreshResponse>> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response) {
+
+        log.error("[REFRESH] cookies={}",
+                request.getCookies() == null ? "null" : Arrays.toString(request.getCookies()));
+
 
         // 1. HttpOnly 쿠키에서 Refresh Token 추출
         String refreshToken = getRefreshTokenFromCookie(request);
