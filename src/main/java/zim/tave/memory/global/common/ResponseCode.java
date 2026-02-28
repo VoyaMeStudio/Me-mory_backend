@@ -99,6 +99,7 @@ public enum ResponseCode {
     MALFORMED_TOKEN(401, "올바르지 않은 JWT 형식입니다."),
     INVALID_TOKEN_SIGNATURE(401, "JWT 서명이 유효하지 않습니다."),
     UNSUPPORTED_TOKEN(401, "지원하지 않는 JWT 토큰입니다."),
+    INVALID_REQUEST_PARAMETER(400, "필수 요청 파라미터가 누락되었습니다."),
 
 
     // 카카오로그인 관련 에러
