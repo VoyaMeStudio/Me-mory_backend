@@ -144,9 +144,3 @@ tasks.register('integrationTest', Test) {
         exceptionFormat = "full"
     }
 }
-
-test {
-    environment "DOCKER_HOST", "unix:///Users/choehyungwon/.docker/run/docker.sock"
-    environment "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/Users/choehyungwon/.docker/run/docker.sock"
-    environment "TESTCONTAINERS_RYUK_DISABLED", "true"
-}
