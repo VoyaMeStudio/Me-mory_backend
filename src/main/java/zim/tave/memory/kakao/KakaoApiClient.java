@@ -1,12 +1,15 @@
 package zim.tave.memory.kakao;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 
 //accessToken으로 카카오 정보 가져옴
+@Slf4j
 @Component
 public class KakaoApiClient {
     private final RestTemplate restTemplate = new RestTemplate();
@@ -31,6 +34,8 @@ public class KakaoApiClient {
                     KakaoInfoResponse.class
             );
 
+            log.info("[KAKAO][ME] status={}, hasBody={}", response.getStatusCode(), response.hasBody());
+
             // HTTP Status 체크
             int status = response.getStatusCodeValue();
 
@@ -54,9 +59,15 @@ public class KakaoApiClient {
                     body.getKakaoAccount().getProfile().getProfileImageUrl()
             );
 
+        } catch (HttpStatusCodeException e) {
+            log.error("[KAKAO][ME] HTTP error. status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new CustomException(ErrorCode.KAKAO_API_UNKNOWN_ERROR);
+
         } catch (CustomException e) {
-            throw e; // 정확한 에러코드 그대로 전달
+            throw e;
+
         } catch (Exception e) {
+            log.error("[KAKAO][ME] unknown error.", e);
             throw new CustomException(ErrorCode.KAKAO_API_UNKNOWN_ERROR);
         }
     }
