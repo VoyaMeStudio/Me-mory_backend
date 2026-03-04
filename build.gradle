@@ -20,13 +20,13 @@ sonar {
 		property "sonar.projectKey", "VoyaMeStudio_Me-mory_backend"
 		property "sonar.organization", "voyamestudio"
 		property "sonar.host.url", "https://sonarcloud.io"
-		
+
 		// 소스 및 테스트 경로
 		property "sonar.sources", "src/main/java"
 		property "sonar.tests", "src/test/java"
 		property "sonar.java.binaries", "build/classes"
 		property "sonar.java.test.binaries", "build/classes"
-		
+
 		// 제외할 경로
 		property "sonar.exclusions", """
 			**/build/**,
@@ -37,15 +37,15 @@ sonar {
 			**/domain/**,
 			**/global/common/exception/**
 		"""
-		
+
 		// 테스트 제외 경로 (선택적)
 		property "sonar.test.exclusions", "**/*Test.java"
-		
+
 		// Java 버전
 		property "sonar.java.source", "21"
 		property "sonar.java.target", "21"
 		property "sonar.sourceEncoding", "UTF-8"
-		
+
 		// Unit 테스트 커버리지 리포트 경로 (unitTest용)
 		property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/unitTest/jacocoUnitTestReport.xml"
 	}
@@ -81,12 +81,13 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	annotationProcessor 'org.projectlombok:lombok'
+    //testImplementation 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
-	testImplementation 'org.testcontainers:testcontainers'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:mysql'
+    testImplementation 'org.testcontainers:testcontainers:1.19.8'
+    testImplementation 'org.testcontainers:mysql:1.19.8'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
 }
 
 //로컬에서 사용하는 전체 테스트 실행행
@@ -106,7 +107,7 @@ tasks.register('unitTest', Test) {
     useJUnitPlatform {
         excludeTags 'integration'
     }
-    
+
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
@@ -125,7 +126,7 @@ tasks.register('jacocoUnitTestReport', JacocoReport) {
         html.required = true
         html.outputLocation = file("build/reports/jacoco/unitTest/html")
     }
-    
+
     executionData unitTest
     sourceDirectories.from(files("src/main/java"))
     classDirectories.from(files("build/classes/java/main"))
@@ -136,7 +137,7 @@ tasks.register('integrationTest', Test) {
     useJUnitPlatform {
         includeTags 'integration'
     }
-    
+
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true

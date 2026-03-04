@@ -45,7 +45,7 @@ spring:
     baseline-on-migrate: false
     validate-on-migrate: true
     # 개발 환경: db/migration + db/migration-dev (테스트 데이터 포함)
-    locations: 
+    locations:
       - classpath:db/migration
       - classpath:db/migration-dev
 

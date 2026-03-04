@@ -16,7 +16,6 @@ import zim.tave.memory.dto.request.UpdateTripRequest;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
-import zim.tave.memory.repository.DiaryImageRepository;
 import zim.tave.memory.repository.TripRepository;
 import zim.tave.memory.repository.TripThemeRepository;
 import zim.tave.memory.repository.UserRepository;
@@ -43,13 +42,10 @@ class TripServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private DiaryRepository diaryRepository;
-
-    @Mock
-    private DiaryImageRepository diaryImageRepository;
-
-    @Mock
     private VisitedCountryService visitedCountryService;
+
+    @Mock
+    private DiaryRepository diaryRepository;
 
     @InjectMocks
     private TripService tripService;

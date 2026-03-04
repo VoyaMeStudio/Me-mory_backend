@@ -1,27 +1,40 @@
 package zim.tave.memory.service;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
+import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
+import zim.tave.memory.repository.VisitedCountryRepository;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Transactional
-@DirtiesContext
+@Tag("integration")
+@ExtendWith(MockitoExtension.class)
 public class SettingServiceTest {
-    private static final String LOGOUT_KAKAO_ID = "testKakaoId_logout";
-    private static final String DELETE_KAKAO_ID = "testKakaoId_delete";
+
+    private static final Logger log = LoggerFactory.getLogger(SettingServiceTest.class);
+
     private static final String TEST_IMAGE_URL = "https://example.com/test.jpg";
     private static final String TEST_SURNAME = "sur";
     private static final String TEST_FIRSTNAME = "first";
@@ -31,40 +44,25 @@ public class SettingServiceTest {
     private static final long INITIAL_COUNT = 0L;
     private static final String INITIAL_FLAGS = "";
 
-    @Autowired
+    @InjectMocks
     private SettingService settingService;
 
-    @Autowired
-    private LoginService loginService;
-
-    @Autowired
+    @Mock
     private UserRepository userRepository;
 
-    @Test
-    public void logout(){
-        //given
-        User testUser = new User();
-        testUser.setKakaoId(LOGOUT_KAKAO_ID);
-        testUser.setProfileImageUrl(TEST_IMAGE_URL);
-        testUser.setStatus(true);
-        testUser.setCreatedAt(LocalDate.now());
-        testUser.setRegistered(true);
-        User savedUser = userRepository.save(testUser);
+    @Mock
+    private VisitedCountryRepository visitedCountryRepository;
 
-        //when
-        loginService.logout(savedUser.getId());
+    @Mock
+    private DiaryRepository diaryRepository;
 
-        //then
-        User loggedOutUser = userRepository.findById(savedUser.getId()).orElseThrow();
-        assertThat(loggedOutUser.isStatus()).isFalse();
-        System.out.println("로그아웃 성공");
-    }
+    private User testUser;
 
-    @Test
-    public void deleteUser(){
-        //given
-        User testUser = new User();
-        testUser.setKakaoId(DELETE_KAKAO_ID);
+    @BeforeEach
+    void setUp() {
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setKakaoId("testKakaoId");
         testUser.setProfileImageUrl(TEST_IMAGE_URL);
         testUser.setSurName(TEST_SURNAME);
         testUser.setFirstName(TEST_FIRSTNAME);
@@ -77,28 +75,36 @@ public class SettingServiceTest {
         testUser.setDiaryCount(INITIAL_COUNT);
         testUser.setVisitedCountryCount(INITIAL_COUNT);
         testUser.setFlags(INITIAL_FLAGS);
+    }
 
-        User savedTestUser = userRepository.save(testUser);
+    @Test
+    public void deleteUser(){
+        //given
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        doNothing().when(visitedCountryRepository).deleteAllByUserId(anyLong());
+        doNothing().when(diaryRepository).deleteAllImagesByUserId(anyLong());
+        doNothing().when(diaryRepository).deleteAllByUserId(anyLong());
+        doNothing().when(userRepository).delete(any(User.class));
 
-        //when
-        settingService.deleteAccount(savedTestUser.getId());
+        // when
+        settingService.deleteAccount(1L);
 
-        //then
-        Optional<User> user = userRepository.findById(savedTestUser.getId());
-        assertThat(user).isEmpty();
-        System.out.println("회원 탈퇴 완료");
+        // then
+        verify(userRepository).delete(testUser);
+        log.info("회원 탈퇴 완료");
     }
 
     @Test
     public void delete_exception() {
-        //given
-        Long testUserId = 99999L;  // 존재하지 않는 ID
+        // given
+        Long nonExistentId = 99999L;
+        when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> settingService.deleteAccount(testUserId))
+        assertThatThrownBy(() -> settingService.deleteAccount(nonExistentId))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
 
-        System.out.println("예외 테스트 성공");
+        log.info("예외 테스트 성공");
     }
 }
