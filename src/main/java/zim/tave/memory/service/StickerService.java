@@ -65,7 +65,8 @@ public class StickerService {
         MultipartFile transformedFile = new ByteArrayMultipartFile(
                 transformedBytes,
                 "sticker.png",
-                "image/png"
+                "image/png",
+                "sticker.png"
         );
 
         // 5. S3 업로드 (S3Uploader 사용)
@@ -106,21 +107,25 @@ public class StickerService {
         private final byte[] data;
         private final String filename;
         private final String contentType;
+        private final String originalFilename;
 
-        public ByteArrayMultipartFile(byte[] data, String filename, String contentType) {
+        public ByteArrayMultipartFile(byte[] data, String filename, String contentType, String originalFilename) {
             this.data = data;
             this.filename = filename;
             this.contentType = contentType;
+            this.originalFilename = originalFilename;
         }
 
+        // 파라미터 이름
         @Override
         public String getName() {
             return filename;
         }
 
+        // 실제 파일이름
         @Override
         public String getOriginalFilename() {
-            return filename;
+            return originalFilename;
         }
 
         @Override
