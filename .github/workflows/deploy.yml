@@ -58,7 +58,7 @@ jobs:
 
             # 최신 이미지 받아서 재시작
             docker-compose pull
-            docker-compose up -d
+            docker-compose up -d --force-recreate
 
             # 헬스체크 대기
             echo "⏳ 애플리케이션 시작 대기 중..."
