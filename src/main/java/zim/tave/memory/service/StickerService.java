@@ -26,8 +26,12 @@ import zim.tave.memory.repository.StickerRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.UserStickerRepository;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -36,56 +40,118 @@ public class StickerService {
 
     private final StickerRepository stickerRepository;
     private final UserStickerRepository userStickerRepository;
-    private final S3Client s3Client;
     private final RestTemplate restTemplate;
     private final FileUploadProperties fileUploadProperties;
     private final UserRepository userRepository;
+    private final S3Uploader s3Uploader;
 
     @Value("${ai.server.url}")
     private String aiServerUrl;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
-
-    @Value("${cloud.aws.s3.base-url}")
-    private String s3BaseUrl;
-
-    private static final List<String> ALLOWED_TYPES =
-            List.of("image/jpeg", "image/png", "image/webp");
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024L; // 10MB
-
     @Transactional
     public StickerCreateResponseDto createSticker(Long userId, MultipartFile file) {
 
-        // 1. 파일 유효성 검사
+        // 1. 파일 유효성 검사 (yml 기반)
         validateFile(file);
 
-        // 2. Python AI 서버로 이미지 전송 → 변환된 PNG 바이트 수신
+        // 2. 사용자 조회 (userId → User 엔티티)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. Python AI 서버 호출 → 변환된 PNG 바이트 수신
         byte[] transformedBytes = callAiServer(file);
 
-        // 3. S3 업로드
-        String s3Key = "stickers/user-" + userId + "/" + UUID.randomUUID() + ".png";
-        uploadToS3(s3Key, transformedBytes);
-        String imageUrl = s3BaseUrl + "/" + s3Key;
+        // 4. 변환된 파일을 MultipartFile처럼 감싸기 (S3Uploader 사용 위해)
+        MultipartFile transformedFile = new ByteArrayMultipartFile(
+                transformedBytes,
+                "sticker.png",
+                "image/png"
+        );
 
-        // 4. Sticker 공통 엔티티 저장 (name은 원본 파일명 기반)
+        // 5. S3 업로드 (S3Uploader 사용)
+        String imageUrl;
+        try {
+            imageUrl = s3Uploader.upload(
+                    transformedFile,
+                    "stickers/user-" + userId
+            );
+        } catch (IOException e) {
+            log.error("S3 업로드 실패", e);
+            throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+
+        // 6. Sticker 저장
         String stickerName = extractBaseName(file.getOriginalFilename());
+
         Sticker sticker = Sticker.builder()
                 .name(stickerName)
                 .imageUrl(imageUrl)
                 .build();
+
         Sticker savedSticker = stickerRepository.save(sticker);
 
-        // 5. UserSticker 연결 저장 (유저-스티커 소유 관계)
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        // 7. UserSticker 저장 (userId → user)
         UserSticker userSticker = UserSticker.builder()
                 .user(user)
                 .sticker(savedSticker)
                 .build();
+
         userStickerRepository.save(userSticker);
 
         return StickerCreateResponseDto.from(savedSticker);
+    }
+
+    public class ByteArrayMultipartFile implements MultipartFile {
+
+        private final byte[] data;
+        private final String filename;
+        private final String contentType;
+
+        public ByteArrayMultipartFile(byte[] data, String filename, String contentType) {
+            this.data = data;
+            this.filename = filename;
+            this.contentType = contentType;
+        }
+
+        @Override
+        public String getName() {
+            return filename;
+        }
+
+        @Override
+        public String getOriginalFilename() {
+            return filename;
+        }
+
+        @Override
+        public String getContentType() {
+            return contentType;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return data.length == 0;
+        }
+
+        @Override
+        public long getSize() {
+            return data.length;
+        }
+
+        @Override
+        public byte[] getBytes() {
+            return data;
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return new ByteArrayInputStream(data);
+        }
+
+        @Override
+        public void transferTo(File dest) throws IOException {
+            Files.write(dest.toPath(), data);
+        }
     }
 
     public StickerListResponseDto getMyStickers(Long userId) {
@@ -160,20 +226,6 @@ public class StickerService {
             throw e;
         } catch (Exception e) {
             log.error("AI 서버 호출 실패: {}", e.getMessage());
-            throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
-        }
-    }
-
-    private void uploadToS3(String key, byte[] data) {
-        try {
-            PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
-                    .contentType("image/png")
-                    .build();
-            s3Client.putObject(request, RequestBody.fromBytes(data));
-        } catch (Exception e) {
-            log.error("S3 업로드 실패: {}", e.getMessage());
             throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
