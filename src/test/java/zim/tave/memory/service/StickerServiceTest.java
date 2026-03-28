@@ -19,7 +19,9 @@ import zim.tave.memory.repository.StickerRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.UserStickerRepository;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -163,5 +165,105 @@ class StickerServiceTest {
 
         assertThatThrownBy(() -> stickerService.createSticker(userId, file))
                 .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void ByteArrayMultipartFile_전체_커버() throws Exception {
+        byte[] data = "test-data".getBytes();
+
+        StickerService.ByteArrayMultipartFile file =
+                stickerService.new ByteArrayMultipartFile(
+                        data,
+                        "paramName",
+                        "image/png",
+                        "original.png"
+                );
+
+        // 모든 메서드 호출 (coverage 핵심🔥)
+        assertThat(file.getName()).isEqualTo("paramName");
+        assertThat(file.getOriginalFilename()).isEqualTo("original.png");
+        assertThat(file.getContentType()).isEqualTo("image/png");
+        assertThat(file.isEmpty()).isFalse();
+        assertThat(file.getSize()).isEqualTo(data.length);
+        assertThat(file.getBytes()).isEqualTo(data);
+
+        InputStream is = file.getInputStream();
+        assertThat(is).isNotNull();
+
+        File tempFile = File.createTempFile("test", ".png");
+        file.transferTo(tempFile);
+
+        assertThat(tempFile.exists()).isTrue();
+    }
+
+    @Test
+    void 파일_타입_오류() {
+        MockMultipartFile file = new MockMultipartFile(
+                "image", "test.txt", "text/plain", "data".getBytes()
+        );
+
+        assertThatThrownBy(() -> stickerService.createSticker(1L, file))
+                .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void 파일_사이즈_초과() {
+        MockMultipartFile file = new MockMultipartFile(
+                "image", "test.jpg", "image/jpeg", "data".getBytes()
+        );
+
+        when(fileUploadProperties.getMaxFileSize()).thenReturn(1L);
+
+        assertThatThrownBy(() -> stickerService.createSticker(1L, file))
+                .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void AI_서버_실패() {
+        MockMultipartFile file = new MockMultipartFile(
+                "image", "test.jpg", "image/jpeg", "data".getBytes()
+        );
+
+        User user = new User();
+        user.setId(1L);
+
+        when(fileUploadProperties.getMaxFileSize()).thenReturn(10_000L);
+        when(fileUploadProperties.getAllowedImageTypes()).thenReturn(List.of("image/jpeg"));
+        when(fileUploadProperties.getAllowedImageExtensions()).thenReturn(List.of(".jpg"));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        when(restTemplate.exchange(anyString(), any(), any(), eq(byte[].class)))
+                .thenThrow(new RuntimeException());
+
+        assertThatThrownBy(() -> stickerService.createSticker(1L, file))
+                .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void 파일이름_null이면_sticker() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "image", null, "image/jpeg", "data".getBytes()
+        );
+
+        User user = new User();
+        user.setId(1L);
+
+        when(fileUploadProperties.getMaxFileSize()).thenReturn(10_000L);
+        when(fileUploadProperties.getAllowedImageTypes()).thenReturn(List.of("image/jpeg"));
+        when(fileUploadProperties.getAllowedImageExtensions()).thenReturn(List.of(""));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        when(restTemplate.exchange(anyString(), any(), any(), eq(byte[].class)))
+                .thenReturn(ResponseEntity.ok("converted".getBytes()));
+
+        when(s3Uploader.upload(any(), any())).thenReturn("url");
+
+        when(stickerRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        StickerCreateResponseDto result = stickerService.createSticker(1L, file);
+
+        assertThat(result).isNotNull();
     }
 }
