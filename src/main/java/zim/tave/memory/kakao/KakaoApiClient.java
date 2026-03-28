@@ -1,5 +1,6 @@
 package zim.tave.memory.kakao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -11,8 +12,9 @@ import zim.tave.memory.global.common.exception.ErrorCode;
 //accessToken으로 카카오 정보 가져옴
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class KakaoApiClient {
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public KakaoUserInfo getKakaoUserInfo(String accessToken){
 
