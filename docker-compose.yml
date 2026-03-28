@@ -2,11 +2,6 @@ services:
   mysql:
     image: mysql:8.0
     container_name: memory-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: memory_db
-      MYSQL_USER: memory_user
-      MYSQL_PASSWORD: memory_password
     ports:
       - "3307:3306"
     volumes:
@@ -29,9 +24,6 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/memory_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: memory_user
-      SPRING_DATASOURCE_PASSWORD: memory_password
     ports:
       - "8081:8081"
     restart: unless-stopped

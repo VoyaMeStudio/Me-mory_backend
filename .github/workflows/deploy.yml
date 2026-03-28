@@ -68,6 +68,6 @@ jobs:
               echo "✅ 배포 성공!"
             else
               echo "❌ 배포 실패 - 로그 확인 필요"
-              docker-compose logs app --tail 50
+              docker-compose logs memory-app --tail 50
               exit 1
             fi
