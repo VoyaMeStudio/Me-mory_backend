@@ -2,6 +2,7 @@ package zim.tave.memory.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import zim.tave.memory.domain.Sticker;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@Builder
 @Schema(description = "스티커 목록 응답 DTO")
 public class StickerListResponseDto {
 
