@@ -19,3 +19,18 @@ memory:
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: https://voyame-studio.org/api/auth/login/kakao
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ${AWS_REGION}
+    s3:
+      bucket: ${AWS_BUCKET}
+      base-url: https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com
+
+ai:
+  server:
+    url: ${AI_SERVER_URL}

@@ -35,6 +35,8 @@ public enum ResponseCode {
     BOARD_UPDATE_SUCCESS(200, "보드 수정이 완료되었습니다."),
     BOARD_DELETE_SUCCESS(200, "보드가 성공적으로 삭제되었습니다."),
     BOARD_FETCH_SUCCESS(200, "보드 정보가 성공적으로 조회되었습니다."),
+    //스티커
+    STICKER_CREATE_SUCCESS(200, "스티커 생성 성공"),
     //알림
     NO_ALARM_TO_SEND(200, "전송할 알림이 없습니다."),
 
