@@ -20,8 +20,6 @@ RUN ./gradlew --no-daemon dependencies
 # 4. 소스 코드 복사
 COPY src src
 
-COPY src/main/resources/application-secret.yml src/main/resources/application-secret.yml
-
 # 5. 실제 빌드
 RUN ./gradlew --no-daemon assemble -x test
 
