@@ -33,8 +33,13 @@ public class JoinRequestDto {
     @Schema(description = "알림 동의 여부 (기본: true, false는 알림 전송X)", example = "true")
     private Boolean alarm;
 
+    // --- null-safe ---
     public String getNationality() {
         return (nationality == null || nationality.isBlank()) ? "REPUBLIC OF KOREA" : nationality;
+    }
+
+    public Boolean getAlarm() {
+        return (alarm == null) ? true : alarm;
     }
 
 }
