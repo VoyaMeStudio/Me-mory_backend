@@ -27,6 +27,9 @@ public class JoinRequestDto {
     @Schema(description = "국가명(미입력 시 'REPUBLIC OF KOREA')", example = "REPUBLIC OF KOREA")
     private String nationality;
 
+    @Schema(description = "프로필 이미지 URL (미입력 시 카카오 프로필 이미지 사용)", example = "https://example.com/image.jpg")
+    private String profileImageUrl;
+
     @Schema(description = "알림 동의 여부 (기본: true, false는 알림 전송X)", example = "true")
     private Boolean alarm;
 
