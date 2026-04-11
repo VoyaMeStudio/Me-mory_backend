@@ -24,10 +24,14 @@ public class JoinRequestDto {
     @Schema(description = "생년월일(필수)[yyyy-MM-dd]", example = "2000-01-01")
     private LocalDate birth;
 
-    @Schema(description = "국가명(필수)", example = "REPUBLIC OF KOREA")
+    @Schema(description = "국가명(미입력 시 'REPUBLIC OF KOREA')", example = "REPUBLIC OF KOREA")
     private String nationality;
 
     @Schema(description = "알림 동의 여부 (기본: true, false는 알림 전송X)", example = "true")
     private Boolean alarm;
+
+    public String getNationality() {
+        return (nationality == null || nationality.isBlank()) ? "REPUBLIC OF KOREA" : nationality;
+    }
 
 }
