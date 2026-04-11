@@ -74,6 +74,11 @@ public class SettingService {
             isUpdated = true;
         }
 
+        if (requestDto.getProfileImageUrl() != null && !requestDto.getProfileImageUrl().isBlank()) {
+            user.setProfileImageUrl(requestDto.getProfileImageUrl());
+            isUpdated = true;
+        }
+
         if (requestDto.getAlarm() != null) {
             Setting setting = user.getSetting();
 
