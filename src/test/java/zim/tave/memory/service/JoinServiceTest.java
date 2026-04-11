@@ -56,6 +56,7 @@ public class JoinServiceTest {
                 TEST_KOREAN_NAME,
                 TEST_BIRTH,
                 TEST_NATIONALITY,
+                TEST_IMAGE_URL,
                 true
         );
     }
