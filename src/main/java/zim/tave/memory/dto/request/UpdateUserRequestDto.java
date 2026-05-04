@@ -35,13 +35,16 @@ public class UpdateUserRequestDto {
     @Schema(description = "알림수신동의", example = "true")
     private Boolean alarm;
 
+    @Schema(description = "프로필 이미지 URL", example = "https://example.com/newimage.jpg")
+    private String profileImageUrl;
+
     public static UserResponseDto from(User user) {
 
         Boolean alarm = null;
         if (user.getSetting() != null) {
             alarm = user.getSetting().getAlarm();
         }
-        
+
         return new UserResponseDto(
                 user.getId(),
                 user.getKakaoId(),

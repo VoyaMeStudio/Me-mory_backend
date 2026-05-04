@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.User;
+import zim.tave.memory.dto.request.UpdateUserRequestDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.DiaryRepository;
@@ -106,5 +107,59 @@ public class SettingServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
 
         log.info("예외 테스트 성공");
+    }
+
+    @Test
+    void 사용자_정보_업데이트_성공() {
+        // given
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+        UpdateUserRequestDto request = UpdateUserRequestDto.builder()
+                .surName("NEW_SUR")
+                .profileImageUrl("https://new-image.com")
+                .build();
+
+        // when
+        settingService.updateUserInfo(1L, request);
+
+        // then
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    void 프로필이미지만_업데이트() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+        UpdateUserRequestDto request = UpdateUserRequestDto.builder()
+                .profileImageUrl("https://only-image.com")
+                .build();
+
+        settingService.updateUserInfo(1L, request);
+
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    void 수정할_필드_없음_예외() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+        UpdateUserRequestDto request = UpdateUserRequestDto.builder().build();
+
+        assertThatThrownBy(() -> settingService.updateUserInfo(1L, request))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NO_FIELDS_TO_UPDATE);
+    }
+
+    @Test
+    void 사용자_없음_update_예외() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        UpdateUserRequestDto request = UpdateUserRequestDto.builder()
+                .profileImageUrl("test")
+                .build();
+
+        assertThatThrownBy(() -> settingService.updateUserInfo(1L, request))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
     }
 }

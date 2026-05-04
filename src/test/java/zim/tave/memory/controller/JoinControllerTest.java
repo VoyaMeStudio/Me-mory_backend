@@ -65,6 +65,7 @@ public class JoinControllerTest {
                 "강지혜",
                 LocalDate.of(2000, 1, 1),
                 "REPUBLIC OF KOREA",
+                "https://test.com/image.jpg",
                 true
         );
 
@@ -96,6 +97,7 @@ public class JoinControllerTest {
                 "KANG", "JIHYE", "강지혜",
                 LocalDate.of(2000, 1, 1),
                 "REPUBLIC OF KOREA",
+                "https://test.com/image.jpg",
                 true
         );
 
@@ -117,6 +119,7 @@ public class JoinControllerTest {
                 "KANG", "JIHYE", "강지혜",
                 LocalDate.of(2000, 1, 1),
                 "REPUBLIC OF KOREA",
+                "https://test.com/image.jpg",
                 true
         );
 

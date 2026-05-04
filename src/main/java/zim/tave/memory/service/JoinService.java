@@ -46,10 +46,16 @@ public class JoinService {
         user.setStatus(true);
         user.setRegistered(true);
 
+        // 사용자가 입력한 URL이 있으면 사용, 없으면 카카오 이미지 유지
+        String validatedImageUrl = requestDto.getValidatedProfileImageUrl();
+        if (validatedImageUrl != null) {
+            user.setProfileImageUrl(validatedImageUrl);
+        }
+
         if (user.getSetting() == null) {
             Setting setting = new Setting();
             setting.setUser(user);
-            setting.setAlarm(requestDto.getAlarm() != null && requestDto.getAlarm());
+            setting.setAlarm(requestDto.getAlarm());
             user.setSetting(setting);
         } else if (requestDto.getAlarm() != null) {
             user.getSetting().setAlarm(requestDto.getAlarm());
