@@ -45,6 +45,9 @@ class TripServiceTest {
     private VisitedCountryService visitedCountryService;
 
     @Mock
+    private TripCountryService tripCountryService;
+
+    @Mock
     private DiaryRepository diaryRepository;
 
     @InjectMocks
@@ -282,6 +285,7 @@ class TripServiceTest {
         assertThat(result.getEndDate()).isEqualTo(request.getEndDate());
         verify(visitedCountryService).registerVisitedCountry(1L, "FR", 2L);
         verify(visitedCountryService).registerVisitedCountry(1L, "IT", 2L);
+        verify(tripCountryService).registerTripCountries(any(Trip.class), eq(request.getCountryCodes()));
     }
 
     @Test
