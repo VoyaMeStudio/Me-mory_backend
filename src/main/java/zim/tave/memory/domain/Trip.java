@@ -58,6 +58,9 @@ public class Trip {
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Diary> diaries = new ArrayList<>();
 
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripCountry> tripCountries = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         if (this.startDate == null) {
@@ -73,6 +76,11 @@ public class Trip {
         diaries.add(diary);
         diary.setTrip(this);
         this.endDate = diary.getCreatedAt().toLocalDate();
+    }
+
+    public void addTripCountry(TripCountry tripCountry) {
+        tripCountries.add(tripCountry);
+        tripCountry.setTrip(this);
     }
 
     //==생성 메서드==//
