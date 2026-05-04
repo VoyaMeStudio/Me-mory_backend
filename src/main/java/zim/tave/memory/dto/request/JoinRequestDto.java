@@ -4,8 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zim.tave.memory.global.common.exception.CustomException;
+import zim.tave.memory.global.common.exception.ErrorCode;
 
 import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 @Getter
 @AllArgsConstructor
@@ -40,6 +43,22 @@ public class JoinRequestDto {
 
     public Boolean getAlarm() {
         return (alarm == null) ? true : alarm;
+    }
+
+    // 유효한 URL인지 검사 (http/https만 허용)
+    private static final Pattern URL_PATTERN = Pattern.compile(
+            "^(https?)://[^\\s/$.?#].[^\\s]*$", Pattern.CASE_INSENSITIVE
+    );
+
+    // null/blank면 카카오 이미지를 사용하므로 검사하지 않음
+    public String getValidatedProfileImageUrl() {
+        if (profileImageUrl == null || profileImageUrl.isBlank()) {
+            return null;
+        }
+        if (!URL_PATTERN.matcher(profileImageUrl).matches()) {
+            throw new CustomException(ErrorCode.INVALID_PROFILE_IMAGE_URL);
+        }
+        return profileImageUrl;
     }
 
 }

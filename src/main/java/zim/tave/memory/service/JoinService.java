@@ -47,8 +47,9 @@ public class JoinService {
         user.setRegistered(true);
 
         // 사용자가 입력한 URL이 있으면 사용, 없으면 카카오 이미지 유지
-        if (requestDto.getProfileImageUrl() != null && !requestDto.getProfileImageUrl().isBlank()) {
-            user.setProfileImageUrl(requestDto.getProfileImageUrl());
+        String validatedImageUrl = requestDto.getValidatedProfileImageUrl();
+        if (validatedImageUrl != null) {
+            user.setProfileImageUrl(validatedImageUrl);
         }
 
         if (user.getSetting() == null) {

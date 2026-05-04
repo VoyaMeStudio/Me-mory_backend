@@ -1,6 +1,7 @@
 package zim.tave.memory.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zim.tave.memory.domain.Setting;
@@ -13,6 +14,7 @@ import zim.tave.memory.repository.DiaryRepository;
 import zim.tave.memory.repository.UserRepository;
 import zim.tave.memory.repository.VisitedCountryRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SettingService {
@@ -75,6 +77,10 @@ public class SettingService {
         }
 
         if (requestDto.getProfileImageUrl() != null && !requestDto.getProfileImageUrl().isBlank()) {
+            log.info("User {} profile image updated from {} to {}",
+                    user.getId(),
+                    user.getProfileImageUrl(),
+                    requestDto.getProfileImageUrl());
             user.setProfileImageUrl(requestDto.getProfileImageUrl());
             isUpdated = true;
         }

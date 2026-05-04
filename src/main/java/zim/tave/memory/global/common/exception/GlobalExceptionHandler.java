@@ -48,6 +48,7 @@ public class GlobalExceptionHandler {
             case DIARY_NOT_FOUND -> ResponseCode.DIARY_NOT_FOUND;
             case IMAGE_NOT_FOUND -> ResponseCode.IMAGE_NOT_FOUND;
             case IMAGE_COUNT_INVALID -> ResponseCode.IMAGE_COUNT_INVALID;
+            case INVALID_PROFILE_IMAGE_URL -> ResponseCode.INVALID_PROFILE_IMAGE_URL;
             case CAMERA_TYPES_REQUIRED -> ResponseCode.CAMERA_TYPES_REQUIRED;
             case REPRESENTATIVE_IMAGE_REQUIRED -> ResponseCode.REPRESENTATIVE_IMAGE_REQUIRED;
             case IMAGE_ID_REQUIRED -> ResponseCode.IMAGE_ID_REQUIRED;
