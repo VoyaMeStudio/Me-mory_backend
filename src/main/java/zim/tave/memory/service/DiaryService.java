@@ -34,6 +34,7 @@ public class DiaryService {
 	private final DiaryImageRepository diaryImageRepository;
     private final CountryService countryService;
     private final VisitedCountryService visitedCountryService;
+    private final TripCountryService tripCountryService;
 
     // 이미지 검증&저장
     private void validateAndAttachImages(Diary diary, List<CreateDiaryRequest.DiaryImageInfo> images) {
@@ -111,6 +112,8 @@ public class DiaryService {
 		Diary saved = diaryRepository.save(diary);
 
 		trip.updateEndDate(saved.getCreatedAt().toLocalDate());
+
+        tripCountryService.registerTripCountry(trip, country);
 
         // VisitedCountry 등록
         try {
@@ -214,7 +217,7 @@ public class DiaryService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+	@Transactional
     public void storeDiary(Long diaryId, Long userId, boolean isStored) {
         if (userId == null) {
             throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
@@ -227,6 +230,7 @@ public class DiaryService {
         }
 
         diary.setIsStored(isStored);
+        syncTripCountryForDiaryVisibility(diary, isStored);
     }
 
     @Transactional
@@ -237,6 +241,7 @@ public class DiaryService {
 		Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
 		checkDiaryOwnership(userId, diary);
         Long tripId = diary.getTrip().getId();
+        removeTripCountryIfLastActiveDiary(diary);
 		diaryRepository.delete(diary);
 
         // 다이어리 삭제 후 Trip의 종료 날짜를 업데이트
@@ -259,6 +264,33 @@ public class DiaryService {
 		if (!diary.getUser().getId().equals(userId)) {
 			throw new CustomException(ErrorCode.ACCESS_DENIED);
 		}
+    }
+
+    private void syncTripCountryForDiaryVisibility(Diary diary, boolean isStored) {
+        if (isStored) {
+            removeTripCountryIfLastActiveDiary(diary);
+            return;
+        }
+        if (diary.getTrip() != null && diary.getCountry() != null) {
+            tripCountryService.registerTripCountry(diary.getTrip(), diary.getCountry());
+        }
+    }
+
+    private void removeTripCountryIfLastActiveDiary(Diary diary) {
+        if (diary.getTrip() == null || diary.getTrip().getId() == null
+                || diary.getCountry() == null || diary.getCountry().getCountryCode() == null
+                || diary.getId() == null) {
+            return;
+        }
+
+        boolean hasOtherActiveDiary = diaryRepository.existsOtherActiveDiaryByTripIdAndCountryCode(
+                diary.getTrip().getId(),
+                diary.getCountry().getCountryCode(),
+                diary.getId()
+        );
+        if (!hasOtherActiveDiary) {
+            tripCountryService.deleteTripCountry(diary.getTrip(), diary.getCountry());
+        }
     }
 
 	private DiaryResponseDto convertToDto(Diary diary) {
