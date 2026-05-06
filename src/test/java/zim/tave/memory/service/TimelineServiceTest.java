@@ -11,12 +11,14 @@ import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.DiaryImage;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.Trip;
+import zim.tave.memory.domain.TripCountry;
 import zim.tave.memory.domain.User;
 import zim.tave.memory.dto.TimelineTripDto;
 import zim.tave.memory.dto.response.TimelineResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.EmotionRepository;
+import zim.tave.memory.repository.TripCountryRepository;
 import zim.tave.memory.repository.TripRepository;
 
 import java.time.LocalDate;
@@ -38,6 +40,9 @@ class TimelineServiceTest {
 
     @Mock
     private EmotionRepository emotionRepository;
+
+    @Mock
+    private TripCountryRepository tripCountryRepository;
 
     @InjectMocks
     private TimelineService timelineService;
@@ -254,6 +259,38 @@ class TimelineServiceTest {
     }
 
     @Test
+    void 타임라인_조회_과거여행_TripCountry_국가_수집() {
+        // given
+        Country china = new Country("CN", "중국", "🇨🇳");
+        Country japan = new Country("JP", "일본", "🇯🇵");
+
+        activeTrip.setIsPast(true);
+        activeTrip.setDiaries(new ArrayList<>());
+
+        Emotion defaultEmotion = new Emotion();
+        defaultEmotion.setId(1L);
+        defaultEmotion.setName("기본");
+        defaultEmotion.setColorCode("#EEEEEE");
+
+        when(tripRepository.findActiveTripsWithDetails(1L)).thenReturn(List.of(activeTrip));
+        when(tripCountryRepository.findByTripIdsWithCountry(List.of(activeTrip.getId())))
+                .thenReturn(List.of(
+                        TripCountry.create(activeTrip, china),
+                        TripCountry.create(activeTrip, japan)
+                ));
+        when(emotionRepository.findByName("기본")).thenReturn(defaultEmotion);
+
+        // when
+        TimelineResponseDto result = timelineService.getTimeline(1L);
+
+        // then
+        assertThat(result.getTrips()).hasSize(1);
+        assertThat(result.getTrips().get(0).getVisitedCountries())
+                .extracting("countryCode")
+                .containsExactlyInAnyOrder("CN", "JP");
+    }
+
+    @Test
     void 타임라인_조회_대표_이미지_해결() {
         // given
         String representativeImageUrl = "https://example.com/image.jpg";
@@ -428,4 +465,3 @@ class TimelineServiceTest {
         assertThat(result.getTrips().get(0).getEmotionColor()).isEqualTo("#EEEEEE");
     }
 }
-

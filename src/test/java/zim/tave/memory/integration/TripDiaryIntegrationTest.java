@@ -23,6 +23,7 @@ import zim.tave.memory.repository.EmotionRepository;
 import zim.tave.memory.repository.WeatherRepository;
 import zim.tave.memory.repository.DiaryImageRepository;
 import zim.tave.memory.service.CountryService;
+import zim.tave.memory.service.TripCountryService;
 import zim.tave.memory.service.VisitedCountryService;
 import zim.tave.memory.dto.response.TripResponseDto;
 
@@ -63,6 +64,9 @@ class TripDiaryIntegrationTest {
 
     @Mock
     private VisitedCountryService visitedCountryService;
+
+    @Mock
+    private TripCountryService tripCountryService;
 
     @InjectMocks
     private TripService tripService;

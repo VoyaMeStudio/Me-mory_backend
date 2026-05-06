@@ -55,6 +55,9 @@ class DiaryServiceTest {
     @Mock
     private VisitedCountryService visitedCountryService;
 
+    @Mock
+    private TripCountryService tripCountryService;
+
     @InjectMocks
     private DiaryService diaryService;
 
@@ -134,6 +137,7 @@ class DiaryServiceTest {
         assertThat(result.getCity()).isEqualTo("서울");
         assertThat(result.getContent()).isEqualTo("테스트 내용");
         verify(diaryRepository).save(any(Diary.class));
+        verify(tripCountryService).registerTripCountry(trip, country);
     }
 
     @Test
@@ -225,6 +229,26 @@ class DiaryServiceTest {
     }
 
     @Test
+    void 다이어리_삭제_마지막_활성_국가면_TripCountry_삭제() {
+        // given
+        Country country = new Country("KR", "대한민국", "🇰🇷");
+        diary.setCountry(country);
+        trip.setStartDate(LocalDate.of(2024, 1, 1));
+
+        when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+        when(diaryRepository.existsOtherActiveDiaryByTripIdAndCountryCode(1L, "KR", 1L))
+                .thenReturn(false);
+        when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
+        when(diaryRepository.findByTrip_Id(1L)).thenReturn(List.of());
+
+        // when
+        diaryService.deleteDiary(1L, 1L);
+
+        // then
+        verify(tripCountryService).deleteTripCountry(trip, country);
+    }
+
+    @Test
     void 다이어리_삭제_후_남은_다이어리_있을_때_종료날짜_업데이트_테스트() {
         // given
         Diary remainingDiary = new Diary();
@@ -296,19 +320,26 @@ class DiaryServiceTest {
     @Test
     void 다이어리_보관_테스트() {
         // given
+        Country country = new Country("KR", "대한민국", "🇰🇷");
+        diary.setCountry(country);
         diary.setIsStored(false);
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
+        when(diaryRepository.existsOtherActiveDiaryByTripIdAndCountryCode(1L, "KR", 1L))
+                .thenReturn(false);
 
         // when
         diaryService.storeDiary(1L, 1L, true);
 
         // then
         assertThat(diary.getIsStored()).isTrue();
+        verify(tripCountryService).deleteTripCountry(trip, country);
     }
 
     @Test
     void 다이어리_보관_해제_테스트() {
         // given
+        Country country = new Country("KR", "대한민국", "🇰🇷");
+        diary.setCountry(country);
         diary.setIsStored(true);
         when(diaryRepository.findById(1L)).thenReturn(Optional.of(diary));
 
@@ -317,6 +348,7 @@ class DiaryServiceTest {
 
         // then
         assertThat(diary.getIsStored()).isFalse();
+        verify(tripCountryService).registerTripCountry(trip, country);
     }
 
     @Test

@@ -49,4 +49,18 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
           )
     """)
     boolean existsIncompleteDiaryByTripId(@Param("tripId") Long tripId);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END
+        FROM Diary d
+        WHERE d.trip.id = :tripId
+          AND d.country.countryCode = :countryCode
+          AND d.id <> :excludedDiaryId
+          AND (d.isStored = false OR d.isStored IS NULL)
+    """)
+    boolean existsOtherActiveDiaryByTripIdAndCountryCode(
+            @Param("tripId") Long tripId,
+            @Param("countryCode") String countryCode,
+            @Param("excludedDiaryId") Long excludedDiaryId
+    );
 }

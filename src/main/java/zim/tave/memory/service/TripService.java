@@ -28,6 +28,7 @@ public class TripService {
 	private final DiaryImageRepository diaryImageRepository;
     private final UserRepository userRepository;
     private final VisitedCountryService visitedCountryService;
+    private final TripCountryService tripCountryService;
     private final DiaryRepository diaryRepository;
 
     private TripService self; // self-injection 추가
@@ -99,6 +100,8 @@ public class TripService {
         trip.setIsStored(false);
 
         Trip saved = tripRepository.save(trip);
+
+        tripCountryService.registerTripCountries(saved, request.getCountryCodes());
 
         request.getCountryCodes().forEach(countryCode ->
                 visitedCountryService.registerVisitedCountry(userId, countryCode, request.getEmotionId()));

@@ -111,7 +111,7 @@ public class TimelineIntegrationTest extends IntegrationTestBase {
         request.setDescription("2023년 유럽 배낭 여행");
         request.setStartDate(LocalDate.of(2023, 5, 1));
         request.setEndDate(LocalDate.of(2023, 5, 14));
-        request.setCountryCodes(Arrays.asList("FR", "IT"));
+        request.setCountryCodes(Arrays.asList("CN", "JP"));
         request.setEmotionId(defaultEmotion.getId());
 
         // when
@@ -128,6 +128,13 @@ public class TimelineIntegrationTest extends IntegrationTestBase {
         // 방문 국가가 등록되었는지 확인
         List<VisitedCountry> visitedCountries = visitedCountryRepository.findByUserIdWithDetails(testUser.getId());
         assertThat(visitedCountries).isNotEmpty();
+
+        TimelineResponseDto timeline = timelineService.getTimeline(testUser.getId());
+        assertThat(timeline.getTrips())
+                .filteredOn(trip -> trip.getTripId().equals(createdPastTrip.getId()))
+                .singleElement()
+                .satisfies(trip -> assertThat(trip.getVisitedCountries())
+                        .extracting("countryCode")
+                        .containsExactlyInAnyOrder("CN", "JP"));
     }
 }
-

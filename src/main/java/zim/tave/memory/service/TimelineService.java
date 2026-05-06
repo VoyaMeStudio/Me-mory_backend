@@ -8,12 +8,14 @@ import zim.tave.memory.domain.Diary;
 import zim.tave.memory.domain.DiaryImage;
 import zim.tave.memory.domain.Emotion;
 import zim.tave.memory.domain.Trip;
+import zim.tave.memory.domain.TripCountry;
 import zim.tave.memory.dto.TimelineTripDto;
 import zim.tave.memory.dto.VisitedCountryInfoDto;
 import zim.tave.memory.dto.response.TimelineResponseDto;
 import zim.tave.memory.global.common.exception.CustomException;
 import zim.tave.memory.global.common.exception.ErrorCode;
 import zim.tave.memory.repository.EmotionRepository;
+import zim.tave.memory.repository.TripCountryRepository;
 import zim.tave.memory.repository.TripRepository;
 
 import java.time.LocalDate;
@@ -32,6 +34,7 @@ public class TimelineService {
 
     private final TripRepository tripRepository;
     private final EmotionRepository emotionRepository;
+    private final TripCountryRepository tripCountryRepository;
 
     /**
      * 사용자의 타임라인 조회(보관함에 숨긴 여행 제외, 시작일 기준 내림차순 정렬 )
@@ -40,6 +43,7 @@ public class TimelineService {
         ensureAuthenticated(userId);
 
         List<Trip> trips = tripRepository.findActiveTripsWithDetails(userId);
+        Map<Long, List<TripCountry>> tripCountriesByTripId = loadTripCountriesByTripId(trips);
 
         // 활성 여행만 필터링하고 시작일 기준 내림차순 정렬
         List<TimelineTripDto> timelineTrips = trips.stream()
@@ -48,7 +52,10 @@ public class TimelineService {
                                 Trip::getStartDate,
                                 Comparator.nullsLast(LocalDate::compareTo))
                         .reversed())
-                .map(this::toTimelineTripDto)
+                .map(trip -> toTimelineTripDto(
+                        trip,
+                        tripCountriesByTripId.getOrDefault(trip.getId(), List.of())
+                ))
                 .toList();
 
         return TimelineResponseDto.builder()
@@ -59,7 +66,7 @@ public class TimelineService {
     /**
      * Trip 엔티티를 TimelineTripDto로 변환(가장 최근 일기에서 감정 정보 추출, 대표 이미지 URL 결정, 방문한 국가 목록 수집)
      */
-    private TimelineTripDto toTimelineTripDto(Trip trip) {
+    private TimelineTripDto toTimelineTripDto(Trip trip, List<TripCountry> tripCountries) {
         // 가장 최근 일기에서 감정 정보 추출
         TripEmotionInfo emotionInfo = resolveTripEmotion(trip);
         
@@ -73,14 +80,54 @@ public class TimelineService {
                 .representativeImageUrl(resolveRepresentativeImage(trip))
                 .emotionName(emotionInfo.emotionName())
                 .emotionColor(emotionInfo.emotionColor())
-                .visitedCountries(collectVisitedCountries(trip))
+                .visitedCountries(collectVisitedCountries(trip, tripCountries))
                 .build();
+    }
+
+    private Map<Long, List<TripCountry>> loadTripCountriesByTripId(List<Trip> trips) {
+        List<Long> tripIds = trips.stream()
+                .map(Trip::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (tripIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<TripCountry> tripCountries = tripCountryRepository.findByTripIdsWithCountry(tripIds);
+        if (tripCountries == null || tripCountries.isEmpty()) {
+            return Map.of();
+        }
+
+        return tripCountries.stream()
+                .filter(tripCountry -> tripCountry.getTrip() != null && tripCountry.getTrip().getId() != null)
+                .collect(Collectors.groupingBy(
+                        tripCountry -> tripCountry.getTrip().getId(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
     }
 
     /**
      * 여행별 방문한 국가 목록을 수집(활성 일기에서 국가 정보 추출, 중복 제거, VisitedCountryInfoDto로 변환)
      */
-    private List<VisitedCountryInfoDto> collectVisitedCountries(Trip trip) {
+    private List<VisitedCountryInfoDto> collectVisitedCountries(Trip trip, List<TripCountry> tripCountries) {
+        if (tripCountries != null && !tripCountries.isEmpty()) {
+            return tripCountries.stream()
+                    .map(TripCountry::getCountry)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap(
+                            Country::getCountryCode,
+                            country -> country,
+                            (existing, duplicate) -> existing,
+                            LinkedHashMap::new
+                    ))
+                    .values()
+                    .stream()
+                    .map(this::buildVisitedCountryInfo)
+                    .toList();
+        }
+
         List<Diary> diaries = filterActiveDiaries(trip.getDiaries());
         if (diaries == null || diaries.isEmpty()) {
             return List.of();
@@ -220,4 +267,3 @@ public class TimelineService {
     private record TripEmotionInfo(String emotionName, String emotionColor) {
     }
 }
-
